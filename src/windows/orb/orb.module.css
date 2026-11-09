@@ -1,0 +1,25 @@
+:global(html),
+:global(body),
+:global(#root) {
+  background: transparent !important;
+  overflow: hidden;
+}
+
+.root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+
+.root:active {
+  cursor: grabbing;
+}
+
+/* The drag region must receive the events; the orb is purely visual. */
+.orb {
+  pointer-events: none;
+  will-change: transform;
+}

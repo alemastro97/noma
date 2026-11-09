@@ -7,6 +7,15 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig({
   plugins: [react()],
   clearScreen: false,
+  build: {
+    rollupOptions: {
+      // One page per Tauri window. Paths match `app.windows[].url` in tauri.conf.json.
+      input: {
+        main: new URL("./index.html", import.meta.url).pathname,
+        orb: new URL("./src/windows/orb/index.html", import.meta.url).pathname,
+      },
+    },
+  },
   server: {
     port: 1420,
     strictPort: true,

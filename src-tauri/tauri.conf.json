@@ -23,6 +23,25 @@
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "backgroundColor": "#111116"
+      },
+      {
+        "label": "orb",
+        "title": "NOMA orb",
+        "url": "src/windows/orb/index.html",
+        "width": 176,
+        "height": 176,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "alwaysOnTop": true,
+        "visibleOnAllWorkspaces": true,
+        "skipTaskbar": true,
+        "visible": false,
+        "focus": false,
+        "acceptFirstMouse": true,
+        "x": 1100,
+        "y": 40
       }
     ],
     "security": {
