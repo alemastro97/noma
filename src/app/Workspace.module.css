@@ -1,0 +1,23 @@
+.workspace {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+  background-color: var(--noma-bg);
+  background-image:
+    radial-gradient(circle, var(--noma-surface-elevated) 1px, transparent 1.2px),
+    radial-gradient(700px 500px at 60% 40%, rgba(109, 74, 255, 0.08), transparent 70%);
+  background-size:
+    24px 24px,
+    100% 100%;
+}
+
+[data-theme="light"] .workspace {
+  background-image:
+    radial-gradient(circle, var(--noma-border) 1px, transparent 1.2px),
+    radial-gradient(700px 500px at 60% 40%, rgba(128, 101, 220, 0.06), transparent 70%);
+}

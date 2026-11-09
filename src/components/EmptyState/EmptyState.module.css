@@ -1,0 +1,40 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 36px 28px;
+  width: min(360px, 100%);
+  border-radius: var(--noma-radius-panel);
+  background: var(--noma-surface);
+  border: 1px solid var(--noma-border-card);
+  animation: appear var(--noma-slow) var(--noma-ease) both;
+}
+
+.empty[data-variant="dashed"] {
+  background: transparent;
+  border: 1px dashed var(--noma-border);
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.body {
+  font-size: 13px;
+  color: var(--noma-text-2);
+  line-height: 1.55;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

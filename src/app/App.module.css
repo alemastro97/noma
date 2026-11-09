@@ -1,0 +1,14 @@
+.app {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background: var(--noma-bg);
+  color: var(--noma-text);
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
