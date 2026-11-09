@@ -176,6 +176,8 @@
 }
 
 .aiChip {
+  background: transparent;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -219,4 +221,9 @@
   .titleGroup .meta {
     display: none;
   }
+}
+
+.aiChip:hover {
+  color: var(--noma-text);
+  border-color: var(--noma-border-hover);
 }

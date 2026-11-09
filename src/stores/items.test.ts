@@ -22,6 +22,8 @@ const item = (over: Partial<Item>): Item => ({
   completedAt: null,
   tags: [],
   linkCount: 0,
+  hint: null,
+  capturing: false,
   ...over,
 });
 

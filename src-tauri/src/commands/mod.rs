@@ -1,5 +1,6 @@
 //! Tauri commands: thin adapters over `db::*`. Each mutation emits `items:changed`.
 
+pub mod ai;
 pub mod boards;
 pub mod items;
 pub mod projects;

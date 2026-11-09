@@ -5,6 +5,7 @@ import { targetKey, useUiStore, type NavTarget } from "../stores/ui";
 import { CanvasView } from "../views/canvas/CanvasView";
 import { KanbanView } from "../views/kanban/KanbanView";
 import { ListView } from "../views/list/ListView";
+import { SettingsView } from "../views/settings/SettingsView";
 import { boardIdFor } from "./boardFor";
 import styles from "./Workspace.module.css";
 
@@ -23,8 +24,8 @@ export function Workspace({ target }: { target: NavTarget }) {
 
   if (target.kind === "settings") {
     return (
-      <section className={styles.workspace} aria-label="Workspace">
-        {empty}
+      <section className={styles.views} aria-label="Settings">
+        <SettingsView />
       </section>
     );
   }

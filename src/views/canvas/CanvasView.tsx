@@ -97,7 +97,20 @@ function Canvas({ boardId, viewKey, empty }: CanvasViewProps) {
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState<CardNodeType>(built);
-  useEffect(() => setNodes(built), [built, setNodes]);
+  // Keep xyflow's measured sizes across rebuilds: a node without `measured`
+  // stays hidden until its ResizeObserver fires again, which never happens
+  // when the card's size did not change.
+  useEffect(
+    () =>
+      setNodes((prev) => {
+        const old = new Map(prev.map((n) => [n.id, n]));
+        return built.map((n) => {
+          const o = old.get(n.id);
+          return o?.measured ? { ...n, measured: o.measured, width: o.width, height: o.height } : n;
+        });
+      }),
+    [built, setNodes],
+  );
 
   const edges = useMemo<Edge[]>(() => {
     const present = new Set(items.map((i) => i.id));

@@ -26,7 +26,17 @@ let seq = 0;
 
 const id = () => `m${++seq}`;
 const iso = (d: Date) => d.toISOString();
-const listeners = new Set<() => void>();
+/** Event name → registered Tauri callback ids. */
+const listeners = new Map<string, Set<number>>();
+
+function emit(event: string, payload: unknown) {
+  const internals = (
+    window as unknown as {
+      __TAURI_INTERNALS__: { runCallback: (id: number, data: unknown) => void };
+    }
+  ).__TAURI_INTERNALS__;
+  for (const id of listeners.get(event) ?? []) internals.runCallback(id, { event, id: 0, payload });
+}
 
 function at(days: number, h: number, m = 0): string {
   const d = new Date();
@@ -59,6 +69,8 @@ function create(input: NewItem): Item {
     completedAt: input.status === "done" ? now : null,
     tags: input.tags ?? [],
     linkCount: 0,
+    hint: null,
+    capturing: false,
   };
   items.set(item.id, item);
   const boardId = input.boardId ?? projects.find((p) => p.id === input.projectId)?.boardId ?? null;
@@ -77,6 +89,7 @@ function create(input: NewItem): Item {
 function withLinks(item: Item): Item {
   return {
     ...item,
+    capturing: capturing.has(item.id),
     linkCount: links.filter((l) => l.fromItem === item.id || l.toItem === item.id).length,
   };
 }
@@ -251,7 +264,97 @@ function seed(): boolean {
 }
 
 function changed() {
-  for (const l of listeners) l();
+  emit("items:changed", { ids: [] });
+}
+
+// ── Simulated AI: a keyword heuristic, enough to exercise the capture UI. ──
+const aiState = {
+  provider: "builtin",
+  modelId: "qwen3-4b-instruct-2507-q4km",
+  ollamaModel: null,
+  ollamaUrl: "http://127.0.0.1:11434",
+  ready: true,
+  phase: "idle",
+  message: null,
+  serverInstalled: true,
+  serverRunning: false,
+  models: [
+    {
+      id: "qwen3-4b-instruct-2507-q4km",
+      name: "Qwen3 4B Instruct",
+      description: "Best balance of speed and accuracy. Italian and English.",
+      file: "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      sizeBytes: 2497281120,
+      ramGb: 3.5,
+      recommended: true,
+      installed: true,
+    },
+    {
+      id: "qwen3-1.7b-q4km",
+      name: "Qwen3 1.7B",
+      description: "Lighter and faster, for machines with less memory.",
+      file: "Qwen3-1.7B-Q4_K_M.gguf",
+      sizeBytes: 1107409472,
+      ramGb: 2,
+      recommended: false,
+      installed: false,
+    },
+  ],
+  download: null as null | { modelId: string; stage: string; received: number; total: number },
+  ollamaAvailable: false,
+  ollamaModels: [] as string[],
+  pending: 0,
+};
+const capturing = new Set<string>();
+
+function publishAi() {
+  emit("ai:state", { ...aiState, pending: capturing.size });
+}
+
+function fakeExtract(text: string): Partial<Item> {
+  const t = text.toLowerCase();
+  const when = (days: number, h: number) => at(days, h);
+  const tomorrow = /domani|tomorrow/.test(t);
+  if (/ricordami|remind/.test(t))
+    return { kind: "reminder", remindAt: when(tomorrow ? 1 : 0, tomorrow ? 9 : 18) };
+  if (/idea|what if|e se/.test(t)) return { kind: "idea" };
+  if (/meeting|riunione|call with|pranzo|dinner|cena/.test(t))
+    return { kind: "event", dueAt: when(1, 14), endsAt: when(1, 15) };
+  if (/password|codice|note/.test(t)) return { kind: "note" };
+  return { kind: "task", dueAt: tomorrow ? when(1, 0) : null };
+}
+
+function simulateCapture(itemId: string, text: string) {
+  capturing.add(itemId);
+  aiState.phase = "processing";
+  publishAi();
+  setTimeout(() => {
+    capturing.delete(itemId);
+    const item = items.get(itemId);
+    if (item) {
+      const title = text
+        .replace(/^(ricordami di|ricordami|remind me to|idea:?)\s*/i, "")
+        .replace(/\s*(domani|tomorrow)\b.*$/i, "")
+        .trim();
+      items.set(itemId, {
+        ...item,
+        ...fakeExtract(text),
+        title: title.charAt(0).toUpperCase() + title.slice(1) || item.title,
+        capturing: false,
+        hint: /venerd|friday/.test(text.toLowerCase()) ? { datePhrase: "friday" } : null,
+      });
+    }
+    aiState.phase = "idle";
+    changed();
+    emit("ai:capture", {
+      captureId: itemId,
+      status: "done",
+      itemIds: [itemId],
+      error: null,
+      latencyMs: 840,
+    });
+    publishAi();
+  }, 900);
 }
 
 function handle(cmd: string, a: Args): unknown {
@@ -387,6 +490,65 @@ function handle(cmd: string, a: Args): unknown {
       changed();
       return l;
     }
+    case "ai_state":
+    case "ai_refresh":
+      return { ...aiState, pending: capturing.size };
+    case "ai_configure":
+      Object.assign(aiState, a.patch as object);
+      publishAi();
+      return { ...aiState, pending: capturing.size };
+    case "ai_download": {
+      const model = aiState.models.find((m) => m.id === a.modelId);
+      if (!model) return null;
+      let received = 0;
+      const tick = setInterval(() => {
+        received = Math.min(model.sizeBytes, received + model.sizeBytes / 12);
+        aiState.download = { modelId: model.id, stage: "model", received, total: model.sizeBytes };
+        if (received >= model.sizeBytes) {
+          clearInterval(tick);
+          aiState.download = null;
+          model.installed = true;
+          aiState.modelId = model.id;
+        }
+        publishAi();
+      }, 250);
+      return null;
+    }
+    case "ai_cancel_download":
+      aiState.download = null;
+      publishAi();
+      return null;
+    case "ai_remove_model": {
+      const model = aiState.models.find((m) => m.id === a.modelId);
+      if (model) model.installed = false;
+      aiState.ready = aiState.models.some((m) => m.installed && m.id === aiState.modelId);
+      publishAi();
+      return { ...aiState, pending: capturing.size };
+    }
+    case "capture_text": {
+      const text = String(a.text).trim();
+      const ctx = (a.context ?? {}) as {
+        projectId?: string;
+        boardId?: string;
+        x?: number;
+        y?: number;
+        status?: Item["status"];
+      };
+      const item = create({
+        kind: "note",
+        title: text.split("\n")[0]!.slice(0, 120),
+        projectId: ctx.projectId ?? null,
+        boardId: ctx.boardId ?? null,
+        x: ctx.x ?? null,
+        y: ctx.y ?? null,
+        status: ctx.status ?? null,
+      });
+      simulateCapture(item.id, text);
+      changed();
+      return { captureId: item.id, item: withLinks(item) };
+    }
+    case "capture_retry":
+      return null;
     case "links_delete":
       links = links.filter((l) => l.id !== a.id);
       changed();
@@ -401,17 +563,10 @@ export function installMockBackend(): void {
   seed();
   mockIPC((cmd, args) => {
     if (cmd === "plugin:event|listen") {
-      // Re-run the app's change handler on every mutation.
-      const handlerId = (args as { handler: number }).handler;
-      listeners.add(() => {
-        const internals = (
-          window as unknown as {
-            __TAURI_INTERNALS__: { runCallback: (id: number, data: unknown) => void };
-          }
-        ).__TAURI_INTERNALS__;
-        internals.runCallback(handlerId, { event: "items:changed", id: 0, payload: { ids: [] } });
-      });
-      return handlerId;
+      const { event, handler } = args as { event: string; handler: number };
+      if (!listeners.has(event)) listeners.set(event, new Set());
+      listeners.get(event)!.add(handler);
+      return handler;
     }
     if (cmd.startsWith("plugin:")) return null;
     return handle(cmd, (args ?? {}) as Args);

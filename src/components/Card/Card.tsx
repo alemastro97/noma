@@ -1,7 +1,7 @@
 import { Copy, Flag, Maximize2, Repeat, Trash2 } from "lucide-react";
 import { memo, type CSSProperties, type MouseEvent } from "react";
 import type { Item, Progress, Project } from "../../api/types";
-import { cardCopy, kindLabel, priorityLabel } from "../../copy";
+import { cardCopy, hintCopy, kindLabel, priorityLabel } from "../../copy";
 import {
   editedAgo,
   eventBlock,
@@ -15,6 +15,8 @@ import {
 import { describeRule } from "../../lib/recurrence";
 import styles from "./Card.module.css";
 import { Checkbox } from "./Checkbox";
+import { HintChips } from "./HintChips";
+import { NomaOrb } from "../NomaOrb";
 import { KIND_STYLE } from "./kind";
 
 export type CardVariant = "canvas" | "board" | "compact";
@@ -297,6 +299,7 @@ export const Card = memo(function Card(props: CardProps) {
       data-selected={selected || undefined}
       data-done={done || undefined}
       data-fresh={fresh || undefined}
+      data-capturing={item.capturing || undefined}
       aria-label={item.title}
       aria-selected={selected}
       tabIndex={-1}
@@ -304,7 +307,20 @@ export const Card = memo(function Card(props: CardProps) {
       onClick={() => onSelect?.(item.id)}
       onDoubleClick={() => onOpen?.(item.id)}
     >
-      <Body {...props} />
+      {item.capturing ? (
+        <>
+          <div className={styles.reading}>
+            <NomaOrb size={14} state="processing" label={hintCopy.reading} />
+            <span>{hintCopy.reading}</span>
+          </div>
+          <h3 className={styles.title}>{item.title}</h3>
+        </>
+      ) : (
+        <>
+          <Body {...props} />
+          <HintChips item={item} />
+        </>
+      )}
       <Actions {...props} />
     </article>
   );

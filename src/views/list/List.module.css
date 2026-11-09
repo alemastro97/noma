@@ -178,3 +178,24 @@
 [data-theme="light"] .meta[data-overdue] {
   color: var(--noma-urgent-text);
 }
+
+.row[data-capturing] .title {
+  color: var(--noma-text-2);
+}
+.reading {
+  font-size: 12px;
+  color: var(--noma-pale);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+.hintDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--noma-reminder);
+  flex: none;
+}

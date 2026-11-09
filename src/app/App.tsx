@@ -7,6 +7,7 @@ import { Header } from "../components/Header/Header";
 import { QuickAdd } from "../components/QuickAdd/QuickAdd";
 import { Sidebar } from "../components/Sidebar/Sidebar";
 import { Toasts } from "../components/Toasts/Toasts";
+import { useAiStore } from "../stores/ai";
 import { useBoardStore } from "../stores/board";
 import { flushPendingDeletes, useItemsStore } from "../stores/items";
 import { useProjectsStore } from "../stores/projects";
@@ -52,8 +53,18 @@ export function App() {
   useEffect(() => {
     void useProjectsStore.getState().load();
     void useItemsStore.getState().refreshCounts();
+    void useAiStore.getState().load();
     let cancelled = false;
     let unlisten: (() => void) | undefined;
+    let unlistenAi: (() => void) | undefined;
+    void useAiStore
+      .getState()
+      .subscribe()
+      .then((fn) => {
+        if (cancelled) fn();
+        else unlistenAi = fn;
+      })
+      .catch(() => undefined);
     void useItemsStore
       .getState()
       .subscribe()
@@ -65,6 +76,7 @@ export function App() {
     return () => {
       cancelled = true;
       unlisten?.();
+      unlistenAi?.();
       window.removeEventListener("beforeunload", flushPendingDeletes);
     };
   }, []);
@@ -97,6 +109,7 @@ export function App() {
           title={titleFor(target, projects, boards)}
           count={openCount}
           color={color}
+          plain={target.kind === "settings"}
           onCapture={() => useUiStore.getState().openQuickAdd()}
           onSearch={() => useUiStore.getState().setPaletteOpen(true)}
         />

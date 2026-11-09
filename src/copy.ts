@@ -66,7 +66,7 @@ export const copy = {
     },
     settings: {
       title: "Settings",
-      body: "Coming with the next phase.",
+      body: "",
     },
   },
 } as const;
@@ -122,8 +122,50 @@ export const listCopy = {
 
 export const quickAddCopy = {
   placeholder: "What's on your mind?",
+  autoPlaceholder: "Say it like you'd say it — “call Marta tomorrow at 10”",
+  auto: "Auto",
+  autoReady: "NOMA sorts it out · ↵",
+  autoPending: "Saved now, sorted when AI is set up · ↵",
   hint: "↵ to add · Esc to close",
   add: "Add",
+} as const;
+
+export const hintCopy = {
+  checkDate: (phrase: string) => `Check date · ${phrase}`,
+  checkThis: "Check this",
+  newProject: (name: string) => `New project? ${name}`,
+  dismiss: "Dismiss",
+  reading: "Reading…",
+} as const;
+
+export const settingsCopy = {
+  title: "Settings",
+  aiTitle: "On-device AI",
+  aiLead:
+    "NOMA reads your captures with a small language model that runs entirely on this Mac. Nothing you say leaves your computer.",
+  provider: "Engine",
+  builtin: "Built-in",
+  ollama: "Ollama",
+  ollamaLead: "Developer option: use a model already pulled in a local Ollama.",
+  ollamaMissing: "Ollama isn't running on this Mac.",
+  ollamaPick: "Choose a model",
+  download: "Download",
+  cancel: "Cancel",
+  remove: "Remove",
+  use: "Use",
+  inUse: "In use",
+  recommended: "Recommended",
+  ram: (gb: number) => `~${gb} GB memory`,
+  size: (bytes: number) => `${(bytes / 1e9).toFixed(1)} GB`,
+  downloading: (stage: string, pct: number) =>
+    stage === "server" ? `Preparing engine… ${pct}%` : `Downloading… ${pct}%`,
+  pending: (n: number) => `${n} capture${n === 1 ? "" : "s"} waiting for the model.`,
+  ready: "Ready. Captures are sorted as you make them.",
+  notReady: "Download a model to let NOMA sort your captures.",
+  appearance: "Appearance",
+  theme: { dark: "Dark", light: "Light", system: "Match system" },
+  about: "About",
+  version: "NOMA — your second mind.",
 } as const;
 
 export const detailCopy = {

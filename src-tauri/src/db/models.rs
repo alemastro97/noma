@@ -77,6 +77,27 @@ impl Default for ItemType {
     }
 }
 
+/// Something AI capture was unsure about, shown as a small chip on the card
+/// until the user resolves or dismisses it.
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct CaptureHint {
+    /// The words that named a date the model could not resolve ("check date").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub date_phrase: Option<String>,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub low_confidence: bool,
+    /// A project name that matched nothing existing ("new project?").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub suggested_project: Option<String>,
+}
+
+impl CaptureHint {
+    pub fn is_empty(&self) -> bool {
+        self.date_phrase.is_none() && !self.low_confidence && self.suggested_project.is_none()
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Item {
@@ -101,6 +122,11 @@ pub struct Item {
     /// Number of connections touching this item.
     #[serde(default)]
     pub link_count: u32,
+    #[serde(default)]
+    pub hint: Option<CaptureHint>,
+    /// An AI capture is still turning this placeholder into its final card.
+    #[serde(default)]
+    pub capturing: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Default)]
@@ -133,6 +159,8 @@ pub struct NewItem {
     pub x: Option<f64>,
     #[serde(default)]
     pub y: Option<f64>,
+    #[serde(default)]
+    pub hint: Option<CaptureHint>,
 }
 
 /// Deserializes a field so that an absent key is `None` (leave alone) while an
@@ -174,6 +202,8 @@ pub struct ItemPatch {
     pub project_id: Option<Option<String>>,
     #[serde(default)]
     pub tags: Option<Vec<String>>,
+    #[serde(default, deserialize_with = "double_option")]
+    pub hint: Option<Option<CaptureHint>>,
 }
 
 /// Which items to list. `now`/`tz` are supplied by the caller (the command

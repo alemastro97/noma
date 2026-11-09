@@ -6,7 +6,8 @@ use rusqlite::{Connection, OptionalExtension, Row, ToSql, params};
 
 use super::error::{DbError, DbResult};
 use super::models::{
-    BoardKind, Counts, Item, ItemFilter, ItemPatch, NewItem, Priority, Progress, Status, new_id,
+    BoardKind, CaptureHint, Counts, Item, ItemFilter, ItemPatch, NewItem, Priority, Progress,
+    Status, new_id,
 };
 use super::placements::{place_item, remove_placement};
 use super::recurrence::{next_after, validate_rrule};
@@ -16,7 +17,9 @@ use super::tags::{attach_tags, set_item_tags};
 const SELECT_ITEM: &str = "SELECT i.id, i.kind, i.title, i.body, i.status, i.priority, i.due_at, \
     i.ends_at, i.remind_at, i.snoozed_until, i.recurrence, i.project_id, i.created_at, \
     i.updated_at, i.completed_at, \
-    (SELECT COUNT(*) FROM connections c WHERE c.from_item = i.id OR c.to_item = i.id) AS link_count \
+    i.hint, \
+    (SELECT COUNT(*) FROM connections c WHERE c.from_item = i.id OR c.to_item = i.id) AS link_count, \
+    EXISTS (SELECT 1 FROM captures k WHERE k.item_id = i.id AND k.status IN ('pending', 'processing')) AS capturing \
     FROM items i";
 
 /// Canvas auto-slot grid for new cards.
@@ -44,7 +47,17 @@ fn row_to_item(row: &Row<'_>) -> rusqlite::Result<Item> {
         completed_at: row.get("completed_at")?,
         tags: Vec::new(),
         link_count: row.get("link_count")?,
+        hint: row
+            .get::<_, Option<String>>("hint")?
+            .and_then(|h| serde_json::from_str(&h).ok()),
+        capturing: row.get("capturing")?,
     })
+}
+
+fn hint_json(hint: &Option<CaptureHint>) -> Option<String> {
+    hint.as_ref()
+        .filter(|h| !h.is_empty())
+        .and_then(|h| serde_json::to_string(h).ok())
 }
 
 fn query_items(conn: &Connection, sql: &str, params: &[&dyn ToSql]) -> DbResult<Vec<Item>> {
@@ -126,8 +139,8 @@ pub fn create_item(conn: &Connection, input: NewItem, now: DateTime<Utc>) -> DbR
         .and(input.due_at.or(input.remind_at));
     tx.execute(
         "INSERT INTO items (id, kind, title, body, status, priority, due_at, ends_at, remind_at, \
-         snoozed_until, recurrence, recurrence_start, project_id, created_at, updated_at, completed_at) \
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, NULL, ?10, ?11, ?12, ?13, ?13, ?14)",
+         snoozed_until, recurrence, recurrence_start, project_id, created_at, updated_at, completed_at, hint) \
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, NULL, ?10, ?11, ?12, ?13, ?13, ?14, ?15)",
         params![
             id,
             input.kind,
@@ -143,6 +156,7 @@ pub fn create_item(conn: &Connection, input: NewItem, now: DateTime<Utc>) -> DbR
             input.project_id,
             now,
             (status == Status::Done).then_some(now),
+            hint_json(&input.hint),
         ],
     )?;
 
@@ -387,8 +401,24 @@ pub fn update_item(
         item.recurrence = recurrence;
         restart_series = true;
     }
+    let project_patched = patch.project_id.is_some();
     if let Some(project_id) = patch.project_id {
         item.project_id = project_id;
+    }
+    if let Some(hint) = patch.hint {
+        item.hint = hint;
+    }
+    // Editing a date resolves a "check date" hint; choosing a project resolves "new project?".
+    if let Some(h) = item.hint.as_mut() {
+        if patch.due_at.is_some() || patch.remind_at.is_some() {
+            h.date_phrase = None;
+        }
+        if project_patched {
+            h.suggested_project = None;
+        }
+        if h.is_empty() {
+            item.hint = None;
+        }
     }
     item.updated_at = now;
     write_item(&tx, &item)?;
@@ -433,7 +463,7 @@ fn write_item(conn: &Connection, item: &Item) -> DbResult<()> {
     let changed = conn.execute(
         "UPDATE items SET kind = ?2, title = ?3, body = ?4, status = ?5, priority = ?6, due_at = ?7, \
          ends_at = ?8, remind_at = ?9, snoozed_until = ?10, recurrence = ?11, project_id = ?12, \
-         updated_at = ?13, completed_at = ?14 WHERE id = ?1",
+         updated_at = ?13, completed_at = ?14, hint = ?15 WHERE id = ?1",
         params![
             item.id,
             item.kind,
@@ -449,6 +479,7 @@ fn write_item(conn: &Connection, item: &Item) -> DbResult<()> {
             item.project_id,
             item.updated_at,
             item.completed_at,
+            hint_json(&item.hint),
         ],
     )?;
     if changed == 0 {
@@ -537,6 +568,7 @@ pub fn duplicate_item(conn: &Connection, id: &str, now: DateTime<Utc>) -> DbResu
             tags: Some(original.tags.clone()),
             x: placement.as_ref().map(|p| p.1 + 24.0),
             y: placement.as_ref().map(|p| p.2 + 24.0),
+            hint: None,
         },
         now,
     )
@@ -1130,6 +1162,44 @@ mod tests {
         assert_eq!(c.inbox, 1);
         let progress = project_progress(&conn).unwrap();
         assert_eq!(progress.get(&p.id), Some(&Progress { done: 1, total: 2 }));
+    }
+
+    #[test]
+    fn hint_roundtrips_and_editing_the_date_resolves_it() {
+        let conn = db::open_in_memory().unwrap();
+        let now = utc(2026, 11, 9, 11, 0);
+        let item = create_item(
+            &conn,
+            NewItem {
+                hint: Some(CaptureHint {
+                    date_phrase: Some("the first".into()),
+                    low_confidence: false,
+                    suggested_project: Some("Kitchen".into()),
+                }),
+                ..task("Pay rent")
+            },
+            now,
+        )
+        .unwrap();
+        assert_eq!(
+            item.hint.as_ref().unwrap().date_phrase.as_deref(),
+            Some("the first")
+        );
+        let patch = ItemPatch {
+            due_at: Some(Some(utc(2026, 12, 1, 9, 0))),
+            ..Default::default()
+        };
+        let after = update_item(&conn, &item.id, patch, now, UTC_TZ).unwrap();
+        let hint = after.hint.unwrap();
+        assert_eq!(hint.date_phrase, None);
+        assert_eq!(hint.suggested_project.as_deref(), Some("Kitchen"));
+        let cleared: ItemPatch = serde_json::from_str(r#"{"hint":null}"#).unwrap();
+        assert_eq!(
+            update_item(&conn, &item.id, cleared, now, UTC_TZ)
+                .unwrap()
+                .hint,
+            None
+        );
     }
 
     #[test]

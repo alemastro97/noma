@@ -1,0 +1,40 @@
+{"text": "Comprare il latte domani", "type": "task", "when": "2026-11-10", "repeat": "none", "project": null, "count": 1}
+{"text": "Ricordami di chiamare la mamma stasera", "type": "reminder", "when": "2026-11-09T20:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Remind me to water the plants tomorrow at 8", "type": "reminder", "when": "2026-11-10T08:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Dentist appointment Thursday at 3pm", "type": "event", "when": "2026-11-12T15:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Riunione con Marta mercoledì alle 14:30", "type": "event", "when": "2026-11-11T14:30", "repeat": "none", "project": null, "count": 1}
+{"text": "Idea: what if the orb dims during meetings", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "E se l'app suggerisse da sola le connessioni tra le note?", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Send the revised deck to Marta by Friday, it's important", "type": "task", "when": "2026-11-13", "repeat": "none", "project": null, "count": 1}
+{"text": "Il codice del cancello è 4821", "type": "note", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Giulia said she keeps reminders in three apps and trusts none of them", "type": "note", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Every Monday at 9 remind me to do the weekly review", "type": "reminder", "when": "2026-11-16T09:00", "repeat": "weekly", "project": null, "count": 1}
+{"text": "Ogni giorno alle 8 ricordami di prendere la vitamina", "type": "reminder", "when": "2026-11-10T08:00", "repeat": "daily", "project": null, "count": 1}
+{"text": "Pay the rent on the first of every month", "type": "task", "when": "2026-12-01", "repeat": "monthly", "project": null, "count": 1}
+{"text": "Book the photographer for the spring launch shoot", "type": "task", "when": null, "repeat": "none", "project": "Spring launch", "count": 1}
+{"text": "Per il trasloco dello studio: chiedere tre preventivi ai traslocatori", "type": "task", "when": null, "repeat": "none", "project": "Studio move", "count": 1}
+{"text": "Add Pachinko by Min Jin Lee to the reading list", "type": "task", "when": null, "repeat": "none", "project": "Reading list", "count": 1}
+{"text": "Buy milk and call the plumber tomorrow morning", "type": "task", "when": null, "repeat": "none", "project": null, "count": 2}
+{"text": "Comprare il pane, pagare la bolletta della luce e prenotare il treno per Roma", "type": "task", "when": null, "repeat": "none", "project": null, "count": 3}
+{"text": "Call the printer about proofs today at 4pm", "type": "reminder", "when": "2026-11-09T16:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Pranzo con Luca venerdì a mezzogiorno", "type": "event", "when": "2026-11-13T12:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Flight to Lisbon next Monday at 7:40", "type": "event", "when": "2026-11-16T07:40", "repeat": "none", "project": null, "count": 1}
+{"text": "Urgente: rinnovare il passaporto", "type": "task", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Finish the tax return by the end of the week", "type": "task", "when": "2026-11-13", "repeat": "none", "project": null, "count": 1}
+{"text": "Dopodomani portare la macchina dal meccanico", "type": "task", "when": "2026-11-11", "repeat": "none", "project": null, "count": 1}
+{"text": "Remind me in the afternoon to stretch", "type": "reminder", "when": "2026-11-09T15:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Cena di compleanno di Sara sabato alle 20", "type": "event", "when": "2026-11-14T20:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Quote I liked: the best way out is always through", "type": "note", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Maybe a calmer notification sound would feel more like NOMA", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Start a new project: kitchen renovation", "type": "project", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Nuovo progetto viaggio in Giappone", "type": "project", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Team standup every weekday at 9:30", "type": "event", "when": "2026-11-10T09:30", "repeat": "weekdays", "project": null, "count": 1}
+{"text": "Ricordami domani mattina di inviare la fattura", "type": "reminder", "when": "2026-11-10T09:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Draft the launch email for spring launch by Wednesday", "type": "task", "when": "2026-11-11", "repeat": "none", "project": "Spring launch", "count": 1}
+{"text": "Wi-Fi password at the studio is noma-2026", "type": "note", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Leggere il capitolo 3 entro domenica", "type": "task", "when": "2026-11-15", "repeat": "none", "project": null, "count": 1}
+{"text": "Anniversary dinner on November 28 at 8pm", "type": "event", "when": "2026-11-28T20:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Ricordami il compleanno di papà ogni anno il 3 marzo", "type": "reminder", "when": "2027-03-03T09:00", "repeat": "yearly", "project": null, "count": 1}
+{"text": "Pick up the studio keys tonight", "type": "task", "when": "2026-11-09T20:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Potrei scrivere un post sul perché le app di task falliscono", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Call Anna next week", "type": "task", "when": "2026-11-16", "repeat": "none", "project": null, "count": 1}

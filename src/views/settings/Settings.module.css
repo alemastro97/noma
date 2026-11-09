@@ -1,0 +1,241 @@
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--noma-bg);
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 40px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--noma-radius-panel);
+  background: var(--noma-surface);
+  border: 1px solid var(--noma-border-card);
+}
+
+.sectionHead {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.lead {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--noma-text-2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--noma-text-2);
+}
+
+.status {
+  margin: 0;
+  font-size: 13px;
+  color: var(--noma-text-2);
+}
+.status[data-ready] {
+  color: var(--noma-done);
+}
+[data-theme="light"] .status[data-ready] {
+  color: var(--noma-done-fill);
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--noma-bg-2);
+  border: 1px solid var(--noma-surface-elevated);
+  align-self: flex-start;
+}
+[data-theme="light"] .segmented {
+  border-color: var(--noma-border);
+}
+
+.segment {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+  font-size: 13px;
+}
+.segment[aria-checked="true"] {
+  background: var(--noma-surface-elevated);
+  color: var(--noma-text);
+}
+[data-theme="light"] .segment[aria-checked="true"] {
+  background: var(--noma-surface);
+  box-shadow: 0 1px 2px rgba(36, 33, 45, 0.08);
+}
+
+.models {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.model {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--noma-border);
+  background: var(--noma-bg-2);
+  transition: border-color var(--noma-fast) ease;
+}
+.model[data-active] {
+  border-color: var(--noma-lavender);
+}
+[data-theme="light"] .model {
+  background: var(--noma-surface);
+}
+
+.modelHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modelName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--noma-pale);
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(167, 139, 250, 0.14);
+}
+[data-theme="light"] .badge {
+  color: var(--noma-lavender);
+}
+
+.modelDesc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--noma-text-2);
+}
+
+.meta {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+  white-space: nowrap;
+}
+
+.actions,
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--noma-surface-elevated);
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--noma-lavender);
+  transition: width 250ms linear;
+}
+
+.primary,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.primary {
+  border: 0;
+  background: var(--noma-lavender);
+  /* Ink on the lavender button, as in the handoff header. */
+  color: #16112a;
+}
+[data-theme="light"] .primary {
+  color: #ffffff;
+}
+.primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.ghost {
+  border: 1px solid var(--noma-border);
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.ghost:hover {
+  color: var(--noma-text);
+}
+
+.inUse {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--noma-done);
+}
+
+.ollama {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.select {
+  height: 36px;
+  max-width: 320px;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  padding: 0 10px;
+  background: var(--noma-bg-2);
+  color: var(--noma-text);
+  font-size: 13px;
+}

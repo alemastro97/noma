@@ -50,6 +50,7 @@ const Row = memo(function Row({ item, project, mode, now, selected, fresh, handl
       data-selected={selected || undefined}
       data-done={done || undefined}
       data-fresh={fresh || undefined}
+      data-capturing={item.capturing || undefined}
       aria-label={item.title}
       onClick={() => handlers.onSelect(item.id)}
       onDoubleClick={() => handlers.onOpen(item.id)}
@@ -77,6 +78,10 @@ const Row = memo(function Row({ item, project, mode, now, selected, fresh, handl
         </button>
       )}
       <span className={styles.title}>{item.title}</span>
+      {item.capturing && <span className={styles.reading}>Reading…</span>}
+      {item.hint && !item.capturing && (
+        <span className={styles.hintDot} title="Needs a quick check" />
+      )}
       {item.recurrence && (
         <span className={styles.repeat} title={describeRule(item.recurrence)}>
           <Repeat size={13} strokeWidth={1.75} aria-hidden="true" />

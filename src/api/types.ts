@@ -12,6 +12,13 @@ export const PRIORITIES: Priority[] = ["low", "normal", "high", "urgent"];
 /** RFC 3339 timestamp in UTC. */
 export type Iso = string;
 
+/** Something AI capture was unsure about, shown as a chip until resolved. */
+export interface CaptureHint {
+  datePhrase?: string;
+  lowConfidence?: boolean;
+  suggestedProject?: string;
+}
+
 export interface Item {
   id: string;
   kind: ItemType;
@@ -30,6 +37,9 @@ export interface Item {
   completedAt: Iso | null;
   tags: string[];
   linkCount: number;
+  hint: CaptureHint | null;
+  /** An AI capture is still turning this placeholder into its final card. */
+  capturing: boolean;
 }
 
 export interface NewItem {
@@ -63,6 +73,7 @@ export interface ItemPatch {
   recurrence?: string | null;
   projectId?: string | null;
   tags?: string[];
+  hint?: CaptureHint | null;
 }
 
 export type ItemFilter =
@@ -130,4 +141,71 @@ export interface Link {
 
 export interface ItemsChanged {
   ids: string[];
+}
+
+// ── AI ────────────────────────────────────────────────────────────────────
+
+export type AiProvider = "builtin" | "ollama";
+export type AiPhase = "idle" | "loading" | "processing" | "error";
+
+export interface ModelInfo {
+  id: string;
+  name: string;
+  description: string;
+  file: string;
+  sizeBytes: number;
+  ramGb: number;
+  recommended: boolean;
+  installed: boolean;
+}
+
+export interface DownloadProgress {
+  modelId: string;
+  stage: "server" | "model";
+  received: number;
+  total: number;
+}
+
+export interface AiState {
+  provider: AiProvider;
+  modelId: string;
+  ollamaModel: string | null;
+  ollamaUrl: string;
+  ready: boolean;
+  phase: AiPhase;
+  message: string | null;
+  serverInstalled: boolean;
+  serverRunning: boolean;
+  models: ModelInfo[];
+  download: DownloadProgress | null;
+  ollamaAvailable: boolean;
+  ollamaModels: string[];
+  pending: number;
+}
+
+export interface AiConfigPatch {
+  provider?: AiProvider;
+  modelId?: string;
+  ollamaModel?: string;
+}
+
+export interface CaptureContext {
+  projectId?: string | null;
+  boardId?: string | null;
+  x?: number | null;
+  y?: number | null;
+  status?: Status | null;
+}
+
+export interface CaptureResult {
+  captureId: string;
+  item: Item;
+}
+
+export interface CaptureEvent {
+  captureId: string;
+  status: "done" | "failed";
+  itemIds: string[];
+  error: string | null;
+  latencyMs: number | null;
 }

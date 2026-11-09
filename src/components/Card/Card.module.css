@@ -409,3 +409,98 @@
   background: var(--noma-surface-elevated);
   color: var(--noma-text);
 }
+
+/* ── AI capture ─────────────────────────────────────── */
+.card[data-capturing] {
+  border-color: rgba(167, 139, 250, 0.45);
+  overflow: hidden;
+}
+.card[data-capturing]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(210, 196, 255, 0.07) 50%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  animation: shimmer 1.4s linear infinite;
+  pointer-events: none;
+}
+.card[data-capturing] .title {
+  color: var(--noma-text-2);
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+.reading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--noma-pale);
+}
+[data-theme="light"] .reading {
+  color: var(--noma-lavender);
+}
+
+.hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -2px;
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 4px 0 8px;
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--noma-text-2);
+  background: var(--noma-surface-elevated);
+  border: 1px solid var(--noma-border);
+}
+.hint[data-tone="date"] {
+  color: var(--noma-reminder);
+  border-color: var(--noma-border-reminder);
+}
+.hint[data-tone="project"] {
+  color: var(--noma-project);
+  border-color: var(--noma-border-project);
+}
+[data-theme="light"] .hint[data-tone="date"] {
+  color: var(--noma-reminder-text);
+}
+[data-theme="light"] .hint[data-tone="project"] {
+  color: var(--noma-project-text);
+}
+.hint button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.hint button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.hintAction {
+  padding: 0 !important;
+}

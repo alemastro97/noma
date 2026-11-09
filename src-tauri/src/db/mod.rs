@@ -2,6 +2,7 @@
 //! functions and emit change events.
 
 pub mod boards;
+pub mod captures;
 pub mod error;
 pub mod items;
 pub mod links;
@@ -12,6 +13,7 @@ pub mod projects;
 pub mod recurrence;
 #[cfg(debug_assertions)]
 pub mod seed;
+pub mod settings;
 pub mod tags;
 
 use std::path::Path;

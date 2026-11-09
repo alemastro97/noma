@@ -1,3 +1,4 @@
+pub mod ai;
 pub mod commands;
 pub mod db;
 pub mod state;
@@ -6,6 +7,9 @@ mod windows;
 use tauri::Manager;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
+use std::sync::Arc;
+
+use ai::service::AiService;
 use state::AppState;
 
 /// ⌥ Space. Phase 0 uses it to toggle the floating orb (spike); Phase 3 rebinds it
@@ -36,6 +40,11 @@ pub fn run() {
                 e
             })?;
             app.manage(AppState::new(conn));
+
+            let paths = ai::Paths::new(&app.path().app_data_dir()?);
+            let service = AiService::new(app.handle().clone(), paths);
+            app.manage(Arc::clone(&service));
+            tauri::async_runtime::spawn(service.run_worker());
 
             windows::orb::setup(app.handle());
             // Another app may already own ⌥ Space: NOMA still starts, without the shortcut.
@@ -69,7 +78,23 @@ pub fn run() {
             commands::boards::links_list,
             commands::boards::links_create,
             commands::boards::links_delete,
+            commands::ai::ai_state,
+            commands::ai::ai_refresh,
+            commands::ai::ai_configure,
+            commands::ai::ai_download,
+            commands::ai::ai_cancel_download,
+            commands::ai::ai_remove_model,
+            commands::ai::capture_text,
+            commands::ai::capture_retry,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running NOMA");
+        .build(tauri::generate_context!())
+        .expect("error while building NOMA")
+        .run(|app, event| {
+            // Never leave a model server running after NOMA quits.
+            if let tauri::RunEvent::Exit = event
+                && let Some(ai) = app.try_state::<Arc<AiService>>()
+            {
+                ai.kill_server_now();
+            }
+        });
 }

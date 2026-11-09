@@ -24,6 +24,8 @@ const base = (over: Partial<Item>): Item => ({
   completedAt: null,
   tags: [],
   linkCount: 0,
+  hint: null,
+  capturing: false,
   ...over,
 });
 
@@ -118,4 +120,21 @@ test("double click opens, click selects, actions do not select", async () => {
   await userEvent.click(screen.getByRole("button", { name: "Delete" }));
   expect(onDelete).toHaveBeenCalledWith("i1");
   expect(onSelect).not.toHaveBeenCalled();
+});
+
+test("capturing placeholder shows the reading state instead of the body", () => {
+  render(<Card now={now} item={base({ kind: "note", title: "call marta", capturing: true })} />);
+  expect(screen.getAllByText("Reading…").length).toBeGreaterThan(0);
+  expect(screen.getByRole("article")).toHaveAttribute("data-capturing", "true");
+});
+
+test("hint chips show check-date and new-project suggestions", () => {
+  render(
+    <Card
+      now={now}
+      item={base({ hint: { datePhrase: "the first", suggestedProject: "Kitchen" } })}
+    />,
+  );
+  expect(screen.getByText("Check date · the first")).toBeInTheDocument();
+  expect(screen.getByText("New project? Kitchen")).toBeInTheDocument();
 });

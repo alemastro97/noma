@@ -2,10 +2,12 @@
 
 Living specifications. One file per feature; each is updated in the same PR as the code it describes. Status values: **Draft** → **In progress** → **Shipped** (or **Superseded**).
 
-| Spec                                         | Status   | Phase |
-| -------------------------------------------- | -------- | ----- |
-| [Design document](2026-11-09-noma-design.md) | Approved | —     |
-| [Foundation](foundation.md)                  | Shipped  | 0     |
+| Spec                                         | Status      | Phase |
+| -------------------------------------------- | ----------- | ----- |
+| [Design document](2026-11-09-noma-design.md) | Approved    | —     |
+| [Foundation](foundation.md)                  | Shipped     | 0     |
+| [Workspace & views](workspace-views.md)      | Shipped     | 1     |
+| [AI capture](ai-capture.md)                  | In progress | 2     |
 
 Plans live in [`../plans/`](../plans/), decisions in [`../adr/`](../adr/).
 
