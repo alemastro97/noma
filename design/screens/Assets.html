@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NOMA app icons and splash</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#111116}
+a{color:#D2C4FF}a:hover{color:#F4F1FA}
+@keyframes nfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3%)}}
+@keyframes nspin{to{transform:rotate(360deg)}}
+@keyframes nload{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+.orb{position:relative;width:1em;height:1em;border-radius:50%;flex:none;isolation:isolate;background:radial-gradient(circle at 34% 28%,#FFFFFF 0%,#E4DAFF 7%,#B9A3FF 22%,#8B6BFF 42%,#5A36E8 66%,#24125E 92%);box-shadow:0 0 .5em rgba(109,74,255,.5),0 0 1.4em rgba(109,74,255,.22),inset -.12em -.16em .3em rgba(18,8,52,.7),inset .06em .06em .16em rgba(255,255,255,.35);animation:nfloat 6s ease-in-out infinite}
+.orb::before{content:"";position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 40%,rgba(210,196,255,.85) 52%,transparent 64% 100%);filter:blur(.06em);mix-blend-mode:screen;animation:nspin 9s linear infinite;opacity:.8}
+.orb.still{animation:none}
+.ico-d{position:relative;flex:none;border-radius:22.5%;background:radial-gradient(70% 70% at 78% 85%,rgba(109,74,255,.55),transparent 70%),linear-gradient(160deg,#262432,#141419);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.05),0 12px 30px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center}
+.ico-l{position:relative;flex:none;border-radius:22.5%;background:radial-gradient(70% 70% at 78% 85%,rgba(167,139,250,.35),transparent 70%),linear-gradient(160deg,#FFFFFF,#EFEBF7);box-shadow:inset 0 0 0 1px rgba(36,33,45,.06),0 12px 30px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
+.meta{font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5}
+.loader{position:relative;width:120px;height:2px;border-radius:2px;background:#262432;overflow:hidden}
+.loader span{position:absolute;inset:0;width:40%;background:linear-gradient(90deg,transparent,#A78BFA,transparent);animation:nload 1.8s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.orb,.orb::before,.loader span{animation:none}}
+</style>
+</head>
+<body>
+<div style="width:1440px;height:820px;box-sizing:border-box;padding:64px 80px;background:#111116;color:#F4F1FA;font-family:Geist,Inter,system-ui,sans-serif;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px">
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <h1 style="margin:0;font-size:28px;font-weight:500">Application icons</h1>
+    <div style="display:flex;gap:28px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+        <div class="ico-d" style="width:168px;height:168px"><svg width="104" height="104" viewBox="0 0 48 48" fill="none" role="img" aria-label="NOMA dark app icon"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#F4F1FA" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="12.2" r="3.6" fill="#B9A3FF"></circle></svg></div>
+        <span class="meta">Dark · primary</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+        <div class="ico-l" style="width:168px;height:168px"><svg width="104" height="104" viewBox="0 0 48 48" fill="none" role="img" aria-label="NOMA light app icon"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#24212D" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="12.2" r="3.6" fill="#8065DC"></circle></svg></div>
+        <span class="meta">Light</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:28px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+        <div class="ico-d" style="width:168px;height:168px;background:linear-gradient(160deg,#1C1B25,#0E0E13)"><div class="orb still" style="font-size:96px"></div></div>
+        <span class="meta">Orb · alternate</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;padding-bottom:28px">
+        <div style="display:flex;align-items:flex-end;gap:20px">
+          <div class="ico-d" style="width:64px;height:64px"><svg width="40" height="40" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#F4F1FA" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="12.2" r="3.8" fill="#B9A3FF"></circle></svg></div>
+          <div class="ico-d" style="width:32px;height:32px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)"><svg width="21" height="21" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#F4F1FA" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="12" r="4.4" fill="#B9A3FF"></circle></svg></div>
+          <div class="ico-d" style="width:16px;height:16px;border-radius:4px;box-shadow:none"><svg width="12" height="12" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#F4F1FA" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="11.5" r="5.2" fill="#B9A3FF"></circle></svg></div>
+        </div>
+        <span class="meta">64 · 32 · 16 — stroke thickens as size drops</span>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#A6A0B5;max-width:520px">Squircle at 22.5% radius. A single violet glow pools in the lower right — the only gradient on the icon. The dot lightens to #B9A3FF on dark so it holds at small sizes.</p>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <h2 style="margin:0;font-size:28px;font-weight:500">Splash screen</h2>
+    <div style="position:relative;flex:1;border-radius:20px;overflow:hidden;border:1px solid #262432;background:radial-gradient(420px 320px at 50% 44%,rgba(109,74,255,.22),transparent 70%),#0F0F14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;box-shadow:0 30px 80px rgba(0,0,0,.5)">
+      <div class="orb" style="font-size:120px"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+        <span style="font-size:40px;font-weight:500;letter-spacing:.18em">NOMA</span>
+        <span style="font-size:13px;letter-spacing:.32em;color:#D2C4FF">YOUR SECOND MIND.</span>
+      </div>
+      <div class="loader" aria-hidden="true"><span></span></div>
+      <span style="position:absolute;bottom:22px;font-size:13px;color:#A6A0B5">Think freely. NOMA remembers.</span>
+    </div>
+  </section>
+</div>
+</body>
+</html>

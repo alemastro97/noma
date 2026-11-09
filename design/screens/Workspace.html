@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NOMA workspace — Canvas mode</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#111116}
+a{color:#D2C4FF}a:hover{color:#F4F1FA}
+@keyframes nfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3%)}}
+@keyframes nspin{to{transform:rotate(360deg)}}
+@keyframes ndash{to{stroke-dashoffset:-24}}
+@keyframes nappear{0%{opacity:0;transform:translateY(6px) scale(.97)}100%{opacity:1;transform:none}}
+.orb{position:relative;width:1em;height:1em;border-radius:50%;flex:none;isolation:isolate;background:radial-gradient(circle at 34% 28%,#FFFFFF 0%,#E4DAFF 7%,#B9A3FF 22%,#8B6BFF 42%,#5A36E8 66%,#24125E 92%);box-shadow:0 0 .5em rgba(109,74,255,.5),inset -.12em -.16em .3em rgba(18,8,52,.7),inset .06em .06em .16em rgba(255,255,255,.35);animation:nfloat 6s ease-in-out infinite}
+.orb::before{content:"";position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 40%,rgba(210,196,255,.85) 52%,transparent 64% 100%);filter:blur(.06em);mix-blend-mode:screen;animation:nspin 9s linear infinite;opacity:.8}
+.nav{display:flex;align-items:center;gap:10px;min-height:34px;padding:0 10px;border-radius:9px;color:#A6A0B5;text-decoration:none;font-size:14px;transition:background .15s ease,color .15s ease}
+.nav:hover{background:#1E1D27;color:#F4F1FA}
+.nav.on{background:#1E1D27;color:#F4F1FA}
+.cnt{margin-left:auto;font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5}
+.mode{display:flex;align-items:center;gap:6px;min-height:32px;padding:0 10px;border-radius:8px;border:0;background:transparent;color:#A6A0B5;font:inherit;font-size:13px;cursor:pointer}
+.mode:hover{color:#F4F1FA}
+.mode.on{background:#262432;color:#F4F1FA}
+.card{position:absolute;box-sizing:border-box;border-radius:14px;background:#1E1D27;border:1px solid #302D3C;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:14px 16px;display:flex;flex-direction:column;gap:10px;transition:transform .2s ease,border-color .2s ease}
+.card:hover{transform:translateY(-2px);border-color:#4A4560}
+.kind{display:flex;align-items:center;gap:6px;font-size:12px;color:#A6A0B5}
+.meta{font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5}
+.tag{font-size:12px;color:#A6A0B5;padding:2px 8px;border-radius:6px;background:#262432}
+.link{stroke-dasharray:4 4;animation:ndash 1.6s linear infinite}
+.fresh{animation:nappear .28s cubic-bezier(.2,.8,.2,1) both}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;border:0;background:transparent;color:#A6A0B5;cursor:pointer}
+.icon-btn:hover{background:#1E1D27;color:#F4F1FA}
+@media (prefers-reduced-motion:reduce){.orb,.orb::before,.link,.fresh{animation:none}}
+</style>
+</head>
+<body>
+<div style="width:100%;min-height:900px;box-sizing:border-box;background:#111116;color:#F4F1FA;font-family:Geist,Inter,system-ui,sans-serif;display:flex;flex-wrap:wrap">
+
+  <aside style="flex:1 1 232px;max-width:248px;box-sizing:border-box;padding:16px 12px;background:#141419;border-right:1px solid #1E1D27;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 8px">
+      <svg width="22" height="22" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#F4F1FA" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="12.2" r="3.6" fill="#A78BFA"></circle></svg>
+      <span style="font-size:15px;font-weight:500;letter-spacing:.14em">NOMA</span>
+      <button class="icon-btn" type="button" aria-label="Collapse sidebar" style="margin-left:auto;width:30px;height:30px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg></button>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px" aria-label="Main">
+      <a class="nav" href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>Inbox<span class="cnt">4</span></a>
+      <a class="nav" href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>Today<span class="cnt">3</span></a>
+      <a class="nav" href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Upcoming<span class="cnt">7</span></a>
+      <a class="nav" href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6M10 22h4"></path></svg>Ideas<span class="cnt">12</span></a>
+      <a class="nav" href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8"></path></svg>Notes</a>
+    </nav>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <span style="font-size:12px;color:#A6A0B5;padding:0 10px 6px">Projects</span>
+      <a class="nav on" href="#"><span style="width:8px;height:8px;border-radius:50%;background:#79B8F5;margin:0 4px"></span>Spring launch<span class="cnt">13</span></a>
+      <a class="nav" href="#"><span style="width:8px;height:8px;border-radius:50%;background:#78DCC0;margin:0 4px"></span>Studio move<span class="cnt">6</span></a>
+      <a class="nav" href="#"><span style="width:8px;height:8px;border-radius:50%;background:#F2BD73;margin:0 4px"></span>Reading list<span class="cnt">21</span></a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <span style="font-size:12px;color:#A6A0B5;padding:0 10px 6px">Personal boards</span>
+      <a class="nav" href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>Thinking space</a>
+      <a class="nav" href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>Trips 2027</a>
+    </div>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:#17171F;border:1px solid #262432">
+        <div class="orb" style="font-size:22px"></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px">NOMA is here</span><span class="meta">⌥ Space to talk</span></div>
+      </div>
+      <a class="nav" href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"></path></svg>Settings</a>
+    </div>
+  </aside>
+
+  <main style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column">
+    <header style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:14px 24px;border-bottom:1px solid #1E1D27">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="width:9px;height:9px;border-radius:50%;background:#79B8F5"></span>
+        <h1 style="margin:0;font-size:17px;font-weight:500">Spring launch</h1>
+        <span class="meta">13 cards</span>
+      </div>
+      <div style="display:flex;gap:2px;padding:3px;border-radius:10px;background:#17171F;border:1px solid #262432" role="group" aria-label="View mode">
+        <button class="mode on" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M9 6h4a5 5 0 0 1 5 5v4"></path></svg>Canvas</button>
+        <button class="mode" type="button">Kanban</button>
+        <button class="mode" type="button">List</button>
+        <button class="mode" type="button">Calendar</button>
+        <button class="mode" type="button">Timeline</button>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+        <label style="display:flex;align-items:center;gap:8px;min-height:36px;padding:0 12px;border-radius:10px;background:#17171F;border:1px solid #262432;color:#A6A0B5;font-size:13px;width:220px;max-width:100%">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input type="search" placeholder="Search" aria-label="Search" style="flex:1;min-width:0;background:transparent;border:0;outline:0;color:#F4F1FA;font:inherit;font-size:13px">
+          <span class="meta">⌘K</span>
+        </label>
+        <button type="button" style="display:flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:10px;border:0;background:#A78BFA;color:#16112A;font:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>Capture</button>
+        <div style="display:flex;align-items:center;gap:8px;padding:0 10px;min-height:36px;border-radius:10px;border:1px solid #262432"><div class="orb" style="font-size:16px"></div><span style="font-size:13px;color:#A6A0B5">Idle</span></div>
+        <button type="button" aria-label="Profile and settings" style="width:36px;height:36px;border-radius:50%;border:1px solid #343141;background:#262432;color:#D2C4FF;font:inherit;font-size:13px;font-weight:500;cursor:pointer">A</button>
+      </div>
+    </header>
+
+    <div style="position:relative;flex:1;min-height:820px;overflow:auto;background-color:#111116;background-image:radial-gradient(circle,#262432 1px,transparent 1.2px),radial-gradient(700px 500px at 60% 40%,rgba(109,74,255,.08),transparent 70%);background-size:24px 24px,100% 100%">
+      <div style="position:relative;width:1140px;height:800px">
+        <svg width="1140" height="800" style="position:absolute;inset:0" aria-hidden="true">
+          <path class="link" d="M370 190 C 440 190, 450 120, 520 120" stroke="#4A4560" stroke-width="1.5" fill="none"></path>
+          <path class="link" d="M370 210 C 450 230, 440 330, 520 340" stroke="#4A4560" stroke-width="1.5" fill="none"></path>
+          <path class="link" d="M250 300 C 250 380, 250 420, 250 470" stroke="#4A4560" stroke-width="1.5" fill="none"></path>
+          <path d="M780 360 C 830 380, 840 450, 860 470" stroke="#A78BFA" stroke-opacity=".7" stroke-width="1.5" fill="none" class="link"></path>
+          <circle cx="520" cy="120" r="3.5" fill="#4A4560"></circle><circle cx="520" cy="340" r="3.5" fill="#4A4560"></circle><circle cx="250" cy="470" r="3.5" fill="#4A4560"></circle><circle cx="860" cy="470" r="3.5" fill="#A78BFA"></circle>
+        </svg>
+
+        <article class="card" style="left:80px;top:110px;width:290px;border-color:#2E4A66">
+          <div class="kind" style="color:#79B8F5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>Project</div>
+          <h2 style="margin:0;font-size:17px;font-weight:500">Spring launch</h2>
+          <p style="margin:0;font-size:13px;line-height:1.55;color:#A6A0B5">Site, deck and press kit for the April release.</p>
+          <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:4px;border-radius:2px;background:#262432"><div style="width:62%;height:100%;border-radius:2px;background:#79B8F5"></div></div><span class="meta">8/13</span></div>
+        </article>
+
+        <article class="card" style="left:520px;top:60px;width:260px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="width:16px;height:16px;margin-top:2px;border-radius:5px;border:1.5px solid #A78BFA;flex:none"></span>
+            <h2 style="margin:0;font-size:15px;font-weight:500;line-height:1.35">Send revised deck to Marta</h2>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding-left:26px"><span class="meta">Thu 12</span><span style="display:flex;align-items:center;gap:4px;font-size:12px;color:#F28C91"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"></path></svg>High</span></div>
+        </article>
+
+        <article class="card" style="left:520px;top:290px;width:260px;border-color:#4E3F2A">
+          <div class="kind" style="color:#F2BD73"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>Reminder</div>
+          <div style="font-size:24px;font-weight:500;color:#F2BD73;letter-spacing:-.01em">Today, 16:00</div>
+          <h2 style="margin:0;font-size:15px;font-weight:500">Call the printer about proofs</h2>
+        </article>
+
+        <article class="card" style="left:110px;top:470px;width:290px;background:#1F1E26">
+          <div class="kind"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>Note</div>
+          <h2 style="margin:0;font-size:15px;font-weight:500">Interview notes — Giulia</h2>
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#A6A0B5">She keeps reminders in three apps and trusts none of them. “I just want to say it once and forget about it.”</p>
+          <div style="display:flex;gap:6px"><span class="tag">#research</span><span class="tag">#voice</span></div>
+        </article>
+
+        <article class="card" style="left:860px;top:110px;width:240px;border-color:#5A3B50;background:linear-gradient(160deg,rgba(221,161,197,.10),transparent 55%),#1E1D27">
+          <div class="kind" style="color:#DDA1C5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6M10 22h4"></path></svg>Idea</div>
+          <h2 style="margin:0;font-size:18px;font-weight:400;line-height:1.35;font-style:italic">What if the orb dims while you’re in a meeting?</h2>
+        </article>
+
+        <article class="card" style="left:860px;top:300px;width:240px">
+          <div class="kind" style="color:#79B8F5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Event</div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="display:flex;flex-direction:column;align-items:center;width:44px;padding:6px 0;border-radius:10px;background:#262432"><span style="font-size:11px;color:#A6A0B5">WED</span><span style="font-size:20px;font-weight:500">11</span></div>
+            <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:500">Design review</span><span class="meta">14:30 – 15:30</span></div>
+          </div>
+        </article>
+
+        <article class="card fresh" style="left:600px;top:470px;width:280px;border-color:#6B57B8;box-shadow:0 0 0 4px rgba(167,139,250,.12),0 14px 40px rgba(0,0,0,.35)">
+          <div style="display:flex;align-items:center;gap:8px"><div class="orb" style="font-size:14px"></div><span style="font-size:12px;color:#D2C4FF">Just captured · by voice</span></div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="width:16px;height:16px;margin-top:2px;border-radius:5px;border:1.5px solid #A78BFA;flex:none"></span>
+            <h2 style="margin:0;font-size:15px;font-weight:500;line-height:1.35">Book photographer for launch shoot</h2>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding-left:26px;flex-wrap:wrap"><span class="meta">Mon 16</span><span class="tag">Spring launch</span><span style="display:flex;align-items:center;gap:4px;font-size:12px;color:#F2BD73"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path></svg>Fri 13</span></div>
+        </article>
+      </div>
+
+      <div style="position:absolute;left:20px;bottom:20px;display:flex;align-items:center;gap:4px;padding:4px;border-radius:12px;background:rgba(30,29,39,.8);border:1px solid #302D3C;backdrop-filter:blur(12px)">
+        <button class="icon-btn" type="button" aria-label="Zoom out"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+        <span class="meta" style="padding:0 6px">100%</span>
+        <button class="icon-btn" type="button" aria-label="Zoom in"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

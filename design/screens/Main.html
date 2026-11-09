@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NOMA brand identity</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#111116}
+a{color:#D2C4FF}a:hover{color:#F4F1FA}
+@keyframes nfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3%)}}
+@keyframes nspin{to{transform:rotate(360deg)}}
+.orb{position:relative;width:1em;height:1em;border-radius:50%;flex:none;isolation:isolate;background:radial-gradient(circle at 34% 28%,#FFFFFF 0%,#E4DAFF 7%,#B9A3FF 22%,#8B6BFF 42%,#5A36E8 66%,#24125E 92%);box-shadow:0 0 .5em rgba(109,74,255,.5),0 0 1.4em rgba(109,74,255,.22),inset -.12em -.16em .3em rgba(18,8,52,.7),inset .06em .06em .16em rgba(255,255,255,.35);animation:nfloat 6s ease-in-out infinite}
+.orb::before{content:"";position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 40%,rgba(210,196,255,.85) 52%,transparent 64% 100%);filter:blur(.06em);mix-blend-mode:screen;animation:nspin 9s linear infinite;opacity:.8}
+.orb::after{content:"";position:absolute;left:18%;top:12%;width:34%;height:22%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.75),transparent);transform:rotate(-24deg)}
+@media (prefers-reduced-motion:reduce){.orb,.orb::before{animation:none}}
+</style>
+</head>
+<body>
+<div style="width:1440px;height:1040px;box-sizing:border-box;padding:72px 80px;background:radial-gradient(900px 600px at 12% 8%,rgba(109,74,255,.14),transparent 70%),#111116;color:#F4F1FA;font-family:Geist,Inter,system-ui,sans-serif;display:flex;flex-direction:column;gap:56px">
+
+  <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:48px">
+    <section style="display:flex;flex-direction:column;justify-content:space-between;gap:40px;padding:48px;border-radius:24px;background:#17171F;border:1px solid #262432;min-height:420px">
+      <div style="display:flex;align-items:center;gap:12px;font-family:'Geist Mono',monospace;font-size:13px;color:#A6A0B5">
+        <span style="width:6px;height:6px;border-radius:50%;background:#A78BFA"></span>Brand identity · v1.0
+      </div>
+      <div style="display:flex;align-items:center;gap:40px">
+        <div class="orb" style="font-size:132px"></div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <h1 style="margin:0;font-size:104px;line-height:.9;font-weight:500;letter-spacing:.14em">NOMA</h1>
+          <p style="margin:0;font-size:15px;letter-spacing:.32em;color:#D2C4FF;font-weight:500">YOUR SECOND MIND.</p>
+        </div>
+      </div>
+      <p style="margin:0;max-width:520px;font-size:17px;line-height:1.6;color:#A6A0B5">A quiet, intelligent presence living on your desktop. It listens, remembers, organizes and gently reminds. <span style="color:#F4F1FA">Think freely. NOMA remembers.</span></p>
+    </section>
+
+    <section style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+      <div style="border-radius:20px;background:#1E1D27;border:1px solid #262432;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px">
+        <svg width="88" height="88" viewBox="0 0 48 48" fill="none" role="img" aria-label="NOMA N symbol on dark"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#F4F1FA" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="12.2" r="3.6" fill="#A78BFA"></circle></svg>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">N symbol · dark</span>
+      </div>
+      <div style="border-radius:20px;background:#F6F5F9;border:1px solid #E8E4EF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px">
+        <svg width="88" height="88" viewBox="0 0 48 48" fill="none" role="img" aria-label="NOMA N symbol on light"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#24212D" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="12.2" r="3.6" fill="#8065DC"></circle></svg>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#777181">N symbol · light</span>
+      </div>
+      <div style="grid-column:span 2;border-radius:20px;background:#1E1D27;border:1px solid #262432;display:flex;align-items:center;justify-content:space-around;gap:24px;padding:28px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <svg width="36" height="36" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M14 35V15.5a1.5 1.5 0 0 1 2.7-.9L31.3 33.4a1.5 1.5 0 0 0 2.7-.9V20" stroke="#F4F1FA" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="34" cy="12.2" r="3.6" fill="#A78BFA"></circle></svg>
+          <span style="font-size:28px;font-weight:500;letter-spacing:.14em">NOMA</span>
+        </div>
+        <div style="width:1px;align-self:stretch;background:#343141"></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="orb" style="font-size:30px"></div>
+          <span style="font-size:28px;font-weight:500;letter-spacing:.14em">NOMA</span>
+        </div>
+      </div>
+      <p style="grid-column:span 2;margin:0;font-size:13px;line-height:1.6;color:#A6A0B5">The N is drawn in one continuous stroke. Its right stem stops short of the top — the lavender dot is NOMA’s presence, the orb in miniature. Works alone from 16px up.</p>
+    </section>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:48px;flex:1">
+    <section style="display:flex;flex-direction:column;gap:20px">
+      <h2 style="margin:0;font-size:20px;font-weight:500">Color</h2>
+      <div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px">
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:12px;background:#111116;border:1px solid #343141"></div><span style="font-size:12px">App bg</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#111116</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:12px;background:#17171F;border:1px solid #343141"></div><span style="font-size:12px">Secondary</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#17171F</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:12px;background:#1E1D27;border:1px solid #343141"></div><span style="font-size:12px">Surface</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#1E1D27</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:12px;background:#262432;border:1px solid #343141"></div><span style="font-size:12px">Elevated</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#262432</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:12px;background:#343141"></div><span style="font-size:12px">Border</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#343141</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:12px;background:#F4F1FA"></div><span style="font-size:12px">Text</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#F4F1FA</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:12px;background:#A6A0B5"></div><span style="font-size:12px">Text 2</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#A6A0B5</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:12px;background:#777184"></div><span style="font-size:12px">Muted</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#777184</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;border-radius:12px;background:#A78BFA"></div><span style="font-size:12px">Electric Lavender</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#A78BFA · primary</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;border-radius:12px;background:#8B78E8"></div><span style="font-size:12px">Soft Violet</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#8B78E8</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;border-radius:12px;background:#D2C4FF"></div><span style="font-size:12px">Pale Lavender</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#D2C4FF</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;border-radius:12px;background:radial-gradient(circle at 30% 30%,#8B6BFF,#6D4AFF 50%,#2A1A6B)"></div><span style="font-size:12px">Ambient Purple</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">#6D4AFF · glow only</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#17171F;border:1px solid #262432"><span style="width:10px;height:10px;border-radius:50%;background:#A78BFA"></span><span style="font-size:12px">Task</span></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#17171F;border:1px solid #262432"><span style="width:10px;height:10px;border-radius:50%;background:#F2BD73"></span><span style="font-size:12px">Reminder</span></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#17171F;border:1px solid #262432"><span style="width:10px;height:10px;border-radius:50%;background:#DDA1C5"></span><span style="font-size:12px">Idea</span></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#17171F;border:1px solid #262432"><span style="width:10px;height:10px;border-radius:50%;background:#79B8F5"></span><span style="font-size:12px">Project</span></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#17171F;border:1px solid #262432"><span style="width:10px;height:10px;border-radius:50%;background:#78DCC0"></span><span style="font-size:12px">Done</span></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#17171F;border:1px solid #262432"><span style="width:10px;height:10px;border-radius:50%;background:#F28C91"></span><span style="font-size:12px">Urgent</span></div>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:20px">
+      <h2 style="margin:0;font-size:20px;font-weight:500">Type — Geist</h2>
+      <div style="display:flex;flex-direction:column;gap:18px;padding:28px;border-radius:20px;background:#17171F;border:1px solid #262432;flex:1">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><span style="font-size:32px;font-weight:500;letter-spacing:-.01em">Think freely.</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">Display 32/500</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><span style="font-size:20px;font-weight:500">Product launch board</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">Title 20/500</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><span style="font-size:15px;font-weight:500">Send revised deck to Marta</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">Card 15/500</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><span style="font-size:14px;color:#A6A0B5;line-height:1.55">Notes and previews breathe at 1.55.</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">Body 14/400</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">Thu 12 · 09:30 · 3/7</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:#A6A0B5">Meta · Geist Mono 12</span></div>
+        <div style="margin-top:auto;padding-top:16px;border-top:1px solid #262432;font-size:13px;line-height:1.6;color:#A6A0B5">Sentence case everywhere. Uppercase is reserved for the tagline. Icons: Lucide, 1.75 stroke, 16 / 18 / 20px.</div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

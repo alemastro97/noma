@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NOMA on the desktop</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#0B0B10}
+a{color:#D2C4FF}a:hover{color:#F4F1FA}
+@keyframes nfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3%)}}
+@keyframes nspin{to{transform:rotate(360deg)}}
+@keyframes nbreath{0%,100%{filter:brightness(1.05)}50%{filter:brightness(1.3)}}
+@keyframes npulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.55);opacity:0}}
+@keyframes nbar{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.orb-wrap{position:relative;width:1em;height:1em;flex:none}
+.orb{position:absolute;inset:0;border-radius:50%;isolation:isolate;background:radial-gradient(circle at 34% 28%,#FFFFFF 0%,#E4DAFF 7%,#B9A3FF 22%,#8B6BFF 42%,#5A36E8 66%,#24125E 92%);box-shadow:0 0 .5em rgba(109,74,255,.5),0 0 1.4em rgba(109,74,255,.22),inset -.12em -.16em .3em rgba(18,8,52,.7),inset .06em .06em .16em rgba(255,255,255,.35);animation:nfloat 6s ease-in-out infinite}
+.orb::before{content:"";position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 40%,rgba(210,196,255,.85) 52%,transparent 64% 100%);filter:blur(.06em);mix-blend-mode:screen;animation:nspin 9s linear infinite;opacity:.8}
+.ring{position:absolute;inset:-6%;border-radius:50%;border:max(1px,.02em) solid rgba(210,196,255,.7);opacity:0;animation:npulse 1.8s ease-out infinite}
+.listen .orb{animation:nfloat 6s ease-in-out infinite,nbreath 1.3s ease-in-out infinite}
+.glass{background:rgba(30,29,39,.62);border:1px solid rgba(255,255,255,.08);box-shadow:0 24px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(28px) saturate(1.3);-webkit-backdrop-filter:blur(28px) saturate(1.3)}
+.wave{display:flex;align-items:center;gap:3px;height:36px}
+.wave span{width:3px;height:100%;border-radius:2px;background:linear-gradient(#D2C4FF,#8B78E8);transform-origin:center;animation:nbar 1.1s ease-in-out infinite}
+.meta{font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5}
+.kbd{font-family:'Geist Mono',monospace;font-size:11px;color:#D2C4FF;padding:2px 6px;border-radius:5px;background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.25)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;font-size:13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:#F4F1FA}
+.btn{min-height:36px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#F4F1FA;font:inherit;font-size:13px;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.09)}
+@media (prefers-reduced-motion:reduce){.orb,.orb::before,.ring,.wave span{animation:none}}
+</style>
+</head>
+<body>
+<div style="position:relative;width:1440px;height:900px;overflow:hidden;color:#F4F1FA;font-family:Geist,Inter,system-ui,sans-serif;background:radial-gradient(700px 520px at 18% 78%,rgba(56,40,120,.55),transparent 70%),radial-gradient(800px 600px at 85% 15%,rgba(40,60,110,.45),transparent 70%),radial-gradient(600px 500px at 55% 55%,rgba(90,54,232,.18),transparent 70%),linear-gradient(160deg,#0E0E16,#09090D)">
+
+  <div style="position:absolute;left:48px;top:40px;display:flex;flex-direction:column;gap:6px">
+    <span style="font-size:13px;color:#A6A0B5">Desktop presence</span>
+    <span style="font-size:22px;font-weight:500">NOMA lives on top of your work, not inside a window.</span>
+  </div>
+
+  <section class="glass" aria-label="Reminder" style="position:absolute;right:40px;top:40px;width:360px;box-sizing:border-box;border-radius:18px;padding:16px;display:flex;gap:14px">
+    <div style="width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(242,189,115,.12);border:1px solid rgba(242,189,115,.3);color:#F2BD73"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1">
+      <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:16px;font-weight:500">Call the printer about proofs</span><span style="font-size:13px;color:#F2BD73">In 15 minutes · 16:00</span></div>
+      <div style="display:flex;gap:8px"><button class="btn" type="button">Snooze 1h</button><button class="btn" type="button" style="background:rgba(120,220,192,.14);border-color:rgba(120,220,192,.35);color:#B8F0DF">Done</button></div>
+    </div>
+  </section>
+
+  <section class="glass" aria-label="Voice capture" style="position:absolute;left:50%;top:230px;width:600px;margin-left:-300px;box-sizing:border-box;border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;align-items:center;gap:20px">
+      <div class="orb-wrap listen" style="font-size:64px"><span class="ring"></span><span class="ring" style="animation-delay:.6s"></span><span class="ring" style="animation-delay:1.2s"></span><span class="orb"></span></div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+        <span style="font-size:13px;color:#D2C4FF">Listening…</span>
+        <p style="margin:0;font-size:20px;line-height:1.45">Book the photographer for the launch shoot next Monday, <span style="color:#A6A0B5">and remind me on Friday</span></p>
+      </div>
+    </div>
+    <div class="wave" aria-hidden="true">
+      <span style="animation-delay:0s"></span><span style="animation-delay:.15s"></span><span style="animation-delay:.3s"></span><span style="animation-delay:.45s"></span><span style="animation-delay:.1s"></span><span style="animation-delay:.25s"></span><span style="animation-delay:.4s"></span><span style="animation-delay:.05s"></span><span style="animation-delay:.2s"></span><span style="animation-delay:.35s"></span><span style="animation-delay:.5s"></span><span style="animation-delay:.12s"></span><span style="animation-delay:.28s"></span><span style="animation-delay:.42s"></span><span style="animation-delay:.08s"></span><span style="animation-delay:.22s"></span><span style="animation-delay:.38s"></span><span style="animation-delay:.02s"></span><span style="animation-delay:.18s"></span><span style="animation-delay:.32s"></span><span style="animation-delay:.48s"></span><span style="animation-delay:.14s"></span><span style="animation-delay:.3s"></span><span style="animation-delay:.06s"></span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="chip"><span style="width:8px;height:8px;border-radius:50%;background:#A78BFA"></span>Task</span>
+      <span class="chip"><span style="width:8px;height:8px;border-radius:50%;background:#79B8F5"></span>Spring launch</span>
+      <span class="chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Mon 16</span>
+      <span class="chip" style="color:#F2BD73"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path></svg>Fri 13, 09:00</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07)">
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#A6A0B5"><span class="kbd">↵</span>Save</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#A6A0B5"><span class="kbd">Tab</span>Edit</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#A6A0B5"><span class="kbd">Esc</span>Cancel</span>
+      <span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:#A6A0B5">Hold <span class="kbd">⌥ Space</span> anywhere</span>
+    </div>
+  </section>
+
+  <section class="glass" aria-label="Quick capture" style="position:absolute;left:48px;bottom:48px;width:440px;box-sizing:border-box;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px">
+    <label style="display:flex;align-items:center;gap:10px;padding:4px 6px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>
+      <input type="text" aria-label="Quick capture" placeholder="Capture a thought…" value="Ask Luca about the venue deposit tomorrow" style="flex:1;min-width:0;background:transparent;border:0;outline:0;color:#F4F1FA;font:inherit;font-size:15px">
+    </label>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span class="chip" style="padding:3px 8px;font-size:12px;border-color:rgba(167,139,250,.4);color:#D2C4FF">Task</span>
+      <span class="chip" style="padding:3px 8px;font-size:12px;color:#A6A0B5">Tomorrow</span>
+      <span class="chip" style="padding:3px 8px;font-size:12px;color:#A6A0B5">Inbox</span>
+      <span style="margin-left:auto" class="kbd">⌘⇧N</span>
+    </div>
+  </section>
+
+  <section class="glass" aria-label="NOMA panel" style="position:absolute;right:40px;bottom:130px;width:300px;box-sizing:border-box;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:500">Today</span><span class="meta">3 left</span></div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="width:15px;height:15px;border-radius:5px;border:1.5px solid #A78BFA;flex:none"></span>Send revised deck to Marta</div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="width:15px;height:15px;border-radius:5px;border:1.5px solid #F2BD73;flex:none"></span>Call the printer<span class="meta" style="margin-left:auto;color:#F2BD73">16:00</span></div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#A6A0B5"><span style="width:15px;height:15px;border-radius:5px;background:#78DCC0;flex:none"></span><span style="text-decoration:line-through">Drink water</span></div>
+  </section>
+
+  <div style="position:absolute;right:48px;bottom:48px;display:flex;align-items:center;gap:12px">
+    <span class="glass" style="padding:6px 10px;border-radius:8px;font-size:12px;color:#A6A0B5">Always on top</span>
+    <button type="button" aria-label="Open NOMA" style="width:64px;height:64px;border-radius:50%;border:0;padding:4px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center"><div class="orb-wrap" style="font-size:56px"><span class="orb"></span></div></button>
+  </div>
+</div>
+</body>
+</html>

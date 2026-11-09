@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NOMA card system</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#111116}
+a{color:#D2C4FF}a:hover{color:#F4F1FA}
+.cell{display:flex;flex-direction:column;gap:14px}
+.cap{display:flex;justify-content:space-between;font-size:13px;color:#A6A0B5}
+.card{box-sizing:border-box;border-radius:14px;background:#1E1D27;border:1px solid #302D3C;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:16px 18px;display:flex;flex-direction:column;gap:12px;transition:transform .2s ease,border-color .2s ease}
+.card:hover{transform:translateY(-2px);border-color:#4A4560}
+.kind{display:flex;align-items:center;gap:6px;font-size:12px;color:#A6A0B5}
+.meta{font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5}
+.tag{font-size:12px;color:#A6A0B5;padding:2px 8px;border-radius:6px;background:#262432}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.act{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;border:0;background:transparent;color:#A6A0B5;cursor:pointer}
+.act:hover{background:#262432;color:#F4F1FA}
+</style>
+</head>
+<body>
+<div style="width:1440px;height:900px;box-sizing:border-box;padding:64px 80px;background:#111116;color:#F4F1FA;font-family:Geist,Inter,system-ui,sans-serif;display:flex;flex-direction:column;gap:36px">
+  <header style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h1 style="margin:0;font-size:36px;font-weight:500;letter-spacing:-.01em">Cards are objects, not rows.</h1>
+      <p style="margin:0;font-size:15px;color:#A6A0B5;max-width:680px;line-height:1.6">One shell — 14px radius, 1px border, soft lift. Type speaks through a colored icon, a tinted hairline and the one field that matters most for it.</p>
+    </div>
+    <div class="meta" style="text-align:right;line-height:1.8">radius 14 · padding 16/18<br>border #302D3C · hover lift 2px / 200ms</div>
+  </header>
+
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 32px">
+    <div class="cell">
+      <div class="cap"><span>Task</span><span class="meta">checkbox · deadline · priority</span></div>
+      <article class="card">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <span style="width:17px;height:17px;margin-top:2px;border-radius:5px;border:1.5px solid #A78BFA;flex:none"></span>
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1">
+            <h2 style="margin:0;font-size:15px;font-weight:500;line-height:1.4">Send revised deck to Marta</h2>
+            <div class="row"><span class="meta">Thu 12 · 18:00</span><span style="display:flex;align-items:center;gap:4px;font-size:12px;color:#F28C91"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"></path></svg>High</span><span class="tag">Spring launch</span></div>
+          </div>
+          <button class="act" type="button" aria-label="More actions"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button>
+        </div>
+      </article>
+    </div>
+
+    <div class="cell">
+      <div class="cap"><span>Reminder</span><span class="meta">time leads · bell</span></div>
+      <article class="card" style="border-color:#4E3F2A">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="kind" style="color:#F2BD73"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>Reminder</div>
+          <span class="meta">in 2h 10m</span>
+        </div>
+        <div style="font-size:26px;font-weight:500;color:#F2BD73;letter-spacing:-.01em">Today, 16:00</div>
+        <h2 style="margin:0;font-size:15px;font-weight:500">Call the printer about proofs</h2>
+      </article>
+    </div>
+
+    <div class="cell">
+      <div class="cap"><span>Note</span><span class="meta">paper tone · preview</span></div>
+      <article class="card" style="background:linear-gradient(#211F29,#1D1C24);border-color:#33303D">
+        <div class="kind"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>Note · edited yesterday</div>
+        <h2 style="margin:0;font-size:16px;font-weight:500">Interview notes — Giulia</h2>
+        <p style="margin:0;font-size:14px;line-height:1.65;color:#B9B3C7">She keeps reminders in three apps and trusts none of them. “I just want to say it once and forget about it.”</p>
+        <div class="row"><span class="tag">#research</span><span class="tag">#voice</span></div>
+      </article>
+    </div>
+
+    <div class="cell">
+      <div class="cap"><span>Idea</span><span class="meta">expressive · italic · rose wash</span></div>
+      <article class="card" style="border-color:#5A3B50;background:radial-gradient(260px 160px at 0% 0%,rgba(221,161,197,.14),transparent 70%),#1E1D27">
+        <div class="kind" style="color:#DDA1C5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6M10 22h4"></path></svg>Idea</div>
+        <h2 style="margin:0;font-size:20px;font-weight:400;font-style:italic;line-height:1.35">What if the orb dims while you’re in a meeting?</h2>
+        <div class="row"><span class="meta">3 linked</span><span class="tag">#product</span></div>
+      </article>
+    </div>
+
+    <div class="cell">
+      <div class="cap"><span>Project</span><span class="meta">project color · progress</span></div>
+      <article class="card" style="border-color:#2E4A66">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="kind" style="color:#79B8F5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>Project</div>
+          <span class="meta">due Apr 2</span>
+        </div>
+        <h2 style="margin:0;font-size:17px;font-weight:500">Spring launch</h2>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:4px;border-radius:2px;background:#262432"><div style="width:62%;height:100%;border-radius:2px;background:#79B8F5"></div></div><span class="meta">8/13</span></div>
+      </article>
+    </div>
+
+    <div class="cell">
+      <div class="cap"><span>Event</span><span class="meta">date block · time range</span></div>
+      <article class="card">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="display:flex;flex-direction:column;align-items:center;width:52px;padding:8px 0;border-radius:11px;background:#262432;flex:none"><span style="font-size:11px;color:#A6A0B5;letter-spacing:.06em">WED</span><span style="font-size:24px;font-weight:500">11</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+            <h2 style="margin:0;font-size:16px;font-weight:500">Design review</h2>
+            <span class="meta">14:30 – 15:30 · Studio</span>
+          </div>
+          <span style="width:8px;height:8px;border-radius:50%;background:#79B8F5"></span>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div class="cap"><span>States</span><span class="meta">same card, four moments</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px">
+      <article class="card" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px"><span style="width:16px;height:16px;border-radius:5px;border:1.5px solid #A78BFA"></span><span style="font-size:14px;font-weight:500">Default</span></div></article>
+      <article class="card" style="padding:14px 16px;border-color:#4A4560;transform:translateY(-2px)"><div style="display:flex;align-items:center;gap:10px"><span style="width:16px;height:16px;border-radius:5px;border:1.5px solid #A78BFA"></span><span style="font-size:14px;font-weight:500">Hover</span><span class="meta" style="margin-left:auto">E · ⌫ · ⌘D</span></div></article>
+      <article class="card" style="padding:14px 16px;border-color:#A78BFA;box-shadow:0 0 0 4px rgba(167,139,250,.14),0 10px 30px rgba(0,0,0,.28)"><div style="display:flex;align-items:center;gap:10px"><span style="width:16px;height:16px;border-radius:5px;border:1.5px solid #A78BFA"></span><span style="font-size:14px;font-weight:500">Selected</span></div></article>
+      <article class="card" style="padding:14px 16px;background:#191820;box-shadow:none"><div style="display:flex;align-items:center;gap:10px"><span style="width:16px;height:16px;border-radius:5px;background:#78DCC0;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#10241E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span><span style="font-size:14px;color:#A6A0B5;text-decoration:line-through">Completed</span></div></article>
+    </div>
+  </section>
+</div>
+</body>
+</html>

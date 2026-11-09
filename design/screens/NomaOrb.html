@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NomaOrb component</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#111116}
+a{color:#D2C4FF}a:hover{color:#F4F1FA}
+@keyframes nfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3%)}}
+@keyframes nspin{to{transform:rotate(360deg)}}
+@keyframes nbreath{0%,100%{filter:brightness(1.05) saturate(1.05)}50%{filter:brightness(1.3) saturate(1.15)}}
+@keyframes npulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.55);opacity:0}}
+@keyframes nsuccess{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.45);opacity:0}}
+@keyframes nbar{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+.orb-wrap{position:relative;width:1em;height:1em;flex:none}
+.orb{position:absolute;inset:0;border-radius:50%;isolation:isolate;background:radial-gradient(circle at 34% 28%,#FFFFFF 0%,#E4DAFF 7%,#B9A3FF 22%,#8B6BFF 42%,#5A36E8 66%,#24125E 92%);box-shadow:0 0 .5em rgba(109,74,255,.5),0 0 1.4em rgba(109,74,255,.22),inset -.12em -.16em .3em rgba(18,8,52,.7),inset .06em .06em .16em rgba(255,255,255,.35);animation:nfloat 6s ease-in-out infinite;transition:filter .3s ease,background .3s ease}
+.orb::before{content:"";position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 40%,rgba(210,196,255,.85) 52%,transparent 64% 100%);filter:blur(.06em);mix-blend-mode:screen;animation:nspin 9s linear infinite;opacity:.8}
+.orb::after{content:"";position:absolute;left:18%;top:12%;width:34%;height:22%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.75),transparent);transform:rotate(-24deg)}
+.ring{position:absolute;inset:-6%;border-radius:50%;border:max(1px,.018em) solid rgba(210,196,255,.7);opacity:0}
+.s-listening .orb{animation:nfloat 6s ease-in-out infinite,nbreath 1.3s ease-in-out infinite}
+.s-listening .ring{animation:npulse 1.8s ease-out infinite}
+.s-listening .ring.r2{animation-delay:.6s}
+.s-listening .ring.r3{animation-delay:1.2s}
+.s-processing .orb::before{animation-duration:2.2s;opacity:1;background:conic-gradient(from 0deg,transparent 0 30%,rgba(210,196,255,.9) 45%,transparent 55%,rgba(167,139,250,.7) 80%,transparent 90%)}
+.orbit{position:absolute;inset:-16%;border-radius:50%;opacity:0}
+.orbit span{position:absolute;left:50%;top:0;width:max(2px,.045em);height:max(2px,.045em);margin-left:-.022em;border-radius:50%;background:#D2C4FF;box-shadow:0 0 .08em #D2C4FF}
+.s-processing .orbit{opacity:1;animation:nspin 3.2s linear infinite}
+.s-processing .orbit.o2{animation-duration:4.6s;animation-direction:reverse;inset:-26%}
+.s-processing .orbit.o2 span{opacity:.6}
+.s-success .orb{background:radial-gradient(circle at 34% 28%,#FFFFFF 0%,#DDFBF1 8%,#A3EBD7 24%,#78DCC0 40%,#6D4AFF 74%,#24125E 96%)}
+.s-success .ring{border-color:rgba(120,220,192,.85);animation:nsuccess 1.4s ease-out infinite}
+.s-error .orb{filter:saturate(.75) brightness(.9)}
+.err{position:absolute;right:4%;top:4%;width:22%;height:22%;min-width:6px;min-height:6px;border-radius:50%;background:#F28C91;box-shadow:0 0 0 max(1.5px,.03em) #111116;display:none}
+.s-error .err{display:block}
+.wave{display:flex;align-items:center;gap:4px;height:28px}
+.wave span{width:3px;height:100%;border-radius:2px;background:#D2C4FF;transform-origin:center;animation:nbar 1s ease-in-out infinite}
+button.st{font:inherit;cursor:pointer;min-height:44px;padding:0 18px;border-radius:12px;border:1px solid #343141;background:#1E1D27;color:#A6A0B5;font-size:14px;transition:all .18s ease}
+button.st:hover{color:#F4F1FA;border-color:#4A4560}
+button.st.on{background:#262432;color:#F4F1FA;border-color:#A78BFA}
+@media (prefers-reduced-motion:reduce){.orb,.orb::before,.ring,.orbit,.wave span{animation:none!important}}
+</style>
+</head>
+<body>
+<div style="width:1440px;height:1040px;box-sizing:border-box;padding:72px 80px;background:#111116;color:#F4F1FA;font-family:Geist,Inter,system-ui,sans-serif;display:flex;flex-direction:column;gap:40px">
+  <header style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#A6A0B5">&lt;NomaOrb size state /&gt;</span>
+      <h1 style="margin:0;font-size:40px;font-weight:500;letter-spacing:-.01em">The orb is NOMA’s presence.</h1>
+      <p style="margin:0;font-size:15px;color:#A6A0B5;max-width:640px;line-height:1.6">One component, five states. Motion is slow and organic; every transition is 150–300ms and stops entirely under reduced motion.</p>
+    </div>
+  </header>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;flex:1">
+    <section style="position:relative;border-radius:24px;background:radial-gradient(520px 420px at 50% 46%,rgba(109,74,255,.18),transparent 70%),#17171F;border:1px solid #262432;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:40px">
+      <div class="orb-wrap s-listening" style="font-size:220px">
+        <span class="ring"></span><span class="ring r2"></span><span class="ring r3"></span>
+        <span class="orbit"><span></span></span><span class="orbit o2"><span></span></span>
+        <span class="orb"></span>
+        <span class="err"></span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-height:56px">
+        <span style="font-size:18px;font-weight:500">Listening…</span>
+        <span style="font-size:14px;color:#A6A0B5">“Remind me to send the deck to Marta on Thursday.”</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+        <button class="st" type="button">Idle</button><button class="st on" type="button">Listening</button><button class="st" type="button">Processing</button><button class="st" type="button">Success</button><button class="st" type="button">Error</button>
+      </div>
+    </section>
+
+    <section style="display:grid;grid-template-rows:repeat(5,minmax(0,1fr));gap:10px">
+      <div style="display:flex;align-items:center;gap:24px;padding:0 24px;border-radius:16px;background:#17171F;border:1px solid #262432">
+        <div class="orb-wrap s-idle" style="font-size:52px"><span class="orb"></span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1"><span style="font-size:15px;font-weight:500">Idle</span><span style="font-size:13px;color:#A6A0B5">Slow 6s float, soft violet glow.</span></div>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">default</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:24px;padding:0 24px;border-radius:16px;background:#17171F;border:1px solid #262432">
+        <div class="orb-wrap s-listening" style="font-size:52px"><span class="ring"></span><span class="ring r2"></span><span class="orb"></span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1"><span style="font-size:15px;font-weight:500">Listening</span><span style="font-size:13px;color:#A6A0B5">Brighter lavender, rings follow voice level.</span></div>
+        <div class="wave" aria-hidden="true"><span style="animation-delay:0s"></span><span style="animation-delay:.2s"></span><span style="animation-delay:.4s"></span><span style="animation-delay:.1s"></span><span style="animation-delay:.3s"></span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:24px;padding:0 24px;border-radius:16px;background:#17171F;border:1px solid #262432">
+        <div class="orb-wrap s-processing" style="font-size:52px"><span class="orbit"><span></span></span><span class="orb"></span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1"><span style="font-size:15px;font-weight:500">Processing</span><span style="font-size:13px;color:#A6A0B5">Inner light turns faster; one particle orbits.</span></div>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">2.2s loop</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:24px;padding:0 24px;border-radius:16px;background:#17171F;border:1px solid #262432">
+        <div class="orb-wrap s-success" style="font-size:52px"><span class="ring"></span><span class="orb"></span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1"><span style="font-size:15px;font-weight:500">Success</span><span style="font-size:13px;color:#A6A0B5">One mint pulse, then back to idle.</span></div>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#78DCC0">1.4s → idle</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:24px;padding:0 24px;border-radius:16px;background:#17171F;border:1px solid #262432">
+        <div class="orb-wrap s-error" style="font-size:52px"><span class="orb"></span><span class="err"></span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1"><span style="font-size:15px;font-weight:500">Error</span><span style="font-size:13px;color:#A6A0B5">A quiet coral dot. No shake, no flash.</span></div>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#F28C91">static</span>
+      </div>
+    </section>
+  </div>
+
+  <section style="display:flex;align-items:center;gap:48px;padding:24px 32px;border-radius:20px;background:#17171F;border:1px solid #262432">
+    <span style="font-size:14px;color:#A6A0B5;width:160px">Size ladder</span>
+    <div style="display:flex;align-items:flex-end;gap:48px;flex:1">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px"><div class="orb-wrap" style="font-size:96px"><span class="orb"></span></div><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">96 · splash</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px"><div class="orb-wrap" style="font-size:56px"><span class="orb"></span></div><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">56 · floating</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px"><div class="orb-wrap" style="font-size:32px"><span class="orb"></span></div><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">32 · minimum</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px"><div class="orb-wrap s-error" style="font-size:32px"><span class="orb"></span><span class="err"></span></div><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">32 · error</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px"><div class="orb-wrap" style="font-size:20px"><span class="orb"></span></div><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#A6A0B5">20 · menu bar</span></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
