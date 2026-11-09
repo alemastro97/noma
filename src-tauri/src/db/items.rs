@@ -1,18 +1,29 @@
 use std::collections::HashMap;
 
-use chrono::{DateTime, Duration, TimeZone, Utc};
+use chrono::{DateTime, Duration, NaiveDate, TimeZone, Utc};
 use chrono_tz::Tz;
-use rusqlite::{Connection, Row, ToSql, params};
+use rusqlite::{Connection, OptionalExtension, Row, ToSql, params};
 
 use super::error::{DbError, DbResult};
 use super::models::{
-    Counts, Item, ItemFilter, ItemPatch, ItemType, NewItem, Priority, Status, new_id,
+    BoardKind, Counts, Item, ItemFilter, ItemPatch, NewItem, Priority, Progress, Status, new_id,
 };
-use super::placements::place_item;
+use super::placements::{place_item, remove_placement};
 use super::recurrence::{next_after, validate_rrule};
+use super::tags::{attach_tags, set_item_tags};
 
-const ITEM_COLUMNS: &str = "id, kind, title, body, status, priority, due_at, remind_at, snoozed_until, \
-                            recurrence, project_id, created_at, updated_at, completed_at";
+/// Columns selected for every item query, aliased so `row_to_item` can read by name.
+const SELECT_ITEM: &str = "SELECT i.id, i.kind, i.title, i.body, i.status, i.priority, i.due_at, \
+    i.ends_at, i.remind_at, i.snoozed_until, i.recurrence, i.project_id, i.created_at, \
+    i.updated_at, i.completed_at, \
+    (SELECT COUNT(*) FROM connections c WHERE c.from_item = i.id OR c.to_item = i.id) AS link_count \
+    FROM items i";
+
+/// Canvas auto-slot grid for new cards.
+const SLOT_COLUMNS: u32 = 4;
+const SLOT_W: f64 = 300.0;
+const SLOT_H: f64 = 200.0;
+const SLOT_ORIGIN: f64 = 80.0;
 
 fn row_to_item(row: &Row<'_>) -> rusqlite::Result<Item> {
     Ok(Item {
@@ -23,6 +34,7 @@ fn row_to_item(row: &Row<'_>) -> rusqlite::Result<Item> {
         status: row.get("status")?,
         priority: row.get("priority")?,
         due_at: row.get("due_at")?,
+        ends_at: row.get("ends_at")?,
         remind_at: row.get("remind_at")?,
         snoozed_until: row.get("snoozed_until")?,
         recurrence: row.get("recurrence")?,
@@ -30,7 +42,71 @@ fn row_to_item(row: &Row<'_>) -> rusqlite::Result<Item> {
         created_at: row.get("created_at")?,
         updated_at: row.get("updated_at")?,
         completed_at: row.get("completed_at")?,
+        tags: Vec::new(),
+        link_count: row.get("link_count")?,
     })
+}
+
+fn query_items(conn: &Connection, sql: &str, params: &[&dyn ToSql]) -> DbResult<Vec<Item>> {
+    let mut stmt = conn.prepare_cached(sql)?;
+    let rows = stmt.query_map(params, row_to_item)?;
+    let mut items: Vec<Item> = rows.collect::<Result<_, _>>()?;
+    attach_tags(conn, &mut items)?;
+    Ok(items)
+}
+
+/// Next free slot on `board_id`: the first cell of a 4-column grid that no
+/// existing card overlaps (cards placed by hand can sit anywhere).
+fn next_slot(conn: &Connection, board_id: &str) -> DbResult<(f64, f64)> {
+    let mut stmt = conn.prepare_cached("SELECT x, y FROM placements WHERE board_id = ?1")?;
+    let taken: Vec<(f64, f64)> = stmt
+        .query_map([board_id], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .collect::<Result<_, _>>()?;
+    Ok(free_slot(&taken))
+}
+
+/// First grid cell not overlapping any of `taken` (approximate card box 280 x 180).
+pub fn free_slot(taken: &[(f64, f64)]) -> (f64, f64) {
+    (0u32..)
+        .map(|n| {
+            let col = f64::from(n % SLOT_COLUMNS);
+            let row = f64::from(n / SLOT_COLUMNS);
+            (SLOT_ORIGIN + col * SLOT_W, SLOT_ORIGIN + row * SLOT_H)
+        })
+        .find(|(x, y)| {
+            taken
+                .iter()
+                .all(|(tx, ty)| (tx - x).abs() >= 280.0 || (ty - y).abs() >= 180.0)
+        })
+        .expect("an unbounded grid always has a free cell")
+}
+
+fn project_board(conn: &Connection, project_id: &str) -> DbResult<Option<String>> {
+    Ok(conn
+        .query_row(
+            "SELECT board_id FROM projects WHERE id = ?1",
+            [project_id],
+            |r| r.get(0),
+        )
+        .optional()?)
+}
+
+fn current_placement_board(conn: &Connection, item_id: &str) -> DbResult<Option<String>> {
+    Ok(conn
+        .query_row(
+            "SELECT board_id FROM placements WHERE item_id = ?1",
+            [item_id],
+            |r| r.get(0),
+        )
+        .optional()?)
+}
+
+fn board_kind(conn: &Connection, board_id: &str) -> DbResult<Option<BoardKind>> {
+    Ok(conn
+        .query_row("SELECT kind FROM boards WHERE id = ?1", [board_id], |r| {
+            r.get(0)
+        })
+        .optional()?)
 }
 
 pub fn create_item(conn: &Connection, input: NewItem, now: DateTime<Utc>) -> DbResult<Item> {
@@ -41,102 +117,117 @@ pub fn create_item(conn: &Connection, input: NewItem, now: DateTime<Utc>) -> DbR
     if let Some(rule) = &input.recurrence {
         validate_rrule(rule)?;
     }
-    let item = Item {
-        id: new_id(),
-        kind: input.kind,
-        title,
-        body: input.body.filter(|b| !b.trim().is_empty()),
-        status: Status::Inbox,
-        priority: input.priority.unwrap_or(Priority::Normal),
-        due_at: input.due_at,
-        remind_at: input.remind_at,
-        snoozed_until: None,
-        recurrence: input.recurrence,
-        project_id: input.project_id,
-        created_at: now,
-        updated_at: now,
-        completed_at: None,
-    };
-    conn.execute(
-        &format!(
-            "INSERT INTO items ({ITEM_COLUMNS}) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)"
-        ),
+    let status = input.status.unwrap_or(Status::Inbox);
+    let tx = conn.unchecked_transaction()?;
+    let id = new_id();
+    let recurrence_start = input
+        .recurrence
+        .as_ref()
+        .and(input.due_at.or(input.remind_at));
+    tx.execute(
+        "INSERT INTO items (id, kind, title, body, status, priority, due_at, ends_at, remind_at, \
+         snoozed_until, recurrence, recurrence_start, project_id, created_at, updated_at, completed_at) \
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, NULL, ?10, ?11, ?12, ?13, ?13, ?14)",
         params![
-            item.id,
-            item.kind,
-            item.title,
-            item.body,
-            item.status,
-            item.priority,
-            item.due_at,
-            item.remind_at,
-            item.snoozed_until,
-            item.recurrence,
-            item.project_id,
-            item.created_at,
-            item.updated_at,
-            item.completed_at,
+            id,
+            input.kind,
+            title,
+            input.body.filter(|b| !b.trim().is_empty()),
+            status,
+            input.priority.unwrap_or(Priority::Normal),
+            input.due_at,
+            input.ends_at,
+            input.remind_at,
+            input.recurrence,
+            recurrence_start,
+            input.project_id,
+            now,
+            (status == Status::Done).then_some(now),
         ],
     )?;
 
+    if let Some(tags) = &input.tags {
+        set_item_tags(&tx, &id, tags)?;
+    }
+
     // A project item lands on its project's board unless a board was given.
-    let board_id = match (&input.board_id, &item.project_id) {
+    let board_id = match (&input.board_id, &input.project_id) {
         (Some(b), _) => Some(b.clone()),
-        (None, Some(p)) => super::projects::get_project(conn, p)?.map(|p| p.board_id),
+        (None, Some(p)) => project_board(&tx, p)?,
         (None, None) => None,
     };
     if let Some(board_id) = board_id {
-        place_item(conn, &item.id, &board_id, 0.0, 0.0)?;
+        let (x, y) = match (input.x, input.y) {
+            (Some(x), Some(y)) => (x, y),
+            _ => next_slot(&tx, &board_id)?,
+        };
+        place_item(&tx, &id, &board_id, x, y)?;
     }
-    Ok(item)
+    tx.commit()?;
+    require_item(conn, &id)
 }
 
 pub fn get_item(conn: &Connection, id: &str) -> DbResult<Option<Item>> {
-    let mut stmt = conn.prepare(&format!("SELECT {ITEM_COLUMNS} FROM items WHERE id = ?1"))?;
-    let mut rows = stmt.query_map([id], row_to_item)?;
-    rows.next().transpose().map_err(Into::into)
+    let sql = format!("{SELECT_ITEM} WHERE i.id = ?1");
+    Ok(query_items(conn, &sql, &[&id])?.into_iter().next())
 }
 
 fn require_item(conn: &Connection, id: &str) -> DbResult<Item> {
     get_item(conn, id)?.ok_or_else(|| DbError::NotFound(format!("item {id}")))
 }
 
+/// Maps a local wall-clock midnight to UTC, stepping forward through a DST gap
+/// (some zones skip 00:00 when DST starts).
+fn local_midnight(date: NaiveDate, tz: Tz) -> Option<DateTime<Utc>> {
+    (0..=3).find_map(|h| {
+        let local = date.and_hms_opt(h, 0, 0)?;
+        tz.from_local_datetime(&local)
+            .earliest()
+            .map(|d| d.with_timezone(&Utc))
+    })
+}
+
 /// Local-day bounds for `now` in `tz`, as UTC instants.
-fn local_day_bounds(now: DateTime<Utc>, tz: Tz) -> (DateTime<Utc>, DateTime<Utc>) {
-    let local_date = now.with_timezone(&tz).date_naive();
-    let start_local = local_date.and_hms_opt(0, 0, 0).expect("midnight exists");
-    let start = tz
-        .from_local_datetime(&start_local)
-        .earliest()
-        .map(|d| d.with_timezone(&Utc))
-        .unwrap_or(now);
-    let end_local = (local_date + Duration::days(1))
-        .and_hms_opt(0, 0, 0)
-        .expect("midnight exists");
-    let end = tz
-        .from_local_datetime(&end_local)
-        .earliest()
-        .map(|d| d.with_timezone(&Utc))
-        .unwrap_or(start + Duration::days(1));
+pub fn local_day_bounds(now: DateTime<Utc>, tz: Tz) -> (DateTime<Utc>, DateTime<Utc>) {
+    let date = now.with_timezone(&tz).date_naive();
+    let start = local_midnight(date, tz).unwrap_or(now - Duration::hours(12));
+    let end = local_midnight(date + Duration::days(1), tz).unwrap_or(start + Duration::days(1));
     (start, end)
 }
 
-/// Builds the WHERE clause and parameters for a filter.
-fn filter_sql(filter: &ItemFilter) -> (String, Vec<Box<dyn ToSql>>) {
-    let open = "i.status != 'done'";
+/// WHERE clause and parameters for a filter. Today includes overdue open items;
+/// the Upcoming window is supplied by the caller (it starts where Today ends).
+fn filter_sql(filter: &ItemFilter, include_done: bool) -> (String, Vec<Box<dyn ToSql>>) {
+    let open = if include_done {
+        "1 = 1"
+    } else {
+        "i.status != 'done'"
+    };
+    let not_project_card = "i.kind != 'project_ref'";
     match filter {
-        ItemFilter::All => ("1 = 1".into(), vec![]),
+        ItemFilter::All => (open.to_string(), vec![]),
         ItemFilter::Inbox => (
             format!(
-                "{open} AND i.project_id IS NULL AND NOT EXISTS (SELECT 1 FROM placements p WHERE p.item_id = i.id)"
+                "{open} AND {not_project_card} AND i.project_id IS NULL \
+                 AND NOT EXISTS (SELECT 1 FROM placements p WHERE p.item_id = i.id)"
             ),
             vec![],
         ),
         ItemFilter::Today { now, tz } => {
             let (start, end) = local_day_bounds(*now, *tz);
+            // Open items due/reminded before tonight (overdue included); done items
+            // only when they were completed today and the caller asked for them.
+            let done_today = if include_done {
+                "(i.status = 'done' AND i.completed_at >= ?1 AND i.completed_at < ?2 \
+                  AND (i.due_at < ?2 OR i.remind_at < ?2))"
+            } else {
+                "1 = 0"
+            };
             (
                 format!(
-                    "{open} AND ((i.due_at >= ?1 AND i.due_at < ?2) OR (i.remind_at >= ?1 AND i.remind_at < ?2))"
+                    "{not_project_card} AND ( \
+                       (i.status != 'done' AND (i.due_at < ?2 OR i.remind_at < ?2)) \
+                       OR {done_today} )"
                 ),
                 vec![Box::new(start), Box::new(end)],
             )
@@ -145,7 +236,8 @@ fn filter_sql(filter: &ItemFilter) -> (String, Vec<Box<dyn ToSql>>) {
             let end = *now + Duration::days(i64::from(*days));
             (
                 format!(
-                    "{open} AND ((i.due_at >= ?1 AND i.due_at < ?2) OR (i.remind_at >= ?1 AND i.remind_at < ?2))"
+                    "{open} AND {not_project_card} AND ((i.due_at >= ?1 AND i.due_at < ?2) \
+                     OR (i.remind_at >= ?1 AND i.remind_at < ?2))"
                 ),
                 vec![Box::new(*now), Box::new(end)],
             )
@@ -165,34 +257,43 @@ fn filter_sql(filter: &ItemFilter) -> (String, Vec<Box<dyn ToSql>>) {
     }
 }
 
-pub fn list_items(conn: &Connection, filter: &ItemFilter) -> DbResult<Vec<Item>> {
-    let (where_sql, params) = filter_sql(filter);
+pub fn list_items(
+    conn: &Connection,
+    filter: &ItemFilter,
+    include_done: bool,
+) -> DbResult<Vec<Item>> {
+    let (where_sql, params) = filter_sql(filter, include_done);
     let sql = format!(
-        "SELECT {} FROM items i WHERE {where_sql} \
-         ORDER BY (i.due_at IS NULL), i.due_at ASC, i.created_at DESC",
-        ITEM_COLUMNS
-            .split(", ")
-            .map(|c| format!("i.{c}"))
-            .collect::<Vec<_>>()
-            .join(", ")
+        "{SELECT_ITEM} WHERE {where_sql} \
+         ORDER BY (i.status = 'done'), (COALESCE(i.due_at, i.remind_at) IS NULL), \
+         COALESCE(i.due_at, i.remind_at) ASC, i.created_at DESC"
     );
-    let mut stmt = conn.prepare(&sql)?;
     let refs: Vec<&dyn ToSql> = params.iter().map(|p| p.as_ref()).collect();
-    let rows = stmt.query_map(refs.as_slice(), row_to_item)?;
-    Ok(rows.collect::<Result<_, _>>()?)
+    query_items(conn, &sql, &refs)
 }
 
 fn count_items(conn: &Connection, filter: &ItemFilter) -> DbResult<u32> {
-    let (where_sql, params) = filter_sql(filter);
+    let (where_sql, params) = filter_sql(filter, false);
     let sql = format!("SELECT COUNT(*) FROM items i WHERE {where_sql}");
     let refs: Vec<&dyn ToSql> = params.iter().map(|p| p.as_ref()).collect();
     Ok(conn.query_row(&sql, refs.as_slice(), |r| r.get(0))?)
 }
 
+/// The Upcoming filter as the app uses it: the `days` after today, local time.
+pub fn upcoming_filter(now: DateTime<Utc>, tz: Tz, days: u32) -> ItemFilter {
+    let (_, end_of_today) = local_day_bounds(now, tz);
+    ItemFilter::Upcoming {
+        now: end_of_today,
+        days,
+    }
+}
+
 pub fn counts(conn: &Connection, now: DateTime<Utc>, tz: Tz) -> DbResult<Counts> {
     let mut by_project = HashMap::new();
     let mut stmt = conn.prepare(
-        "SELECT project_id, COUNT(*) FROM items WHERE status != 'done' AND project_id IS NOT NULL GROUP BY project_id",
+        "SELECT project_id, COUNT(*) FROM items \
+         WHERE status != 'done' AND project_id IS NOT NULL AND kind != 'project_ref' \
+         GROUP BY project_id",
     )?;
     for row in stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, u32>(1)?)))? {
         let (id, n) = row?;
@@ -201,11 +302,29 @@ pub fn counts(conn: &Connection, now: DateTime<Utc>, tz: Tz) -> DbResult<Counts>
     Ok(Counts {
         inbox: count_items(conn, &ItemFilter::Inbox)?,
         today: count_items(conn, &ItemFilter::Today { now, tz })?,
-        upcoming: count_items(conn, &ItemFilter::Upcoming { now, days: 7 })?,
+        upcoming: count_items(conn, &upcoming_filter(now, tz, 7))?,
         ideas: count_items(conn, &ItemFilter::Ideas)?,
         notes: count_items(conn, &ItemFilter::Notes)?,
         by_project,
     })
+}
+
+/// Done / total items per project (project cards themselves excluded).
+pub fn project_progress(conn: &Connection) -> DbResult<HashMap<String, Progress>> {
+    let mut stmt = conn.prepare(
+        "SELECT project_id, SUM(status = 'done'), COUNT(*) FROM items \
+         WHERE project_id IS NOT NULL AND kind != 'project_ref' GROUP BY project_id",
+    )?;
+    let rows = stmt.query_map([], |r| {
+        Ok((
+            r.get::<_, String>(0)?,
+            Progress {
+                done: r.get(1)?,
+                total: r.get(2)?,
+            },
+        ))
+    })?;
+    Ok(rows.collect::<Result<_, _>>()?)
 }
 
 pub fn update_item(
@@ -213,8 +332,21 @@ pub fn update_item(
     id: &str,
     patch: ItemPatch,
     now: DateTime<Utc>,
+    tz: Tz,
 ) -> DbResult<Item> {
-    let mut item = require_item(conn, id)?;
+    // "Done" goes through completion so recurring items advance instead.
+    if patch.status == Some(Status::Done) {
+        let mut rest = patch.clone();
+        rest.status = None;
+        if rest != ItemPatch::default() {
+            update_item(conn, id, rest, now, tz)?;
+        }
+        return complete_item(conn, id, now, tz);
+    }
+
+    let tx = conn.unchecked_transaction()?;
+    let mut item = require_item(&tx, id)?;
+    let old_project = item.project_id.clone();
     if let Some(kind) = patch.kind {
         item.kind = kind;
     }
@@ -230,11 +362,7 @@ pub fn update_item(
     }
     if let Some(status) = patch.status {
         item.status = status;
-        item.completed_at = if status == Status::Done {
-            Some(now)
-        } else {
-            None
-        };
+        item.completed_at = None;
     }
     if let Some(priority) = patch.priority {
         item.priority = priority;
@@ -242,31 +370,70 @@ pub fn update_item(
     if let Some(due_at) = patch.due_at {
         item.due_at = due_at;
     }
+    if let Some(ends_at) = patch.ends_at {
+        item.ends_at = ends_at;
+    }
     if let Some(remind_at) = patch.remind_at {
         item.remind_at = remind_at;
     }
     if let Some(snoozed_until) = patch.snoozed_until {
         item.snoozed_until = snoozed_until;
     }
+    let mut restart_series = patch.due_at.is_some() || patch.remind_at.is_some();
     if let Some(recurrence) = patch.recurrence {
         if let Some(rule) = &recurrence {
             validate_rrule(rule)?;
         }
         item.recurrence = recurrence;
+        restart_series = true;
     }
     if let Some(project_id) = patch.project_id {
         item.project_id = project_id;
     }
     item.updated_at = now;
-    write_item(conn, &item)?;
-    Ok(item)
+    write_item(&tx, &item)?;
+
+    if restart_series {
+        let start = item.recurrence.as_ref().and(item.due_at.or(item.remind_at));
+        tx.execute(
+            "UPDATE items SET recurrence_start = ?2 WHERE id = ?1",
+            params![item.id, start],
+        )?;
+    }
+
+    if let Some(tags) = &patch.tags {
+        set_item_tags(&tx, &item.id, tags)?;
+    }
+
+    // Changing project moves the card to the new project's board, or off the old
+    // project's board when cleared. Personal-board placements are left alone.
+    if item.project_id != old_project {
+        let current = current_placement_board(&tx, &item.id)?;
+        let on_project_board = match &current {
+            Some(b) => board_kind(&tx, b)? == Some(BoardKind::Project),
+            None => true,
+        };
+        if on_project_board {
+            match &item.project_id {
+                Some(p) => {
+                    if let Some(board) = project_board(&tx, p)? {
+                        let (x, y) = next_slot(&tx, &board)?;
+                        place_item(&tx, &item.id, &board, x, y)?;
+                    }
+                }
+                None => remove_placement(&tx, &item.id)?,
+            }
+        }
+    }
+    tx.commit()?;
+    require_item(conn, id)
 }
 
 fn write_item(conn: &Connection, item: &Item) -> DbResult<()> {
     let changed = conn.execute(
         "UPDATE items SET kind = ?2, title = ?3, body = ?4, status = ?5, priority = ?6, due_at = ?7, \
-         remind_at = ?8, snoozed_until = ?9, recurrence = ?10, project_id = ?11, updated_at = ?12, \
-         completed_at = ?13 WHERE id = ?1",
+         ends_at = ?8, remind_at = ?9, snoozed_until = ?10, recurrence = ?11, project_id = ?12, \
+         updated_at = ?13, completed_at = ?14 WHERE id = ?1",
         params![
             item.id,
             item.kind,
@@ -275,6 +442,7 @@ fn write_item(conn: &Connection, item: &Item) -> DbResult<()> {
             item.status,
             item.priority,
             item.due_at,
+            item.ends_at,
             item.remind_at,
             item.snoozed_until,
             item.recurrence,
@@ -298,34 +466,80 @@ pub fn delete_item(conn: &Connection, id: &str) -> DbResult<()> {
 }
 
 /// Completes an item. A recurring item logs the occurrence and advances to its
-/// next date instead of becoming `done`; an exhausted rule becomes `done`.
-pub fn complete_item(conn: &Connection, id: &str, now: DateTime<Utc>) -> DbResult<Item> {
-    let mut item = require_item(conn, id)?;
+/// next date (computed from the fixed series start in `tz`) instead of becoming
+/// `done`; an exhausted series becomes `done`. Completing a done item is a no-op.
+pub fn complete_item(conn: &Connection, id: &str, now: DateTime<Utc>, tz: Tz) -> DbResult<Item> {
+    let tx = conn.unchecked_transaction()?;
+    let mut item = require_item(&tx, id)?;
+    if item.status == Status::Done {
+        return Ok(item);
+    }
     let anchor = item.due_at.or(item.remind_at);
+    let series_start: Option<DateTime<Utc>> = tx.query_row(
+        "SELECT recurrence_start FROM items WHERE id = ?1",
+        [id],
+        |r| r.get(0),
+    )?;
 
     if let (Some(rule), Some(anchor)) = (item.recurrence.clone(), anchor)
-        && let Some(next) = next_after(&rule, anchor, now.max(anchor))?
+        && let Some(next) = next_after(&rule, series_start.unwrap_or(anchor), anchor, tz)?
     {
-        conn.execute(
+        tx.execute(
             "INSERT INTO item_occurrences (id, item_id, scheduled_at, completed_at, skipped) \
              VALUES (?1, ?2, ?3, ?4, 0)",
             params![new_id(), item.id, anchor, now],
         )?;
         let shift = next - anchor;
         item.due_at = item.due_at.map(|d| d + shift);
+        item.ends_at = item.ends_at.map(|d| d + shift);
         item.remind_at = item.remind_at.map(|d| d + shift);
         item.snoozed_until = None;
         item.updated_at = now;
-        write_item(conn, &item)?;
-        return Ok(item);
+        write_item(&tx, &item)?;
+        tx.commit()?;
+        return require_item(conn, id);
     }
 
     item.status = Status::Done;
     item.completed_at = Some(now);
     item.snoozed_until = None;
     item.updated_at = now;
-    write_item(conn, &item)?;
-    Ok(item)
+    write_item(&tx, &item)?;
+    tx.commit()?;
+    require_item(conn, id)
+}
+
+/// Copies an item (title, body, type, dates, project, tags) as a new open card,
+/// placed 24 px below-right of the original when it is on a board.
+pub fn duplicate_item(conn: &Connection, id: &str, now: DateTime<Utc>) -> DbResult<Item> {
+    let original = require_item(conn, id)?;
+    let placement: Option<(String, f64, f64)> = conn
+        .query_row(
+            "SELECT board_id, x, y FROM placements WHERE item_id = ?1",
+            [id],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .optional()?;
+    create_item(
+        conn,
+        NewItem {
+            kind: original.kind,
+            title: original.title.clone(),
+            body: original.body.clone(),
+            priority: Some(original.priority),
+            status: None,
+            due_at: original.due_at,
+            ends_at: original.ends_at,
+            remind_at: original.remind_at,
+            recurrence: original.recurrence.clone(),
+            project_id: original.project_id.clone(),
+            board_id: placement.as_ref().map(|p| p.0.clone()),
+            tags: Some(original.tags.clone()),
+            x: placement.as_ref().map(|p| p.1 + 24.0),
+            y: placement.as_ref().map(|p| p.2 + 24.0),
+        },
+        now,
+    )
 }
 
 /// Full-text search over title and body (FTS5 prefix query).
@@ -339,28 +553,18 @@ pub fn search_items(conn: &Connection, query: &str, limit: u32) -> DbResult<Vec<
     }
     let match_expr = terms.join(" ");
     let sql = format!(
-        "SELECT {} FROM items i JOIN items_fts f ON f.rowid = i.rowid \
-         WHERE items_fts MATCH ?1 ORDER BY bm25(items_fts) LIMIT ?2",
-        ITEM_COLUMNS
-            .split(", ")
-            .map(|c| format!("i.{c}"))
-            .collect::<Vec<_>>()
-            .join(", ")
+        "{SELECT_ITEM} JOIN items_fts f ON f.id = i.id \
+         WHERE items_fts MATCH ?1 ORDER BY (i.status = 'done'), bm25(items_fts) LIMIT ?2"
     );
-    let mut stmt = conn.prepare(&sql)?;
-    let rows = stmt.query_map(params![match_expr, limit], row_to_item)?;
-    Ok(rows.collect::<Result<_, _>>()?)
-}
-
-#[allow(dead_code)]
-pub fn kind_of(item: &Item) -> ItemType {
-    item.kind
+    query_items(conn, &sql, &[&match_expr, &limit])
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db;
+    use crate::db::{self, models::ItemType};
+
+    const UTC_TZ: Tz = chrono_tz::UTC;
 
     fn utc(y: i32, m: u32, d: u32, h: u32, min: u32) -> DateTime<Utc> {
         Utc.with_ymd_and_hms(y, m, d, h, min, 0).unwrap()
@@ -372,6 +576,10 @@ mod tests {
             title: title.into(),
             ..Default::default()
         }
+    }
+
+    fn ids(items: &[Item]) -> Vec<&str> {
+        items.iter().map(|i| i.id.as_str()).collect()
     }
 
     #[test]
@@ -411,13 +619,65 @@ mod tests {
     }
 
     #[test]
+    fn failed_placement_leaves_no_ghost_item() {
+        let conn = db::open_in_memory().unwrap();
+        let err = create_item(
+            &conn,
+            NewItem {
+                board_id: Some("missing-board".into()),
+                ..task("ghost")
+            },
+            Utc::now(),
+        );
+        assert!(err.is_err());
+        assert!(
+            list_items(&conn, &ItemFilter::All, true)
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn new_board_items_take_free_slots() {
+        let conn = db::open_in_memory().unwrap();
+        let board = db::boards::create_board(&conn, "B", Utc::now()).unwrap();
+        for t in ["a", "b", "c", "d", "e"] {
+            create_item(
+                &conn,
+                NewItem {
+                    board_id: Some(board.id.clone()),
+                    ..task(t)
+                },
+                Utc::now(),
+            )
+            .unwrap();
+        }
+        let mut pos: Vec<(f64, f64)> = db::placements::list_placements(&conn, &board.id)
+            .unwrap()
+            .iter()
+            .map(|p| (p.x, p.y))
+            .collect();
+        pos.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        pos.dedup();
+        assert_eq!(pos.len(), 5);
+    }
+
+    #[test]
+    fn free_slot_skips_cells_covered_by_hand_placed_cards() {
+        assert_eq!(free_slot(&[]), (SLOT_ORIGIN, SLOT_ORIGIN));
+        // A card dragged near the first cell pushes the next card to the second.
+        let (x, y) = free_slot(&[(100.0, 90.0)]);
+        assert_eq!((x, y), (SLOT_ORIGIN + SLOT_W, SLOT_ORIGIN));
+    }
+
+    #[test]
     fn list_inbox_excludes_done_and_projects() {
         let conn = db::open_in_memory().unwrap();
         let now = Utc::now();
         let project = db::projects::create_project(&conn, "P", "#79B8F5", now).unwrap();
         let a = create_item(&conn, task("inbox a"), now).unwrap();
         let b = create_item(&conn, task("done b"), now).unwrap();
-        complete_item(&conn, &b.id, now).unwrap();
+        complete_item(&conn, &b.id, now, UTC_TZ).unwrap();
         create_item(
             &conn,
             NewItem {
@@ -427,28 +687,30 @@ mod tests {
             now,
         )
         .unwrap();
-        let inbox = list_items(&conn, &ItemFilter::Inbox).unwrap();
+        let inbox = list_items(&conn, &ItemFilter::Inbox, false).unwrap();
+        assert_eq!(ids(&inbox), vec![a.id.as_str()]);
         assert_eq!(
-            inbox.iter().map(|i| i.id.as_str()).collect::<Vec<_>>(),
-            vec![a.id.as_str()]
-        );
-        assert_eq!(
-            list_items(&conn, &ItemFilter::Project(project.id.clone()))
+            list_items(&conn, &ItemFilter::Project(project.id.clone()), false)
                 .unwrap()
                 .len(),
             1
         );
         assert_eq!(
-            list_items(&conn, &ItemFilter::Board(project.board_id.clone()))
+            list_items(&conn, &ItemFilter::Board(project.board_id.clone()), false)
                 .unwrap()
                 .len(),
             1
         );
-        assert_eq!(list_items(&conn, &ItemFilter::All).unwrap().len(), 3);
+        assert_eq!(list_items(&conn, &ItemFilter::All, true).unwrap().len(), 3);
+        assert_eq!(list_items(&conn, &ItemFilter::All, false).unwrap().len(), 2);
+        assert_eq!(
+            list_items(&conn, &ItemFilter::Inbox, true).unwrap().len(),
+            2
+        );
     }
 
     #[test]
-    fn list_today_uses_local_day() {
+    fn list_today_uses_local_day_and_includes_overdue() {
         let conn = db::open_in_memory().unwrap();
         let tz: Tz = "Europe/Rome".parse().unwrap();
         // 2026-11-09 12:00 Rome = 11:00 UTC.
@@ -473,7 +735,7 @@ mod tests {
             now,
         )
         .unwrap();
-        // Reminder at 09:00 Rome today = 08:00 UTC → today even though due_at is null.
+        // Reminder at 09:00 Rome today = 08:00 UTC → today.
         let rem = create_item(
             &conn,
             NewItem {
@@ -484,15 +746,45 @@ mod tests {
             now,
         )
         .unwrap();
-        let today = list_items(&conn, &ItemFilter::Today { now, tz }).unwrap();
-        let ids: Vec<&str> = today.iter().map(|i| i.id.as_str()).collect();
-        assert_eq!(ids.len(), 2);
-        assert!(ids.contains(&late.id.as_str()));
-        assert!(ids.contains(&rem.id.as_str()));
+        // Due yesterday and still open → overdue, shown today.
+        let overdue = create_item(
+            &conn,
+            NewItem {
+                due_at: Some(utc(2026, 11, 8, 16, 0)),
+                ..task("overdue")
+            },
+            now,
+        )
+        .unwrap();
+        let today = list_items(&conn, &ItemFilter::Today { now, tz }, false).unwrap();
+        let got = ids(&today);
+        assert_eq!(got.len(), 3);
+        for id in [&late.id, &rem.id, &overdue.id] {
+            assert!(got.contains(&id.as_str()));
+        }
     }
 
     #[test]
-    fn list_upcoming_within_days() {
+    fn today_with_done_shows_items_completed_today() {
+        let conn = db::open_in_memory().unwrap();
+        let now = utc(2026, 11, 9, 11, 0);
+        let item = create_item(
+            &conn,
+            NewItem {
+                due_at: Some(utc(2026, 11, 9, 9, 0)),
+                ..task("done today")
+            },
+            now,
+        )
+        .unwrap();
+        complete_item(&conn, &item.id, now, UTC_TZ).unwrap();
+        let filter = ItemFilter::Today { now, tz: UTC_TZ };
+        assert!(list_items(&conn, &filter, false).unwrap().is_empty());
+        assert_eq!(list_items(&conn, &filter, true).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn upcoming_starts_after_today() {
         let conn = db::open_in_memory().unwrap();
         let now = utc(2026, 11, 9, 11, 0);
         let soon = create_item(
@@ -504,29 +796,23 @@ mod tests {
             now,
         )
         .unwrap();
-        create_item(
-            &conn,
-            NewItem {
-                due_at: Some(utc(2026, 11, 30, 9, 0)),
-                ..task("far")
-            },
-            now,
-        )
-        .unwrap();
-        create_item(
-            &conn,
-            NewItem {
-                due_at: Some(utc(2026, 11, 1, 9, 0)),
-                ..task("past")
-            },
-            now,
-        )
-        .unwrap();
-        let up = list_items(&conn, &ItemFilter::Upcoming { now, days: 7 }).unwrap();
-        assert_eq!(
-            up.iter().map(|i| i.id.as_str()).collect::<Vec<_>>(),
-            vec![soon.id.as_str()]
-        );
+        for (t, d) in [
+            ("later today", utc(2026, 11, 9, 18, 0)),
+            ("far", utc(2026, 11, 30, 9, 0)),
+            ("past", utc(2026, 11, 1, 9, 0)),
+        ] {
+            create_item(
+                &conn,
+                NewItem {
+                    due_at: Some(d),
+                    ..task(t)
+                },
+                now,
+            )
+            .unwrap();
+        }
+        let up = list_items(&conn, &upcoming_filter(now, UTC_TZ, 7), false).unwrap();
+        assert_eq!(ids(&up), vec![soon.id.as_str()]);
     }
 
     #[test]
@@ -545,24 +831,68 @@ mod tests {
         .unwrap();
         let later = now + Duration::minutes(5);
         let patch: ItemPatch =
-            serde_json::from_str(r#"{"title":"New title","dueAt":null}"#).unwrap();
-        let updated = update_item(&conn, &item.id, patch, later).unwrap();
+            serde_json::from_str(r#"{"title":"New title","dueAt":null,"tags":["x"]}"#).unwrap();
+        let updated = update_item(&conn, &item.id, patch, later, UTC_TZ).unwrap();
         assert_eq!(updated.title, "New title");
         assert_eq!(updated.body.as_deref(), Some("keep me"));
         assert_eq!(updated.due_at, None);
+        assert_eq!(updated.tags, vec!["x".to_string()]);
         assert_eq!(updated.updated_at, later);
         assert_eq!(updated.created_at, now);
     }
 
     #[test]
-    fn complete_sets_done_and_completed_at() {
+    fn changing_project_moves_board_placement() {
+        let conn = db::open_in_memory().unwrap();
+        let now = Utc::now();
+        let a = db::projects::create_project(&conn, "A", "#79B8F5", now).unwrap();
+        let b = db::projects::create_project(&conn, "B", "#78DCC0", now).unwrap();
+        let item = create_item(
+            &conn,
+            NewItem {
+                project_id: Some(a.id.clone()),
+                ..task("moving")
+            },
+            now,
+        )
+        .unwrap();
+        let to_b = ItemPatch {
+            project_id: Some(Some(b.id.clone())),
+            ..Default::default()
+        };
+        update_item(&conn, &item.id, to_b, now, UTC_TZ).unwrap();
+        assert!(
+            list_items(&conn, &ItemFilter::Board(a.board_id.clone()), false)
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(
+            list_items(&conn, &ItemFilter::Board(b.board_id.clone()), false)
+                .unwrap()
+                .len(),
+            1
+        );
+        let clear = ItemPatch {
+            project_id: Some(None),
+            ..Default::default()
+        };
+        update_item(&conn, &item.id, clear, now, UTC_TZ).unwrap();
+        assert_eq!(
+            ids(&list_items(&conn, &ItemFilter::Inbox, false).unwrap()),
+            vec![item.id.as_str()]
+        );
+    }
+
+    #[test]
+    fn complete_sets_done_and_is_idempotent() {
         let conn = db::open_in_memory().unwrap();
         let now = utc(2026, 11, 9, 11, 0);
         let item = create_item(&conn, task("Do it"), now).unwrap();
-        let done = complete_item(&conn, &item.id, now).unwrap();
+        let done = complete_item(&conn, &item.id, now, UTC_TZ).unwrap();
         assert_eq!(done.status, Status::Done);
         assert_eq!(done.completed_at, Some(now));
-        assert!(list_items(&conn, &ItemFilter::Inbox).unwrap().is_empty());
+        let again = complete_item(&conn, &item.id, now + Duration::hours(1), UTC_TZ).unwrap();
+        assert_eq!(again.completed_at, Some(now));
     }
 
     #[test]
@@ -580,8 +910,7 @@ mod tests {
             due,
         )
         .unwrap();
-        let now = utc(2026, 11, 9, 10, 0);
-        let next = complete_item(&conn, &item.id, now).unwrap();
+        let next = complete_item(&conn, &item.id, utc(2026, 11, 9, 10, 0), UTC_TZ).unwrap();
         assert_eq!(next.status, Status::Inbox);
         assert_eq!(next.due_at, Some(utc(2026, 11, 16, 9, 0)));
         assert_eq!(next.remind_at, Some(utc(2026, 11, 16, 8, 0)));
@@ -594,6 +923,28 @@ mod tests {
             )
             .unwrap();
         assert_eq!(occ, 1);
+    }
+
+    #[test]
+    fn complete_recurring_count_three_ends_after_three() {
+        let conn = db::open_in_memory().unwrap();
+        let due = utc(2026, 11, 9, 9, 0);
+        let item = create_item(
+            &conn,
+            NewItem {
+                due_at: Some(due),
+                recurrence: Some("FREQ=DAILY;COUNT=3".into()),
+                ..task("Three times")
+            },
+            due,
+        )
+        .unwrap();
+        let first = complete_item(&conn, &item.id, due, UTC_TZ).unwrap();
+        assert_eq!(first.due_at, Some(utc(2026, 11, 10, 9, 0)));
+        let second = complete_item(&conn, &item.id, due, UTC_TZ).unwrap();
+        assert_eq!(second.due_at, Some(utc(2026, 11, 11, 9, 0)));
+        let third = complete_item(&conn, &item.id, due, UTC_TZ).unwrap();
+        assert_eq!(third.status, Status::Done);
     }
 
     #[test]
@@ -610,9 +961,32 @@ mod tests {
             due,
         )
         .unwrap();
-        let done = complete_item(&conn, &item.id, utc(2026, 11, 9, 10, 0)).unwrap();
+        let done = complete_item(&conn, &item.id, utc(2026, 11, 9, 10, 0), UTC_TZ).unwrap();
         assert_eq!(done.status, Status::Done);
         assert!(done.completed_at.is_some());
+    }
+
+    #[test]
+    fn status_done_patch_advances_recurring_item() {
+        let conn = db::open_in_memory().unwrap();
+        let due = utc(2026, 11, 9, 9, 0);
+        let item = create_item(
+            &conn,
+            NewItem {
+                due_at: Some(due),
+                recurrence: Some("FREQ=DAILY".into()),
+                ..task("Daily")
+            },
+            due,
+        )
+        .unwrap();
+        let patch = ItemPatch {
+            status: Some(Status::Done),
+            ..Default::default()
+        };
+        let next = update_item(&conn, &item.id, patch, due, UTC_TZ).unwrap();
+        assert_eq!(next.status, Status::Inbox);
+        assert_eq!(next.due_at, Some(utc(2026, 11, 10, 9, 0)));
     }
 
     #[test]
@@ -662,7 +1036,33 @@ mod tests {
     }
 
     #[test]
-    fn fts_finds_by_body_word() {
+    fn duplicate_copies_fields_and_offsets_position() {
+        let conn = db::open_in_memory().unwrap();
+        let now = Utc::now();
+        let board = db::boards::create_board(&conn, "B", now).unwrap();
+        let item = create_item(
+            &conn,
+            NewItem {
+                board_id: Some(board.id.clone()),
+                x: Some(100.0),
+                y: Some(100.0),
+                tags: Some(vec!["x".into()]),
+                ..task("copy me")
+            },
+            now,
+        )
+        .unwrap();
+        let copy = duplicate_item(&conn, &item.id, now).unwrap();
+        assert_ne!(copy.id, item.id);
+        assert_eq!(copy.title, "copy me");
+        assert_eq!(copy.tags, vec!["x".to_string()]);
+        let placements = db::placements::list_placements(&conn, &board.id).unwrap();
+        let p = placements.iter().find(|p| p.item_id == copy.id).unwrap();
+        assert_eq!((p.x, p.y), (124.0, 124.0));
+    }
+
+    #[test]
+    fn fts_finds_by_body_word_and_follows_updates() {
         let conn = db::open_in_memory().unwrap();
         let now = Utc::now();
         let hit = create_item(
@@ -676,21 +1076,27 @@ mod tests {
         )
         .unwrap();
         create_item(&conn, task("Unrelated"), now).unwrap();
-        let found = search_items(&conn, "remind", 10).unwrap();
         assert_eq!(
-            found.iter().map(|i| i.id.as_str()).collect::<Vec<_>>(),
+            ids(&search_items(&conn, "remind", 10).unwrap()),
             vec![hit.id.as_str()]
         );
         assert!(search_items(&conn, "", 10).unwrap().is_empty());
+        let patch = ItemPatch {
+            title: Some("Giulia".into()),
+            ..Default::default()
+        };
+        update_item(&conn, &hit.id, patch, now, UTC_TZ).unwrap();
+        assert_eq!(search_items(&conn, "giul", 10).unwrap().len(), 1);
+        delete_item(&conn, &hit.id).unwrap();
+        assert!(search_items(&conn, "giul", 10).unwrap().is_empty());
     }
 
     #[test]
-    fn counts_by_project() {
+    fn counts_and_progress_by_project() {
         let conn = db::open_in_memory().unwrap();
         let now = utc(2026, 11, 9, 11, 0);
-        let tz: Tz = "Europe/Rome".parse().unwrap();
         let p = db::projects::create_project(&conn, "P", "#79B8F5", now).unwrap();
-        create_item(
+        let a = create_item(
             &conn,
             NewItem {
                 project_id: Some(p.id.clone()),
@@ -717,9 +1123,20 @@ mod tests {
             now,
         )
         .unwrap();
-        let c = counts(&conn, now, tz).unwrap();
-        assert_eq!(c.by_project.get(&p.id), Some(&2));
+        complete_item(&conn, &a.id, now, UTC_TZ).unwrap();
+        let c = counts(&conn, now, UTC_TZ).unwrap();
+        assert_eq!(c.by_project.get(&p.id), Some(&1));
         assert_eq!(c.ideas, 1);
         assert_eq!(c.inbox, 1);
+        let progress = project_progress(&conn).unwrap();
+        assert_eq!(progress.get(&p.id), Some(&Progress { done: 1, total: 2 }));
+    }
+
+    #[test]
+    fn local_midnight_steps_over_dst_gap() {
+        // Santiago starts DST at 00:00 on 2026-09-06 (00:00 → 01:00).
+        let tz: Tz = "America/Santiago".parse().unwrap();
+        let date = NaiveDate::from_ymd_opt(2026, 9, 6).unwrap();
+        assert!(local_midnight(date, tz).is_some());
     }
 }

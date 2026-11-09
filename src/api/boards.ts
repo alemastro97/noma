@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Board, Placement } from "./types";
+import type { Board, Link, Placement } from "./types";
 
 export function listBoards(): Promise<Board[]> {
   return invoke<Board[]>("boards_list");
@@ -20,4 +20,16 @@ export function setPlacement(
   y: number,
 ): Promise<Placement> {
   return invoke<Placement>("placements_set", { itemId, boardId, x, y });
+}
+
+export function listLinks(boardId: string): Promise<Link[]> {
+  return invoke<Link[]>("links_list", { boardId });
+}
+
+export function createLink(fromItem: string, toItem: string): Promise<Link> {
+  return invoke<Link>("links_create", { fromItem, toItem });
+}
+
+export function deleteLink(id: string): Promise<void> {
+  return invoke<void>("links_delete", { id });
 }

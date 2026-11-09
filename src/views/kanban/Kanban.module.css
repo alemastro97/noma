@@ -1,0 +1,115 @@
+.board {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--noma-bg);
+}
+
+.column {
+  flex: 1 0 240px;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: var(--noma-radius-panel);
+  background: var(--noma-bg-2);
+  border: 1px solid transparent;
+  transition:
+    border-color var(--noma-fast) ease,
+    background var(--noma-fast) ease;
+}
+[data-theme="light"] .column {
+  background: var(--noma-bg-2);
+}
+.column[data-over] {
+  border-color: var(--noma-lavender);
+  background: rgba(167, 139, 250, 0.06);
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 10px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--noma-text-2);
+}
+.dot[data-status="next"] {
+  background: var(--noma-lavender);
+}
+.dot[data-status="doing"] {
+  background: var(--noma-reminder);
+}
+.dot[data-status="done"] {
+  background: var(--noma-done);
+}
+
+.columnTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.count {
+  margin-left: auto;
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+
+.cards {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px 10px 12px;
+}
+
+.draggable {
+  cursor: grab;
+}
+.draggable[data-dragging] {
+  opacity: 0.4;
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px dashed var(--noma-border);
+  background: transparent;
+  color: var(--noma-text-2);
+  font-size: 13px;
+  transition:
+    color var(--noma-fast) ease,
+    border-color var(--noma-fast) ease;
+}
+.add:hover {
+  color: var(--noma-text);
+  border-color: var(--noma-border-hover);
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}

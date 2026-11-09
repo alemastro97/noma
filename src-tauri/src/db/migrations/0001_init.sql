@@ -1,4 +1,6 @@
--- NOMA schema v1. Timestamps are RFC 3339 text in UTC. Ids are UUID v7 text.
+-- NOMA schema v1. Timestamps are written by rusqlite's chrono ToSql as
+-- "YYYY-MM-DD HH:MM:SS[.f]+00:00" (UTC); always bind through ToSql, never compare
+-- against hand-written literals. Ids are UUID v7 text.
 
 CREATE TABLE IF NOT EXISTS schema_version (
   version INTEGER NOT NULL

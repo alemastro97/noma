@@ -187,3 +187,56 @@
   font-size: 12px;
   color: var(--noma-text-2);
 }
+
+.sectionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 4px;
+}
+.sectionRow .section {
+  padding-bottom: 6px;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+  opacity: 0;
+  transition:
+    opacity var(--noma-fast) ease,
+    background var(--noma-fast) ease;
+}
+.group:hover .addBtn,
+.addBtn:focus-visible {
+  opacity: 1;
+}
+.addBtn:hover {
+  background: var(--noma-surface);
+  color: var(--noma-text);
+}
+
+.nav[data-creating] {
+  background: var(--noma-surface);
+  box-shadow: 0 0 0 1px var(--noma-border-hover);
+}
+
+.createInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--noma-text);
+  font-size: 14px;
+}
+.createInput::placeholder {
+  color: var(--noma-text-2);
+}

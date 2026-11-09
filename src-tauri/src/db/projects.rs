@@ -26,7 +26,8 @@ pub fn create_project(
     if name.is_empty() {
         return Err(DbError::Invalid("project name must not be blank".into()));
     }
-    let board = insert_board(conn, name, BoardKind::Project, now)?;
+    let tx = conn.unchecked_transaction()?;
+    let board = insert_board(&tx, name, BoardKind::Project, now)?;
     let project = Project {
         id: new_id(),
         name: name.to_string(),
@@ -34,7 +35,7 @@ pub fn create_project(
         board_id: board.id,
         created_at: now,
     };
-    conn.execute(
+    tx.execute(
         "INSERT INTO projects (id, name, color, board_id, created_at) VALUES (?1, ?2, ?3, ?4, ?5)",
         params![
             project.id,
@@ -44,6 +45,7 @@ pub fn create_project(
             project.created_at
         ],
     )?;
+    tx.commit()?;
     Ok(project)
 }
 

@@ -1,0 +1,237 @@
+.panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  width: 400px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--noma-surface);
+  border-left: 1px solid var(--noma-border);
+  box-shadow: -20px 0 48px rgba(0, 0, 0, 0.3);
+  animation: slide 240ms var(--noma-ease) both;
+}
+[data-theme="light"] .panel {
+  box-shadow: -12px 0 40px rgba(36, 33, 45, 0.08);
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 6px 22px;
+}
+
+.headerKind {
+  font-size: 12px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 2px;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.iconBtn:hover {
+  background: var(--noma-surface-elevated);
+  color: var(--noma-text);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 22px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.body > * {
+  flex-shrink: 0;
+}
+
+.kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kindBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--noma-border);
+  background: transparent;
+  color: var(--noma-text-2);
+  font-size: 12px;
+  transition:
+    color var(--noma-fast) ease,
+    border-color var(--noma-fast) ease;
+}
+.kindBtn:hover {
+  color: var(--noma-text);
+}
+
+.title {
+  resize: none;
+  overflow: hidden;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--noma-text);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.title[data-idea] {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.notes {
+  min-height: 96px;
+  resize: vertical;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  padding: 10px 12px;
+  background: var(--noma-bg-2);
+  color: var(--noma-text);
+  font-size: 14px;
+  line-height: 1.6;
+  outline: none;
+}
+.notes:focus {
+  border-color: var(--noma-border-hover);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+
+.input {
+  height: 36px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  padding: 0 10px;
+  background: var(--noma-bg-2);
+  color: var(--noma-text);
+  font-size: 13px;
+  outline: none;
+  color-scheme: inherit;
+}
+.input:focus {
+  border-color: var(--noma-border-hover);
+}
+.input:disabled {
+  opacity: 0.5;
+}
+
+.dateRow {
+  display: flex;
+  gap: 6px;
+}
+
+.clear {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  background: transparent;
+  color: var(--noma-text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.clear:hover {
+  color: var(--noma-text);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  background: var(--noma-bg-2);
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--noma-text-2);
+  padding: 2px 4px 2px 8px;
+  border-radius: 6px;
+  background: var(--noma-surface-elevated);
+}
+.tagChip button {
+  display: inline-flex;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 2px;
+}
+
+.tagInput {
+  flex: 1;
+  min-width: 80px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13px;
+  color: var(--noma-text);
+}
+
+.footnote {
+  margin: 4px 0 0;
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+}

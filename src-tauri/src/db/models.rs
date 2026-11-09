@@ -70,6 +70,13 @@ str_enum!(BoardKind {
     Personal => "personal",
 });
 
+#[allow(clippy::derivable_impls)]
+impl Default for ItemType {
+    fn default() -> Self {
+        ItemType::Task
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Item {
@@ -80,6 +87,7 @@ pub struct Item {
     pub status: Status,
     pub priority: Priority,
     pub due_at: Option<DateTime<Utc>>,
+    pub ends_at: Option<DateTime<Utc>>,
     pub remind_at: Option<DateTime<Utc>>,
     pub snoozed_until: Option<DateTime<Utc>>,
     pub recurrence: Option<String>,
@@ -87,6 +95,12 @@ pub struct Item {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub completed_at: Option<DateTime<Utc>>,
+    /// Tag names (without '#'), sorted.
+    #[serde(default)]
+    pub tags: Vec<String>,
+    /// Number of connections touching this item.
+    #[serde(default)]
+    pub link_count: u32,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Default)]
@@ -99,7 +113,11 @@ pub struct NewItem {
     #[serde(default)]
     pub priority: Option<Priority>,
     #[serde(default)]
+    pub status: Option<Status>,
+    #[serde(default)]
     pub due_at: Option<DateTime<Utc>>,
+    #[serde(default)]
+    pub ends_at: Option<DateTime<Utc>>,
     #[serde(default)]
     pub remind_at: Option<DateTime<Utc>>,
     #[serde(default)]
@@ -108,13 +126,13 @@ pub struct NewItem {
     pub project_id: Option<String>,
     #[serde(default)]
     pub board_id: Option<String>,
-}
-
-#[allow(clippy::derivable_impls)]
-impl Default for ItemType {
-    fn default() -> Self {
-        ItemType::Task
-    }
+    #[serde(default)]
+    pub tags: Option<Vec<String>>,
+    /// Canvas position on `board_id` (or the project's board). Auto-slot when absent.
+    #[serde(default)]
+    pub x: Option<f64>,
+    #[serde(default)]
+    pub y: Option<f64>,
 }
 
 /// Deserializes a field so that an absent key is `None` (leave alone) while an
@@ -145,6 +163,8 @@ pub struct ItemPatch {
     #[serde(default, deserialize_with = "double_option")]
     pub due_at: Option<Option<DateTime<Utc>>>,
     #[serde(default, deserialize_with = "double_option")]
+    pub ends_at: Option<Option<DateTime<Utc>>>,
+    #[serde(default, deserialize_with = "double_option")]
     pub remind_at: Option<Option<DateTime<Utc>>>,
     #[serde(default, deserialize_with = "double_option")]
     pub snoozed_until: Option<Option<DateTime<Utc>>>,
@@ -152,6 +172,8 @@ pub struct ItemPatch {
     pub recurrence: Option<Option<String>>,
     #[serde(default, deserialize_with = "double_option")]
     pub project_id: Option<Option<String>>,
+    #[serde(default)]
+    pub tags: Option<Vec<String>>,
 }
 
 /// Which items to list. `now`/`tz` are supplied by the caller (the command
@@ -189,6 +211,13 @@ pub struct Project {
     pub created_at: DateTime<Utc>,
 }
 
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Progress {
+    pub done: u32,
+    pub total: u32,
+}
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Board {
@@ -205,6 +234,17 @@ pub struct Placement {
     pub board_id: String,
     pub x: f64,
     pub y: f64,
+}
+
+/// A connection between two items (shown as an edge on the canvas).
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Link {
+    pub id: String,
+    pub from_item: String,
+    pub to_item: String,
+    pub label: Option<String>,
+    pub created_at: DateTime<Utc>,
 }
 
 pub fn new_id() -> String {

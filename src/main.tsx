@@ -6,8 +6,18 @@ import "./styles/global.css";
 
 initTheme();
 
-createRoot(document.getElementById("root") as HTMLElement).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+async function boot() {
+  // Plain-browser development (no Tauri shell): use the in-memory mock backend.
+  if (import.meta.env.DEV && !("__TAURI_INTERNALS__" in window)) {
+    const { installMockBackend } = await import("./dev/mockBackend");
+    installMockBackend();
+  }
+}
+
+void boot().then(() =>
+  createRoot(document.getElementById("root") as HTMLElement).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  ),
 );

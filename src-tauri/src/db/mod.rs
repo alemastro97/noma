@@ -4,11 +4,15 @@
 pub mod boards;
 pub mod error;
 pub mod items;
+pub mod links;
 pub mod migrations;
 pub mod models;
 pub mod placements;
 pub mod projects;
 pub mod recurrence;
+#[cfg(debug_assertions)]
+pub mod seed;
+pub mod tags;
 
 use std::path::Path;
 

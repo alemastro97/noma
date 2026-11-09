@@ -4,6 +4,16 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+## 0.1.0 — Workspace & views (2026-11-09)
+
+- Card system: task, reminder, note, idea, project and event cards with default, hover, selected and completed states and hover actions (open, duplicate, delete).
+- Canvas view: free-positioned cards with persisted positions, pan/zoom, dashed animated connections made by dragging between cards, double-click to add a card in place; only visible cards render (60 fps with 500 cards).
+- List view grouped by part of day (Today) or by date, with a Checked section; Kanban view with drag between Inbox, Next, Doing and Done.
+- Detail panel to edit every field, including repeat presets, project and tags.
+- Quick add (⌘N / N / Capture), ⌘K command palette with full-text search, keyboard shortcuts on the selected card, undoable delete.
+- Create projects and personal boards from the sidebar; project cards show progress.
+- Fixes from the Phase 0 review: recurring COUNT and local time zone, theme following the OS after switching to "system", out-of-order list loads, atomic multi-step writes, moving cards between projects, overdue items in Today, NOMA starting even when ⌥ Space is taken, VACUUM-safe search index; commands no longer block the UI thread.
+
 ## 0.0.1 — Foundation (2026-11-09)
 
 - Design document, Phase 0 plan, design handoff, spec index and ADRs.

@@ -1,0 +1,81 @@
+.stack {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 60;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 8px 0 16px;
+  border-radius: 12px;
+  background: var(--noma-surface-elevated);
+  border: 1px solid var(--noma-border);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  color: var(--noma-text);
+  animation: rise 220ms var(--noma-ease) both;
+}
+[data-theme="light"] .toast {
+  background: var(--noma-surface);
+  box-shadow: 0 14px 40px rgba(36, 33, 45, 0.14);
+}
+.toast[data-tone="error"] {
+  border-color: rgba(242, 140, 145, 0.5);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.message {
+  max-width: 420px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.action {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-pale);
+  font-size: 13px;
+  font-weight: 500;
+}
+[data-theme="light"] .action {
+  color: var(--noma-lavender);
+}
+.action:hover {
+  background: var(--noma-surface);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.close:hover {
+  color: var(--noma-text);
+}

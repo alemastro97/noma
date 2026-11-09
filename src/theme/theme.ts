@@ -37,19 +37,25 @@ export function setTheme(theme: Theme): void {
 }
 
 /**
- * Applies the saved theme and keeps following the OS while the theme is "system".
- * Returns an unsubscribe function.
+ * Applies the saved theme and keeps it current: follows the OS whenever the
+ * saved theme is "system" (even if chosen later), and follows changes made in
+ * other windows (the orb window shares localStorage). Returns an unsubscribe.
  */
 export function initTheme(): () => void {
-  const theme = readTheme();
-  applyTheme(theme);
-  if (theme !== "system" || typeof window === "undefined" || !window.matchMedia) {
-    return () => undefined;
-  }
-  const mql = window.matchMedia(LIGHT_QUERY);
-  const onChange = () => {
+  applyTheme(readTheme());
+  if (typeof window === "undefined") return () => undefined;
+
+  const mql = window.matchMedia?.(LIGHT_QUERY);
+  const onSystemChange = () => {
     if (readTheme() === "system") applyTheme("system");
   };
-  mql.addEventListener("change", onChange);
-  return () => mql.removeEventListener("change", onChange);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === THEME_STORAGE_KEY) applyTheme(readTheme());
+  };
+  mql?.addEventListener("change", onSystemChange);
+  window.addEventListener("storage", onStorage);
+  return () => {
+    mql?.removeEventListener("change", onSystemChange);
+    window.removeEventListener("storage", onStorage);
+  };
 }

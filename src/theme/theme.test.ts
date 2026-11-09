@@ -59,6 +59,15 @@ test("setTheme persists to localStorage key noma.theme", () => {
   expect(document.documentElement.dataset.theme).toBe("light");
 });
 
+test("switching to system later still tracks the OS", () => {
+  const media = mockMatchMedia(false);
+  localStorage.setItem(THEME_STORAGE_KEY, "dark");
+  initTheme();
+  setTheme("system");
+  media.flip(true);
+  expect(document.documentElement.dataset.theme).toBe("light");
+});
+
 test("initTheme reads the saved theme", () => {
   mockMatchMedia(false);
   localStorage.setItem(THEME_STORAGE_KEY, "light");

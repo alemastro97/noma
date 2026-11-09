@@ -1,0 +1,411 @@
+/* One shell — radius 14, padding 16/18, 1 px border, soft lift (design/screens/Cards.html). */
+.card {
+  position: relative;
+  box-sizing: border-box;
+  border-radius: var(--noma-radius-card);
+  background: var(--noma-surface);
+  border: 1px solid var(--noma-border-card);
+  box-shadow: var(--noma-shadow-card);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--noma-text);
+  cursor: default;
+  transition:
+    transform var(--noma-base) var(--noma-ease),
+    border-color var(--noma-base) ease,
+    box-shadow var(--noma-base) ease,
+    background var(--noma-base) ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--noma-border-hover);
+}
+
+[data-theme="light"] .card {
+  box-shadow:
+    0 1px 2px rgba(36, 33, 45, 0.05),
+    0 8px 24px rgba(36, 33, 45, 0.06);
+}
+
+/* Widths on the canvas follow the mockup per type. */
+.card[data-variant="canvas"] {
+  width: 260px;
+}
+.card[data-variant="canvas"][data-kind="note"],
+.card[data-variant="canvas"][data-kind="project_ref"] {
+  width: 290px;
+}
+.card[data-variant="canvas"][data-kind="idea"],
+.card[data-variant="canvas"][data-kind="event"] {
+  width: 240px;
+}
+.card[data-variant="board"] {
+  width: 100%;
+}
+.card[data-variant="compact"] {
+  padding: 14px 16px;
+  gap: 10px;
+}
+
+/* Type tints: a hairline border and, for ideas and notes, a quiet surface. */
+.card[data-kind="reminder"] {
+  border-color: var(--noma-border-reminder);
+}
+.card[data-kind="project_ref"] {
+  border-color: var(--noma-border-project);
+}
+.card[data-kind="idea"] {
+  border-color: var(--noma-border-idea);
+  background:
+    radial-gradient(260px 160px at 0% 0%, rgba(221, 161, 197, 0.14), transparent 70%),
+    var(--noma-surface);
+}
+.card[data-kind="note"] {
+  /* "Paper" tone from the handoff. */
+  background: linear-gradient(#211f29, #1d1c24);
+  border-color: #33303d;
+}
+[data-theme="light"] .card[data-kind="note"] {
+  background: linear-gradient(#ffffff, #fbfaf7);
+  border-color: var(--noma-border-card);
+}
+[data-theme="light"] .card[data-kind="reminder"] {
+  border-color: #f0dcbc;
+}
+[data-theme="light"] .card[data-kind="project_ref"] {
+  border-color: #cfe2f5;
+}
+[data-theme="light"] .card[data-kind="idea"] {
+  border-color: #efd4e4;
+}
+
+.card:hover[data-kind] {
+  border-color: var(--noma-border-hover);
+}
+
+.card[data-selected] {
+  border-color: var(--noma-lavender);
+  box-shadow:
+    0 0 0 4px rgba(167, 139, 250, 0.14),
+    var(--noma-shadow-card);
+}
+
+.card[data-done] {
+  background: #191820;
+  box-shadow: none;
+}
+[data-theme="light"] .card[data-done] {
+  background: var(--noma-bg-2);
+}
+.card[data-done] .title,
+.card[data-done] .ideaTitle {
+  color: var(--noma-text-2);
+  text-decoration: line-through;
+}
+
+.card[data-fresh] {
+  border-color: #6b57b8;
+  box-shadow:
+    0 0 0 4px rgba(167, 139, 250, 0.12),
+    0 14px 40px rgba(0, 0, 0, 0.35);
+  animation: appear 280ms var(--noma-ease) both;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Typography ─────────────────────────────────────── */
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.title[data-size="note"] {
+  font-size: 16px;
+}
+.title[data-size="project"] {
+  font-size: 17px;
+}
+
+.ideaTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.card[data-variant="board"] .ideaTitle,
+.card[data-variant="compact"] .ideaTitle {
+  font-size: 17px;
+}
+
+.preview {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #b9b3c7;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+}
+[data-theme="light"] .preview {
+  color: var(--noma-text-2);
+}
+.previewShort {
+  margin: -4px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--noma-text-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.kind {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+.kindExtra {
+  color: var(--noma-text-2);
+}
+.repeat {
+  display: inline-flex;
+  margin-left: 2px;
+  opacity: 0.85;
+}
+
+.meta {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+.meta[data-overdue="true"] {
+  color: var(--noma-urgent);
+}
+
+.tag {
+  font-size: 12px;
+  color: var(--noma-text-2);
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--noma-surface-elevated);
+  white-space: nowrap;
+}
+[data-theme="light"] .tag {
+  background: #f1eef6;
+  color: #5f5a6b;
+}
+
+.priority {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--noma-urgent);
+}
+[data-theme="light"] .priority {
+  color: var(--noma-urgent-text);
+}
+
+.remindChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--noma-reminder);
+}
+[data-theme="light"] .remindChip {
+  color: var(--noma-reminder-text);
+}
+
+/* ── Layout helpers ─────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.spread {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.taskRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.taskRow .title {
+  padding-right: 4px;
+}
+
+.reminderTime {
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--noma-reminder);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+[data-theme="light"] .reminderTime {
+  color: var(--noma-reminder-text);
+}
+.card[data-variant="board"] .reminderTime,
+.card[data-variant="compact"] .reminderTime {
+  font-size: 20px;
+}
+.card[data-done] .reminderTime {
+  color: var(--noma-text-2);
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.progressTrack {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--noma-surface-elevated);
+  overflow: hidden;
+}
+[data-theme="light"] .progressTrack {
+  background: var(--noma-border);
+}
+.progressFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width var(--noma-slow) var(--noma-ease);
+}
+
+.eventRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.dateBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 52px;
+  padding: 8px 0;
+  border-radius: 11px;
+  background: var(--noma-surface-elevated);
+  flex: none;
+}
+[data-theme="light"] .dateBlock {
+  background: var(--noma-bg-2);
+}
+.dateWeekday {
+  font-size: 11px;
+  color: var(--noma-text-2);
+  letter-spacing: 0.06em;
+}
+.dateDay {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+.eventDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* ── Checkbox ───────────────────────────────────────── */
+.checkbox {
+  flex: none;
+  margin-top: 2px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1.5px solid var(--noma-lavender);
+  background: transparent;
+  color: var(--noma-bg);
+  transition:
+    background var(--noma-fast) ease,
+    border-color var(--noma-fast) ease,
+    transform var(--noma-fast) var(--noma-ease);
+}
+.checkbox:hover {
+  background: rgba(167, 139, 250, 0.12);
+}
+.checkbox:active {
+  transform: scale(0.9);
+}
+.checkbox[data-checked="true"] {
+  background: var(--noma-done);
+  border-color: var(--noma-done);
+}
+[data-theme="light"] .checkbox[data-checked="true"] {
+  background: var(--noma-done-fill);
+  border-color: var(--noma-done-fill);
+  color: #ffffff;
+}
+
+/* ── Hover actions ──────────────────────────────────── */
+.actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--noma-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--noma-fast) ease;
+}
+.card:hover .actions,
+.card[data-selected] .actions,
+.card:focus-within .actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.act:hover {
+  background: var(--noma-surface-elevated);
+  color: var(--noma-text);
+}

@@ -5,10 +5,13 @@ import {
   LayoutGrid,
   Lightbulb,
   PanelLeft,
+  Plus,
   SlidersHorizontal,
   Sun,
 } from "lucide-react";
-import { copy } from "../../copy";
+import { useEffect, useRef, useState } from "react";
+import { copy, sidebarCopy } from "../../copy";
+import { nextProjectColor } from "../../lib/colors";
 import { useHotkey } from "../../hooks/useHotkey";
 import { useItemsStore } from "../../stores/items";
 import { personalBoards, useProjectsStore } from "../../stores/projects";
@@ -49,6 +52,84 @@ const MAIN_NAV: {
   },
 ];
 
+function SectionHeader({
+  label,
+  addLabel,
+  onAdd,
+}: {
+  label: string;
+  addLabel: string;
+  onAdd: () => void;
+}) {
+  return (
+    <div className={styles.sectionRow}>
+      <span className={styles.section}>{label}</span>
+      <button
+        type="button"
+        className={styles.addBtn}
+        aria-label={addLabel}
+        title={addLabel}
+        onClick={onAdd}
+      >
+        <Plus size={14} strokeWidth={1.75} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function InlineCreate({
+  placeholder,
+  dot,
+  icon,
+  onSubmit,
+  onDone,
+}: {
+  placeholder: string;
+  dot?: string;
+  icon?: React.ReactNode;
+  onSubmit: (name: string) => Promise<void>;
+  onDone: () => void;
+}) {
+  const [name, setName] = useState("");
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => ref.current?.focus(), []);
+  const submit = async () => {
+    const value = name.trim();
+    onDone();
+    if (value) await onSubmit(value);
+  };
+  return (
+    <div className={styles.nav} data-creating>
+      {dot ? (
+        <span className={styles.dot} style={{ background: dot }} aria-hidden="true" />
+      ) : (
+        <span className={styles.icon} aria-hidden="true">
+          {icon}
+        </span>
+      )}
+      <input
+        ref={ref}
+        className={styles.createInput}
+        placeholder={placeholder}
+        aria-label={placeholder}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={() => void submit()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            void submit();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            setName("");
+            onDone();
+          }
+        }}
+      />
+    </div>
+  );
+}
+
 export function Sidebar() {
   const counts = useItemsStore((s) => s.counts);
   const projects = useProjectsStore((s) => s.projects);
@@ -57,6 +138,10 @@ export function Sidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const setTarget = useUiStore((s) => s.setTarget);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const creating = useUiStore((s) => s.creating);
+  const setCreating = useUiStore((s) => s.setCreating);
+  const createProject = useProjectsStore((s) => s.createProject);
+  const createBoard = useProjectsStore((s) => s.createBoard);
 
   useHotkey("mod+\\", toggleSidebar);
 
@@ -93,9 +178,15 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {projects.length > 0 && (
+      {!collapsed || projects.length > 0 ? (
         <nav className={styles.group} aria-label={copy.nav.projects}>
-          {!collapsed && <span className={styles.section}>{copy.nav.projects}</span>}
+          {!collapsed && (
+            <SectionHeader
+              label={copy.nav.projects}
+              addLabel={sidebarCopy.newProject}
+              onAdd={() => setCreating("project")}
+            />
+          )}
           {projects.map((p) => (
             <NavItem
               key={p.id}
@@ -107,12 +198,29 @@ export function Sidebar() {
               onSelect={() => setTarget({ kind: "project", id: p.id })}
             />
           ))}
+          {creating === "project" && !collapsed && (
+            <InlineCreate
+              placeholder={sidebarCopy.projectPlaceholder}
+              dot={nextProjectColor(projects.length)}
+              onSubmit={async (name) => {
+                const p = await createProject(name, nextProjectColor(projects.length));
+                if (p) setTarget({ kind: "project", id: p.id });
+              }}
+              onDone={() => setCreating(null)}
+            />
+          )}
         </nav>
-      )}
+      ) : null}
 
-      {boards.length > 0 && (
+      {!collapsed || boards.length > 0 ? (
         <nav className={styles.group} aria-label={copy.nav.boards}>
-          {!collapsed && <span className={styles.section}>{copy.nav.boards}</span>}
+          {!collapsed && (
+            <SectionHeader
+              label={copy.nav.boards}
+              addLabel={sidebarCopy.newBoard}
+              onAdd={() => setCreating("board")}
+            />
+          )}
           {boards.map((b) => (
             <NavItem
               key={b.id}
@@ -123,8 +231,19 @@ export function Sidebar() {
               onSelect={() => setTarget({ kind: "board", id: b.id })}
             />
           ))}
+          {creating === "board" && !collapsed && (
+            <InlineCreate
+              placeholder={sidebarCopy.boardPlaceholder}
+              icon={<LayoutGrid {...ICON} />}
+              onSubmit={async (name) => {
+                const b = await createBoard(name);
+                if (b) setTarget({ kind: "board", id: b.id });
+              }}
+              onDone={() => setCreating(null)}
+            />
+          )}
         </nav>
-      )}
+      ) : null}
 
       <div className={styles.footer}>
         <div

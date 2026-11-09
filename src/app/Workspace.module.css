@@ -21,3 +21,11 @@
     radial-gradient(circle, var(--noma-border) 1px, transparent 1.2px),
     radial-gradient(700px 500px at 60% 40%, rgba(128, 101, 220, 0.06), transparent 70%);
 }
+
+.views {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}

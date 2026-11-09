@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Capability for the main and orb windows",
   "windows": ["main", "orb"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "core:window:allow-start-dragging"]
 }

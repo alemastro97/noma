@@ -31,11 +31,17 @@ pub fn run() {
         )
         .setup(|app| {
             let db_path = app.path().app_data_dir()?.join("noma.db");
-            let conn = db::open(&db_path)?;
+            let conn = db::open(&db_path).map_err(|e| {
+                log::error!("could not open database at {}: {e}", db_path.display());
+                e
+            })?;
             app.manage(AppState::new(conn));
 
             windows::orb::setup(app.handle());
-            app.global_shortcut().register(orb_shortcut())?;
+            // Another app may already own ⌥ Space: NOMA still starts, without the shortcut.
+            if let Err(err) = app.global_shortcut().register(orb_shortcut()) {
+                log::warn!("could not register ⌥ Space: {err}");
+            }
             if let Some(main) = app.get_webview_window("main") {
                 let _ = main.set_focus();
             }
@@ -48,14 +54,21 @@ pub fn run() {
             commands::items::items_update,
             commands::items::items_delete,
             commands::items::items_complete,
+            commands::items::items_duplicate,
             commands::items::items_counts,
             commands::items::items_search,
+            commands::items::tags_list,
+            commands::items::dev_seed,
             commands::projects::projects_list,
             commands::projects::projects_create,
+            commands::projects::projects_progress,
             commands::boards::boards_list,
             commands::boards::boards_create,
             commands::boards::placements_list,
             commands::boards::placements_set,
+            commands::boards::links_list,
+            commands::boards::links_create,
+            commands::boards::links_delete,
         ])
         .run(tauri::generate_context!())
         .expect("error while running NOMA");

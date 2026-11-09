@@ -27,3 +27,16 @@ if (!window.matchMedia) {
     }),
   });
 }
+
+if (!("ResizeObserver" in window)) {
+  class ResizeObserverStub {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  Object.defineProperty(window, "ResizeObserver", { writable: true, value: ResizeObserverStub });
+  Object.defineProperty(globalThis, "ResizeObserver", {
+    writable: true,
+    value: ResizeObserverStub,
+  });
+}

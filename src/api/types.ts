@@ -5,6 +5,10 @@ export type Status = "inbox" | "next" | "doing" | "done";
 export type Priority = "low" | "normal" | "high" | "urgent";
 export type BoardKind = "project" | "personal";
 
+export const ITEM_TYPES: ItemType[] = ["task", "reminder", "note", "idea", "event", "project_ref"];
+export const STATUSES: Status[] = ["inbox", "next", "doing", "done"];
+export const PRIORITIES: Priority[] = ["low", "normal", "high", "urgent"];
+
 /** RFC 3339 timestamp in UTC. */
 export type Iso = string;
 
@@ -16,6 +20,7 @@ export interface Item {
   status: Status;
   priority: Priority;
   dueAt: Iso | null;
+  endsAt: Iso | null;
   remindAt: Iso | null;
   snoozedUntil: Iso | null;
   recurrence: string | null;
@@ -23,6 +28,8 @@ export interface Item {
   createdAt: Iso;
   updatedAt: Iso;
   completedAt: Iso | null;
+  tags: string[];
+  linkCount: number;
 }
 
 export interface NewItem {
@@ -30,11 +37,16 @@ export interface NewItem {
   title: string;
   body?: string | null;
   priority?: Priority | null;
+  status?: Status | null;
   dueAt?: Iso | null;
+  endsAt?: Iso | null;
   remindAt?: Iso | null;
   recurrence?: string | null;
   projectId?: string | null;
   boardId?: string | null;
+  tags?: string[] | null;
+  x?: number | null;
+  y?: number | null;
 }
 
 /** Omit a key to leave it alone; send `null` to clear a nullable field. */
@@ -45,10 +57,12 @@ export interface ItemPatch {
   status?: Status;
   priority?: Priority;
   dueAt?: Iso | null;
+  endsAt?: Iso | null;
   remindAt?: Iso | null;
   snoozedUntil?: Iso | null;
   recurrence?: string | null;
   projectId?: string | null;
+  tags?: string[];
 }
 
 export type ItemFilter =
@@ -87,6 +101,11 @@ export interface Project {
   createdAt: Iso;
 }
 
+export interface Progress {
+  done: number;
+  total: number;
+}
+
 export interface Board {
   id: string;
   name: string;
@@ -99,6 +118,14 @@ export interface Placement {
   boardId: string;
   x: number;
   y: number;
+}
+
+export interface Link {
+  id: string;
+  fromItem: string;
+  toItem: string;
+  label: string | null;
+  createdAt: Iso;
 }
 
 export interface ItemsChanged {

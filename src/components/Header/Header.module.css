@@ -1,6 +1,6 @@
 .header {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 12px 20px;
   padding: 14px 24px;
@@ -17,6 +17,8 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
+  max-width: 320px;
+  flex: 0 0 auto;
 }
 
 .titleDot {
@@ -43,6 +45,7 @@
 }
 
 .switcher {
+  flex: none;
   display: flex;
   gap: 2px;
   padding: 3px;
@@ -95,6 +98,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .search {
@@ -108,8 +113,8 @@
   border: 1px solid var(--noma-surface-elevated);
   color: var(--noma-text-2);
   font-size: 13px;
-  width: 220px;
-  max-width: 100%;
+  width: clamp(120px, 18vw, 220px);
+  min-width: 0;
   transition: border-color var(--noma-fast) ease;
 }
 
@@ -199,4 +204,19 @@
 
 [data-theme="light"] .avatar {
   color: var(--noma-lavender);
+}
+
+/* Narrow windows: drop the AI label and the card count before anything wraps. */
+@media (max-width: 1240px) {
+  .aiChip span {
+    display: none;
+  }
+  .aiChip {
+    padding: 0 9px;
+  }
+}
+@media (max-width: 1120px) {
+  .titleGroup .meta {
+    display: none;
+  }
 }

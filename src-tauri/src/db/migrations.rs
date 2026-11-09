@@ -3,7 +3,10 @@ use rusqlite::Connection;
 use super::error::{DbError, DbResult};
 
 /// Ordered migrations. Each entry is applied exactly once; the index + 1 is its version.
-const MIGRATIONS: &[&str] = &[include_str!("migrations/0001_init.sql")];
+const MIGRATIONS: &[&str] = &[
+    include_str!("migrations/0001_init.sql"),
+    include_str!("migrations/0002_events_end.sql"),
+];
 
 /// Applies any pending migrations and returns the schema version afterwards.
 pub fn migrate(conn: &mut Connection) -> DbResult<u32> {
@@ -37,12 +40,12 @@ mod tests {
     #[test]
     fn migrate_is_idempotent() {
         let mut conn = db::open_in_memory().unwrap();
-        assert_eq!(db::migrate(&mut conn).unwrap(), 1);
-        assert_eq!(db::migrate(&mut conn).unwrap(), 1);
+        assert_eq!(db::migrate(&mut conn).unwrap(), 2);
+        assert_eq!(db::migrate(&mut conn).unwrap(), 2);
         let rows: u32 = conn
             .query_row("SELECT COUNT(*) FROM schema_version", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(rows, 1);
+        assert_eq!(rows, 2);
     }
 
     #[test]

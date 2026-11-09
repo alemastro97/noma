@@ -1,12 +1,19 @@
-import { useEffect } from "react";
-import type { Board, Project } from "../api/types";
+import { useEffect, useMemo } from "react";
+import type { Board, ItemFilter, Project } from "../api/types";
 import { copy } from "../copy";
+import { CommandPalette } from "../components/CommandPalette/CommandPalette";
+import { DetailPanel } from "../components/DetailPanel/DetailPanel";
 import { Header } from "../components/Header/Header";
+import { QuickAdd } from "../components/QuickAdd/QuickAdd";
 import { Sidebar } from "../components/Sidebar/Sidebar";
-import { useItemsStore } from "../stores/items";
+import { Toasts } from "../components/Toasts/Toasts";
+import { useBoardStore } from "../stores/board";
+import { flushPendingDeletes, useItemsStore } from "../stores/items";
 import { useProjectsStore } from "../stores/projects";
 import { useUiStore, type NavTarget } from "../stores/ui";
 import styles from "./App.module.css";
+import { useGlobalHotkeys } from "./useGlobalHotkeys";
+import { boardIdFor } from "./boardFor";
 import { Workspace } from "./Workspace";
 
 function titleFor(target: NavTarget, projects: Project[], boards: Board[]) {
@@ -20,39 +27,87 @@ function titleFor(target: NavTarget, projects: Project[], boards: Board[]) {
   }
 }
 
+function filterFor(target: NavTarget): ItemFilter | null {
+  switch (target.kind) {
+    case "settings":
+      return null;
+    case "upcoming":
+      return { kind: "upcoming", days: 7 };
+    default:
+      return target;
+  }
+}
+
 export function App() {
   const target = useUiStore((s) => s.target);
+  const viewMode = useUiStore((s) => s.viewMode);
   const projects = useProjectsStore((s) => s.projects);
   const boards = useProjectsStore((s) => s.boards);
-  const loadProjects = useProjectsStore((s) => s.load);
   const order = useItemsStore((s) => s.order);
-  const loadItems = useItemsStore((s) => s.load);
-  const refreshCounts = useItemsStore((s) => s.refreshCounts);
-  const subscribe = useItemsStore((s) => s.subscribe);
+  const itemsById = useItemsStore((s) => s.items);
 
+  useGlobalHotkeys();
+
+  // Initial data and backend change events. Safe under StrictMode's double effect.
   useEffect(() => {
-    void loadProjects();
-    void refreshCounts();
+    void useProjectsStore.getState().load();
+    void useItemsStore.getState().refreshCounts();
+    let cancelled = false;
     let unlisten: (() => void) | undefined;
-    void subscribe().then((fn) => (unlisten = fn));
-    return () => unlisten?.();
-  }, [loadProjects, refreshCounts, subscribe]);
+    void useItemsStore
+      .getState()
+      .subscribe()
+      .then((fn) => {
+        if (cancelled) fn();
+        else unlisten = fn;
+      });
+    window.addEventListener("beforeunload", flushPendingDeletes);
+    return () => {
+      cancelled = true;
+      unlisten?.();
+      window.removeEventListener("beforeunload", flushPendingDeletes);
+    };
+  }, []);
+
+  const filter = useMemo(() => filterFor(target), [target]);
+  const includeDone = viewMode !== "canvas";
 
   useEffect(() => {
-    if (target.kind === "settings") return;
-    void loadItems(target.kind === "upcoming" ? { kind: "upcoming", days: 7 } : target);
-  }, [target, loadItems]);
+    if (filter) void useItemsStore.getState().load(filter, { includeDone });
+  }, [filter, includeDone]);
+
+  const projectBoards = useMemo(
+    () => Object.fromEntries(projects.map((p) => [p.id, p.boardId])),
+    [projects],
+  );
+  const boardId = boardIdFor(target, projectBoards);
+  useEffect(() => {
+    void useBoardStore.getState().load(viewMode === "canvas" ? boardId : null);
+  }, [boardId, viewMode]);
 
   const color =
     target.kind === "project" ? projects.find((p) => p.id === target.id)?.color : undefined;
+  const openCount = order.filter((id) => itemsById[id] && itemsById[id].status !== "done").length;
 
   return (
     <div role="application" aria-label={copy.appName} className={styles.app}>
       <Sidebar />
       <main className={styles.main}>
-        <Header title={titleFor(target, projects, boards)} count={order.length} color={color} />
-        <Workspace target={target} />
+        <Header
+          title={titleFor(target, projects, boards)}
+          count={openCount}
+          color={color}
+          onCapture={() => useUiStore.getState().openQuickAdd()}
+          onSearch={() => useUiStore.getState().setPaletteOpen(true)}
+        />
+        <div className={styles.content}>
+          <Workspace target={target} />
+          <DetailPanel />
+        </div>
       </main>
+      <QuickAdd />
+      <CommandPalette />
+      <Toasts />
     </div>
   );
 }

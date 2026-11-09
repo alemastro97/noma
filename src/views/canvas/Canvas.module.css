@@ -1,0 +1,143 @@
+.canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background-color: var(--noma-bg);
+  /* One very faint violet glow behind the dot grid. */
+  background-image: radial-gradient(
+    700px 500px at 60% 40%,
+    rgba(109, 74, 255, 0.08),
+    transparent 70%
+  );
+}
+
+[data-theme="light"] .canvas {
+  background-image: radial-gradient(
+    700px 500px at 60% 40%,
+    rgba(128, 101, 220, 0.06),
+    transparent 70%
+  );
+}
+
+.canvas :global(.react-flow) {
+  background: transparent;
+}
+
+.canvas :global(.react-flow__node) {
+  cursor: grab;
+}
+
+.canvas :global(.react-flow__node.dragging) {
+  cursor: grabbing;
+  z-index: 10 !important;
+}
+
+.canvas :global(.react-flow__node.dragging article) {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 0 0 1px var(--noma-border-hover),
+    0 18px 44px rgba(0, 0, 0, 0.4);
+}
+
+.node {
+  position: relative;
+}
+
+/* Connection handles appear on hover only. */
+.handle {
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50%;
+  border: 2px solid var(--noma-bg) !important;
+  background: var(--noma-lavender) !important;
+  opacity: 0;
+  transition: opacity var(--noma-fast) ease;
+}
+.node:hover .handle,
+:global(.react-flow__handle.connectingfrom),
+:global(.react-flow__handle.connectingto) {
+  opacity: 1;
+}
+
+.edge {
+  stroke: var(--noma-border-hover) !important;
+  stroke-width: 1.5 !important;
+  stroke-dasharray: 4 4;
+  animation: dash 1.6s linear infinite;
+  fill: none;
+}
+.edge[data-selected] {
+  stroke: var(--noma-lavender) !important;
+  stroke-opacity: 0.9;
+}
+.edgeDot {
+  fill: var(--noma-border-hover);
+}
+.edgeDot[data-selected] {
+  fill: var(--noma-lavender);
+}
+
+:global(.react-flow__connection-path) {
+  stroke: var(--noma-lavender);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.zoom {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(30, 29, 39, 0.8);
+  border: 1px solid var(--noma-border-card);
+  backdrop-filter: blur(12px);
+}
+[data-theme="light"] .zoom {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.zoomBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.zoomBtn:hover {
+  background: var(--noma-surface-elevated);
+  color: var(--noma-text);
+}
+
+.zoomValue {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+  padding: 0 6px;
+  min-width: 44px;
+  text-align: center;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 4;
+}
