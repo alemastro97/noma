@@ -65,31 +65,56 @@ struct RawItem {
     tags: Option<Vec<String>>,
     date_phrase: Option<String>,
     confidence: Option<f64>,
+    unsure: Option<bool>,
 }
 
-pub const SYSTEM_PROMPT: &str = r#"You turn one short note that the user said or typed into structured cards for their personal organizer. Notes may be in Italian or English. Reply only with JSON that matches the schema.
+pub const SYSTEM_PROMPT: &str = r#"You turn one short note the user said or typed into cards for their personal organizer. Notes may be Italian or English. Reply with compact single-line JSON that matches the schema. Omit every optional field that does not apply.
 
-Fields of each item:
-- type: "task" (something to do), "reminder" (a nudge at a moment: "remind me", "ricordami"), "event" (an appointment or meeting at a time), "note" (information to keep), "idea" (a thought or possibility: "idea", "what if", "e se"), "project" (only when the user explicitly starts a new project).
-- title: short, in the user's language, without the date and time words, first letter capitalized, at most 80 characters.
-- body: extra details from the note that do not fit the title, otherwise null.
-- due: local time "YYYY-MM-DDTHH:MM" when a task is due or an event starts; null if no date was said.
-- end: local end time of an event; null if not said.
-- remind: local time "YYYY-MM-DDTHH:MM" to notify the user; for a reminder put the time here and leave due null.
-- repeat: "none", "daily", "weekdays", "weekly", "monthly" or "yearly".
-- priority: "urgent" only for urgent/ASAP/subito/urgente, "high" for important/importante, else "normal".
-- project: the exact name from Projects when the note clearly belongs to one, else null.
-- tags: up to 3 lowercase topic words, only when obvious; otherwise [].
-- date_phrase: the exact words that expressed the date or time, or null.
-- confidence: 0 to 1, how sure you are about type and dates.
+Fields:
+- type: "task" (something to do), "reminder" (a nudge at a moment: "remind me", "ricordami"), "event" (an appointment, meeting, lunch, flight or dinner at a time; a call the user has to make is a task), "note" (information to keep: codes, passwords, quotes, what someone said), "idea" (a thought or possibility: "idea", "what if", "maybe", "e se", "potrei"), "project" (only when the user explicitly starts a new project).
+- title: short, in the user's language, without the date and time words and without "remind me to" / "ricordami di"; first letter capitalized, the rest as normal sentence case.
+- due: when a task is due or an event starts, local "YYYY-MM-DDTHH:MM", or "YYYY-MM-DD" for a task with only a day.
+- end: the end of an event, only when said.
+- remind: when to notify, local "YYYY-MM-DDTHH:MM". Reminders use remind, never due.
+- repeat: only when the note repeats: "daily", "weekdays", "weekly", "monthly" or "yearly".
+- priority: "urgent" for urgent/ASAP/subito/urgente, "high" for important/importante; otherwise omit.
+- project: the exact name from Projects, only when the note clearly belongs to that project.
+- unsure: true only when you are unsure about the type or the date.
 
-Dates: resolve relative words against Now. "today/oggi", "tomorrow/domani", "dopodomani" = in two days. A weekday name means its next occurrence after today. "next week/la prossima settimana" = Monday of next week. Default times when only a part of day is said: morning/mattina 09:00, noon/mezzogiorno 12:00, afternoon/pomeriggio 15:00, evening/stasera/sera 20:00, tonight 20:00. A date with no time: tasks 00:00, reminders 09:00, events 09:00.
+Dates: use the Calendar line to turn weekday names into dates; never compute weekdays yourself. A day-and-month date ("3 March", "il 5") means its next occurrence after today. Resolve relative words against Now. today/oggi = Now's date; tomorrow/domani = +1 day; dopodomani/day after tomorrow = +2; a weekday name = its next occurrence after today; next week/la prossima settimana = next Monday; by the end of the week/entro la settimana = this Friday. Times when only a part of the day is said: morning/mattina 09:00, noon/mezzogiorno 12:00, afternoon/pomeriggio 15:00, evening/sera/stasera/tonight 20:00. A reminder with only a day: 09:00. An event with only a day: 09:00.
 
-Make several items only when the note clearly lists separate things (at most 3). Never invent dates, projects or details that are not in the note."#;
+Several items only when the note clearly lists separate things to do (max 3). Never invent dates, projects or details.
+
+Examples with Now 2026-11-09T10:00 (Monday), Projects: Spring launch, Studio move:
+Note: ricordami di chiamare la mamma stasera
+{"items":[{"type":"reminder","title":"Chiamare la mamma","remind":"2026-11-09T20:00"}]}
+Note: buy milk and call the plumber tomorrow morning
+{"items":[{"type":"task","title":"Buy milk","due":"2026-11-10"},{"type":"task","title":"Call the plumber","due":"2026-11-10T09:00"}]}
+Note: every Monday at 9 remind me to do the weekly review
+{"items":[{"type":"reminder","title":"Do the weekly review","remind":"2026-11-16T09:00","repeat":"weekly"}]}
+Note: call Marta at 11 about the contract
+{"items":[{"type":"task","title":"Call Marta about the contract","due":"2026-11-09T11:00"}]}
+Note: dentist Thursday at 3pm
+{"items":[{"type":"event","title":"Dentist","due":"2026-11-12T15:00"}]}
+Note: book the photographer for the spring launch shoot
+{"items":[{"type":"task","title":"Book the photographer for the shoot","project":"Spring launch"}]}
+Note: e se l'orb si attenuasse durante le riunioni?
+{"items":[{"type":"idea","title":"E se l'orb si attenuasse durante le riunioni?"}]}
+Note: il codice del portone è 4821
+{"items":[{"type":"note","title":"Codice del portone: 4821"}]}
+Note: urgente: rinnovare la carta d'identità
+{"items":[{"type":"task","title":"Rinnovare la carta d'identità","priority":"urgent"}]}
+Note: pay the internet bill on the 5th of every month
+{"items":[{"type":"task","title":"Pay the internet bill","due":"2026-12-05","repeat":"monthly"}]}
+Note: ricordami il compleanno di Luca ogni anno il 2 febbraio
+{"items":[{"type":"reminder","title":"Compleanno di Luca","remind":"2027-02-02T09:00","repeat":"yearly"}]}"#;
 
 /// JSON schema the server constrains decoding to (GBNF under the hood).
+/// Only `type` and `title` are required: every omitted field is output the
+/// model does not have to generate, which is most of the latency on a laptop.
 pub fn schema() -> Value {
-    let datetime = json!({ "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$" });
+    let datetime =
+        json!({ "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$" });
     json!({
         "type": "object",
         "properties": {
@@ -102,18 +127,15 @@ pub fn schema() -> Value {
                     "properties": {
                         "type": { "type": "string", "enum": ["task", "reminder", "event", "note", "idea", "project"] },
                         "title": { "type": "string", "minLength": 1, "maxLength": 120 },
-                        "body": { "type": ["string", "null"] },
-                        "due": datetime,
+                        "due": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2})?$" },
                         "end": datetime,
                         "remind": datetime,
-                        "repeat": { "type": "string", "enum": ["none", "daily", "weekdays", "weekly", "monthly", "yearly"] },
-                        "priority": { "type": "string", "enum": ["low", "normal", "high", "urgent"] },
-                        "project": { "type": ["string", "null"] },
-                        "tags": { "type": "array", "items": { "type": "string" }, "maxItems": 3 },
-                        "date_phrase": { "type": ["string", "null"] },
-                        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+                        "repeat": { "type": "string", "enum": ["daily", "weekdays", "weekly", "monthly", "yearly"] },
+                        "priority": { "type": "string", "enum": ["high", "urgent"] },
+                        "project": { "type": "string" },
+                        "unsure": { "type": "boolean" }
                     },
-                    "required": ["type", "title", "body", "due", "end", "remind", "repeat", "priority", "project", "tags", "date_phrase", "confidence"]
+                    "required": ["type", "title"]
                 }
             }
         },
@@ -121,7 +143,8 @@ pub fn schema() -> Value {
     })
 }
 
-/// The user message: the moment, the projects and the note itself.
+/// The user message: the moment, a short calendar (small models are bad at
+/// weekday arithmetic), the projects and the note itself.
 pub fn user_prompt(text: &str, ctx: &Context<'_>) -> String {
     let local = ctx.now.with_timezone(&ctx.tz);
     let projects = if ctx.projects.is_empty() {
@@ -133,11 +156,20 @@ pub fn user_prompt(text: &str, ctx: &Context<'_>) -> String {
             .collect::<Vec<_>>()
             .join(", ")
     };
+    let today = local.date_naive();
+    let calendar = (1..=8)
+        .map(|d| {
+            let day = today + Duration::days(d);
+            format!("{} {}", day.format("%a"), day.format("%Y-%m-%d"))
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
     format!(
-        "Now: {} ({}), time zone {}\nProjects: {}\nNote: {}",
+        "Now: {} ({}), time zone {}\nCalendar: {}\nProjects: {}\nNote: {}",
         local.format("%Y-%m-%dT%H:%M"),
         local.format("%A"),
         ctx.tz.name(),
+        calendar,
         projects,
         text.trim()
     )
@@ -199,11 +231,7 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
 
     let date_phrase = raw.date_phrase.filter(|p| !p.trim().is_empty());
     let flag_date = |hint: &mut CaptureHint| {
-        hint.date_phrase = Some(
-            date_phrase
-                .clone()
-                .unwrap_or_else(|| "the date".to_string()),
-        );
+        hint.date_phrase = Some(date_phrase.clone().unwrap_or_default());
     };
 
     let parse = |s: Option<String>, default_hour: u32, hint: &mut CaptureHint| match s {
@@ -250,6 +278,16 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
         .repeat
         .as_deref()
         .and_then(|preset| anchor.and_then(|a| rule_for(preset, a, ctx.tz)));
+    // "Every day at 8", said at 10:00: the first occurrence is tomorrow, not this morning.
+    if let (Some(rule), Some(a)) = (&recurrence, anchor)
+        && a < ctx.now
+        && let Ok(Some(next)) = crate::db::recurrence::next_after(rule, a, ctx.now, ctx.tz)
+    {
+        let shift = next - a;
+        due_at = due_at.map(|d| d + shift);
+        remind_at = remind_at.map(|d| d + shift);
+        ends_at = ends_at.map(|d| d + shift);
+    }
 
     let priority = match raw.priority.as_deref() {
         Some("urgent") => Priority::Urgent,
@@ -271,7 +309,7 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
         _ => None,
     };
 
-    if raw.confidence.unwrap_or(1.0) < LOW_CONFIDENCE {
+    if raw.unsure == Some(true) || raw.confidence.unwrap_or(1.0) < LOW_CONFIDENCE {
         hint.low_confidence = true;
     }
 
@@ -429,7 +467,8 @@ mod tests {
         let req = s["properties"]["items"]["items"]["required"]
             .as_array()
             .unwrap();
-        assert_eq!(req.len(), 12);
+        assert_eq!(req.len(), 2);
+        assert!(SYSTEM_PROMPT.contains("compact single-line JSON"));
     }
 
     #[test]
@@ -437,6 +476,8 @@ mod tests {
         let projects = vec![("p1".to_string(), "Spring launch".to_string())];
         let p = user_prompt(" buy milk ", &ctx(&projects));
         assert!(p.contains("Now: 2026-11-09T10:00 (Monday), time zone Europe/Rome"));
+        assert!(p.contains("Calendar: Tue 2026-11-10, Wed 2026-11-11"));
+        assert!(p.contains("Tue 2026-11-17"));
         assert!(p.contains("Projects: Spring launch"));
         assert!(p.ends_with("Note: buy milk"));
     }
@@ -493,6 +534,18 @@ mod tests {
             &[],
         );
         assert_eq!(e.recurrence.as_deref(), Some("FREQ=WEEKLY;BYDAY=MO"));
+    }
+
+    #[test]
+    fn recurring_time_already_passed_today_starts_at_the_next_occurrence() {
+        // Now is 10:00; "every day at 8" must start tomorrow at 08:00.
+        let e = one(
+            &item(
+                r#""type":"reminder","title":"Vitamin","remind":"2026-11-09T08:00","repeat":"daily""#,
+            ),
+            &[],
+        );
+        assert_eq!(e.remind_at, Some(rome(2026, 11, 10, 8, 0)));
     }
 
     #[test]

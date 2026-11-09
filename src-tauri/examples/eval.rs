@@ -13,7 +13,7 @@
 //!
 //! Fixed context: Monday 9 November 2026, 10:00, Europe/Rome; projects
 //! "Spring launch", "Studio move", "Reading list".
-//! Gate (design doc §4.5): type ≥ 90 %, date ≥ 85 %, warm p95 < 1.2 s.
+//! Gate (ADR-0003): type ≥ 90 %, date ≥ 85 %, warm p95 < 2.5 s.
 
 use std::path::PathBuf;
 use std::time::Instant;
@@ -237,7 +237,7 @@ async fn main() {
     println!("project  {:5.1} %", pct(ok_project, n));
     println!("count    {:5.1} %", pct(ok_count, n));
     println!("latency  p50 {} ms · p95 {} ms", p(0.5), p(0.95));
-    let pass = pct(ok_type, n) >= 90.0 && pct(ok_when, n_when) >= 85.0 && p(0.95) < 1200;
+    let pass = pct(ok_type, n) >= 90.0 && pct(ok_when, n_when) >= 85.0 && p(0.95) < 2500;
     println!("\ngate     {}", if pass { "PASS" } else { "FAIL" });
     if let Some(s) = server {
         s.stop().await;

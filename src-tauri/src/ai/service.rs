@@ -208,12 +208,12 @@ impl AiService {
 
     pub async fn snapshot(&self) -> AiState {
         let cfg = self.config();
-        let server_running = self
-            .server
-            .lock()
-            .await
-            .as_mut()
-            .is_some_and(|s| s.is_running());
+        // Never wait on the server lock here: `provider()` holds it while the
+        // model loads and publishes progress, which calls this. Locked = starting.
+        let server_running = match self.server.try_lock() {
+            Ok(mut guard) => guard.as_mut().is_some_and(|s| s.is_running()),
+            Err(_) => true,
+        };
         let pending = self
             .with_db(|c| captures::count_pending(c).unwrap_or(0))
             .unwrap_or(0);

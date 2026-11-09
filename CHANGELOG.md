@@ -4,6 +4,15 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+## 0.2.0 — On-device AI capture (2026-11-09)
+
+- Quick add has an **Auto** mode: say or type anything and NOMA turns it into one to three typed cards — dates, reminders, repeats, priority and project included — with a model running entirely on your Mac.
+- Settings → On-device AI: download Qwen3 4B (2.5 GB) or the lighter Qwen3 1.7B, with progress, cancel and remove; optional Ollama engine for development.
+- The capture card appears instantly and is rewritten in place when the model is done; captures made before a model is installed wait and run later; failures keep your words as a note with Retry.
+- Review chips on cards when the model was unsure: check date, new project?, check this.
+- Extraction eval (40 Italian + English notes): type 97.5 %, date 100 %, warm p95 2.1 s on an M2.
+- Fix: canvas cards could disappear after any change until the window was resized.
+
 ## 0.1.0 — Workspace & views (2026-11-09)
 
 - Card system: task, reminder, note, idea, project and event cards with default, hover, selected and completed states and hover actions (open, duplicate, delete).

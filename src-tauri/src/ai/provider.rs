@@ -45,9 +45,12 @@ impl Provider {
                 let mut body = json!({
                     "messages": messages,
                     "temperature": 0,
-                    "max_tokens": 700,
+                    "max_tokens": 300,
                     "cache_prompt": true,
-                    "response_format": { "type": "json_schema", "schema": schema },
+                    "response_format": {
+                        "type": "json_schema",
+                        "json_schema": { "name": "cards", "strict": true, "schema": schema }
+                    },
                 });
                 if *thinking {
                     body["chat_template_kwargs"] = json!({ "enable_thinking": false });
@@ -74,7 +77,7 @@ impl Provider {
                     "stream": false,
                     "think": false,
                     "keep_alive": "10m",
-                    "options": { "temperature": 0, "num_predict": 700 },
+                    "options": { "temperature": 0, "num_predict": 300 },
                 });
                 let resp: Value = client
                     .post(format!("{base_url}/api/chat"))

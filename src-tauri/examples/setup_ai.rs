@@ -26,7 +26,7 @@ async fn main() {
     let cancel = Arc::new(AtomicBool::new(false));
     let report = |label: &'static str| {
         move |received: u64, total: u64| {
-            let pct = if total > 0 { received * 100 / total } else { 0 };
+            let pct = (received * 100).checked_div(total).unwrap_or(0);
             println!("{label} {pct:3}% ({} / {} MB)", received >> 20, total >> 20);
         }
     };

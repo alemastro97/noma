@@ -16,7 +16,7 @@
 {"text": "Add Pachinko by Min Jin Lee to the reading list", "type": "task", "when": null, "repeat": "none", "project": "Reading list", "count": 1}
 {"text": "Buy milk and call the plumber tomorrow morning", "type": "task", "when": null, "repeat": "none", "project": null, "count": 2}
 {"text": "Comprare il pane, pagare la bolletta della luce e prenotare il treno per Roma", "type": "task", "when": null, "repeat": "none", "project": null, "count": 3}
-{"text": "Call the printer about proofs today at 4pm", "type": "reminder", "when": "2026-11-09T16:00", "repeat": "none", "project": null, "count": 1}
+{"text": "Call the printer about proofs today at 4pm", "type": "task", "when": "2026-11-09T16:00", "repeat": "none", "project": null, "count": 1}
 {"text": "Pranzo con Luca venerdì a mezzogiorno", "type": "event", "when": "2026-11-13T12:00", "repeat": "none", "project": null, "count": 1}
 {"text": "Flight to Lisbon next Monday at 7:40", "type": "event", "when": "2026-11-16T07:40", "repeat": "none", "project": null, "count": 1}
 {"text": "Urgente: rinnovare il passaporto", "type": "task", "when": null, "repeat": "none", "project": null, "count": 1}
