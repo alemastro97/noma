@@ -1914,6 +1914,7 @@ version = "0.0.0"
 dependencies = [
  "chrono",
  "chrono-tz",
+ "iana-time-zone",
  "log",
  "objc2",
  "objc2-app-kit",

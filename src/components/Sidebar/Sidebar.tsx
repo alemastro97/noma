@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { copy } from "../../copy";
 import { useHotkey } from "../../hooks/useHotkey";
+import { useItemsStore } from "../../stores/items";
+import { personalBoards, useProjectsStore } from "../../stores/projects";
 import { sameTarget, useUiStore, type NavTarget } from "../../stores/ui";
 import { NomaOrb } from "../NomaOrb";
 import { NSymbol } from "../Logo/NSymbol";
@@ -17,39 +19,13 @@ import { Wordmark } from "../Logo/Wordmark";
 import { NavItem } from "./NavItem";
 import styles from "./Sidebar.module.css";
 
-export interface SidebarCounts {
-  inbox: number;
-  today: number;
-  upcoming: number;
-  ideas: number;
-  notes: number;
-  byProject: Record<string, number>;
-}
-
-export interface SidebarProject {
-  id: string;
-  name: string;
-  color: string;
-}
-
-export interface SidebarBoard {
-  id: string;
-  name: string;
-}
-
-interface SidebarProps {
-  counts: SidebarCounts;
-  projects: SidebarProject[];
-  boards: SidebarBoard[];
-}
-
 const ICON = { size: 17, strokeWidth: 1.75 } as const;
 
 const MAIN_NAV: {
   target: NavTarget;
   label: string;
   icon: React.ReactNode;
-  count: keyof SidebarCounts;
+  count: "inbox" | "today" | "upcoming" | "ideas" | "notes";
 }[] = [
   { target: { kind: "inbox" }, label: copy.nav.inbox, icon: <Inbox {...ICON} />, count: "inbox" },
   { target: { kind: "today" }, label: copy.nav.today, icon: <Sun {...ICON} />, count: "today" },
@@ -73,7 +49,10 @@ const MAIN_NAV: {
   },
 ];
 
-export function Sidebar({ counts, projects, boards }: SidebarProps) {
+export function Sidebar() {
+  const counts = useItemsStore((s) => s.counts);
+  const projects = useProjectsStore((s) => s.projects);
+  const boards = personalBoards(useProjectsStore((s) => s.boards));
   const target = useUiStore((s) => s.target);
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const setTarget = useUiStore((s) => s.setTarget);
@@ -106,7 +85,7 @@ export function Sidebar({ counts, projects, boards }: SidebarProps) {
             key={item.label}
             label={item.label}
             icon={item.icon}
-            count={counts[item.count] as number}
+            count={counts[item.count]}
             active={isActive(item.target)}
             collapsed={collapsed}
             onSelect={() => setTarget(item.target)}

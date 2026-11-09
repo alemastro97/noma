@@ -110,6 +110,7 @@ pub struct NewItem {
     pub board_id: Option<String>,
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for ItemType {
     fn default() -> Self {
         ItemType::Task

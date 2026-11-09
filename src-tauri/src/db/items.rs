@@ -303,21 +303,21 @@ pub fn complete_item(conn: &Connection, id: &str, now: DateTime<Utc>) -> DbResul
     let mut item = require_item(conn, id)?;
     let anchor = item.due_at.or(item.remind_at);
 
-    if let (Some(rule), Some(anchor)) = (item.recurrence.clone(), anchor) {
-        if let Some(next) = next_after(&rule, anchor, now.max(anchor))? {
-            conn.execute(
-                "INSERT INTO item_occurrences (id, item_id, scheduled_at, completed_at, skipped) \
-                 VALUES (?1, ?2, ?3, ?4, 0)",
-                params![new_id(), item.id, anchor, now],
-            )?;
-            let shift = next - anchor;
-            item.due_at = item.due_at.map(|d| d + shift);
-            item.remind_at = item.remind_at.map(|d| d + shift);
-            item.snoozed_until = None;
-            item.updated_at = now;
-            write_item(conn, &item)?;
-            return Ok(item);
-        }
+    if let (Some(rule), Some(anchor)) = (item.recurrence.clone(), anchor)
+        && let Some(next) = next_after(&rule, anchor, now.max(anchor))?
+    {
+        conn.execute(
+            "INSERT INTO item_occurrences (id, item_id, scheduled_at, completed_at, skipped) \
+             VALUES (?1, ?2, ?3, ?4, 0)",
+            params![new_id(), item.id, anchor, now],
+        )?;
+        let shift = next - anchor;
+        item.due_at = item.due_at.map(|d| d + shift);
+        item.remind_at = item.remind_at.map(|d| d + shift);
+        item.snoozed_until = None;
+        item.updated_at = now;
+        write_item(conn, &item)?;
+        return Ok(item);
     }
 
     item.status = Status::Done;
