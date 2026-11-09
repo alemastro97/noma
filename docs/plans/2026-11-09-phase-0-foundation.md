@@ -40,12 +40,14 @@ Inputs the spec implies but no feature test exercises; each has a pinned test in
 ### Task 1: Repository, GitHub remote and process scaffolding
 
 **Files:**
+
 - Create: `.gitignore`, `README.md`, `CHANGELOG.md`, `LICENSE` (MIT, copyright Alessandro Mastropasqua)
 - Create: `docs/specs/README.md` (spec index), `docs/specs/foundation.md` (living spec for Phase 0, Status: In progress)
 - Create: `docs/adr/README.md`, `docs/adr/0000-template.md`, `docs/adr/0001-tauri-2-desktop-framework.md`
 - Existing: `design/**`, `docs/specs/2026-11-09-noma-design.md`, `docs/plans/2026-11-09-phase-0-foundation.md`
 
 **Interfaces:**
+
 - Produces: the repo at `~/Documents/side-projects/Noma` on branch `main`, remote `git@github.com:alemastro97/noma.git` (private). Spec index format: a table `| Spec | Status | Phase |`.
 
 - [ ] **Step 1: Init git, set author to the personal account**
@@ -70,6 +72,7 @@ Run from the repo root: `git init -b main && git config user.name "Alessandro Ma
 gh repo create alemastro97/noma --private --description "NOMA — your second mind. Personal AI desktop companion." --source . --remote origin
 git add -A && git commit -m "docs: add design spec, phase 0 plan, design handoff and process scaffolding" && git push -u origin main
 ```
+
 Expected: `gh repo view alemastro97/noma --json visibility` → `"PRIVATE"`.
 
 ---
@@ -77,12 +80,14 @@ Expected: `gh repo view alemastro97/noma --json visibility` → `"PRIVATE"`.
 ### Task 2: Tauri 2 + React 19 scaffold with lint and test toolchain
 
 **Files:**
+
 - Create: `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `vitest.config.ts`, `tsconfig.json`, `tsconfig.node.json`, `eslint.config.js`, `.prettierrc`, `index.html`
 - Create: `src/main.tsx`, `src/app/App.tsx`, `src/test/setup.ts`, `src/app/App.test.tsx`
 - Create: `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, `src-tauri/build.rs`, `src-tauri/src/main.rs`, `src-tauri/src/lib.rs`, `src-tauri/capabilities/default.json`, `src-tauri/icons/*` (placeholder from the generator; replaced in Task 5)
 - Create: `.nvmrc` (`22`), `rust-toolchain.toml` (`channel = "stable"`)
 
 **Interfaces:**
+
 - Produces: `pnpm dev | build | tauri | test | test:watch | lint | typecheck | format` scripts; `pnpm tauri dev` opens the main window `main` (1280×820, min 960×640, `titleBarStyle: "Overlay"`, `hiddenTitle: true`, background `#111116`); Rust crate `noma` with `lib.rs` exposing `pub fn run()`.
 
 - [ ] **Step 1: Update Rust and scaffold in the scratchpad, then merge into the repo**
@@ -92,6 +97,7 @@ rustup update stable
 cd "$SCRATCHPAD" && pnpm create tauri-app@latest noma --template react-ts --manager pnpm --yes
 rsync -a --exclude node_modules --exclude .git "$SCRATCHPAD/noma/" ~/Documents/side-projects/Noma/
 ```
+
 Then set in `src-tauri/tauri.conf.json`: `productName: "NOMA"`, `identifier: "com.noma.app"`, `app.macOSPrivateApi: true`, window `main` as in Interfaces, `bundle.targets: ["dmg", "app"]`, `bundle.category: "Productivity"`. Set `package.json` `name: "noma"`, `private: true`, `packageManager: "pnpm@10"`.
 
 - [ ] **Step 2: Add the test and lint toolchain**
@@ -131,12 +137,14 @@ git add -A && git commit -m "feat: scaffold Tauri 2 + React 19 app with vitest a
 ### Task 3: Design tokens, bundled fonts, global styles and theme
 
 **Files:**
+
 - Create: `src/styles/tokens.css` (verbatim copy of `design/tokens.css`), `src/styles/global.css`, `src/styles/fonts.css`
 - Create: `src/assets/fonts/Geist[wght].woff2`, `src/assets/fonts/GeistMono[wght].woff2` (copied from the `geist` npm package `dist/fonts/**`)
 - Create: `src/theme/theme.ts`, `src/theme/theme.test.ts`, `src/theme/tokens.test.ts`
 - Modify: `src/main.tsx` (import styles, call `initTheme()`)
 
 **Interfaces:**
+
 - Produces: `export type Theme = "dark" | "light" | "system"`; `export function applyTheme(theme: Theme, root?: HTMLElement): void` (sets `data-theme="dark"|"light"` on `document.documentElement`, resolving `system` via `matchMedia("(prefers-color-scheme: light)")`); `export function initTheme(): () => void` (reads saved theme from `localStorage["noma.theme"]` default `"system"`, applies it, subscribes to matchMedia changes while `system`, returns unsubscribe); `export function setTheme(theme: Theme): void` (persists + applies). CSS variables `--noma-*` available app-wide.
 
 - [ ] **Step 1: Write the failing tests**
@@ -145,9 +153,12 @@ git add -A && git commit -m "feat: scaffold Tauri 2 + React 19 app with vitest a
 // src/theme/tokens.test.ts
 import { readFileSync } from "node:fs";
 test("tokens.css is identical to the design handoff", () => {
-  expect(readFileSync("src/styles/tokens.css", "utf8")).toBe(readFileSync("design/tokens.css", "utf8"));
+  expect(readFileSync("src/styles/tokens.css", "utf8")).toBe(
+    readFileSync("design/tokens.css", "utf8"),
+  );
 });
 ```
+
 ```ts
 // src/theme/theme.test.ts — uses a matchMedia mock with a controllable `matches` and listener list
 test("applyTheme('light') sets data-theme=light", …)
@@ -173,20 +184,37 @@ test("setTheme persists to localStorage key noma.theme", …)
 ### Task 4: NomaOrb component
 
 **Files:**
+
 - Create: `src/components/NomaOrb/NomaOrb.tsx`, `src/components/NomaOrb/noma-orb.css` (verbatim copy of `design/noma-orb.css`), `src/components/NomaOrb/useOrbState.ts`, `src/components/NomaOrb/NomaOrb.test.tsx`, `src/components/NomaOrb/useOrbState.test.ts`, `src/components/NomaOrb/index.ts`
 
 **Interfaces:**
+
 - Produces: `export type OrbState = "idle" | "listening" | "processing" | "success" | "error"`; `export function NomaOrb({ state = "idle", size = 56, label, className }: { state?: OrbState; size?: number; label?: string; className?: string }): JSX.Element` — renders the handoff markup (`div.noma-orb.s-<state>` with `font-size: <size>px`, `role="img"`, `aria-label={label ?? "NOMA is " + state}`); `export function useOrbState(initial?: OrbState): { state: OrbState; set: (s: OrbState) => void; flashSuccess: () => void; flashError: (ms?: number) => void }` — `flashSuccess` sets `success` then returns to `idle` after **1400 ms**; `flashError` sets `error` and returns to `idle` after `ms` (default 2500).
 
 - [ ] **Step 1: Write the failing tests**
 
 ```tsx
 // NomaOrb.test.tsx
-test.each(["idle","listening","processing","success","error"] as const)("renders state class s-%s", (s) => { render(<NomaOrb state={s} />); expect(screen.getByRole("img")).toHaveClass(`s-${s}`); });
-test("sizes via font-size", () => { render(<NomaOrb size={32} />); expect(screen.getByRole("img")).toHaveStyle({ fontSize: "32px" }); });
-test("default aria-label", () => { render(<NomaOrb state="listening" />); expect(screen.getByRole("img", { name: "NOMA is listening" })).toBeInTheDocument(); });
-test("respects prefers-reduced-motion", () => { /* read noma-orb.css text; expect it to contain "@media (prefers-reduced-motion:reduce)" and "animation:none!important" */ });
+test.each(["idle", "listening", "processing", "success", "error"] as const)(
+  "renders state class s-%s",
+  (s) => {
+    render(<NomaOrb state={s} />);
+    expect(screen.getByRole("img")).toHaveClass(`s-${s}`);
+  },
+);
+test("sizes via font-size", () => {
+  render(<NomaOrb size={32} />);
+  expect(screen.getByRole("img")).toHaveStyle({ fontSize: "32px" });
+});
+test("default aria-label", () => {
+  render(<NomaOrb state="listening" />);
+  expect(screen.getByRole("img", { name: "NOMA is listening" })).toBeInTheDocument();
+});
+test("respects prefers-reduced-motion", () => {
+  /* read noma-orb.css text; expect it to contain "@media (prefers-reduced-motion:reduce)" and "animation:none!important" */
+});
 ```
+
 ```ts
 // useOrbState.test.ts (fake timers, renderHook)
 test("flashSuccess returns to idle after 1400ms", …)   // advance 1399 → still success; 1400 → idle
@@ -207,6 +235,7 @@ test("set() cancels a pending flash timer", …)
 ### Task 5: App shell — sidebar, header, view switcher, empty states, app icons
 
 **Files:**
+
 - Create: `src/copy.ts`
 - Create: `src/stores/ui.ts`, `src/stores/ui.test.ts`
 - Create: `src/components/Sidebar/Sidebar.tsx`, `Sidebar.module.css`, `Sidebar.test.tsx`, `NavItem.tsx`
@@ -219,6 +248,7 @@ test("set() cancels a pending flash timer", …)
 - Create: `src-tauri/icons/icon.svg` (dark app icon rebuilt from `design/screens/Assets.html`), regenerate `src-tauri/icons/*` via `pnpm tauri icon src-tauri/icons/icon.svg`
 
 **Interfaces:**
+
 - Produces (store `src/stores/ui.ts`, Zustand):
   ```ts
   export type NavTarget = { kind: "inbox" } | { kind: "today" } | { kind: "upcoming" } | { kind: "ideas" } | { kind: "notes" } | { kind: "settings" } | { kind: "project"; id: string } | { kind: "board"; id: string };
@@ -241,6 +271,7 @@ test("default target is inbox and view mode canvas", …)
 test("setViewMode('calendar') is ignored", …)
 test("toggleSidebar flips and persists to localStorage noma.ui", …)
 ```
+
 ```tsx
 // Sidebar.test.tsx
 test("clicking Today sets target today and marks it current (aria-current=page)", …)
@@ -267,6 +298,7 @@ test("shows Idle AI status with an orb", …)
 ### Task 6: Floating-window spike (go/no-go) → ADR-0002
 
 **Files:**
+
 - Create: `docs/adr/0002-floating-windows-on-tauri.md`
 - Modify: `src-tauri/tauri.conf.json` (add window `orb`), `src-tauri/Cargo.toml` (add `tauri-plugin-global-shortcut`, `objc2`, `objc2-app-kit` on macOS), `src-tauri/src/lib.rs`
 - Create: `src-tauri/src/windows/mod.rs`, `src-tauri/src/windows/orb.rs`, `src-tauri/src/windows/visibility.rs`
@@ -274,6 +306,7 @@ test("shows Idle AI status with an orb", …)
 - Modify: `vite.config.ts` (multi-page: `main: index.html`, `orb: src/windows/orb/index.html`), `src-tauri/capabilities/default.json` (+ `orb` window, global-shortcut permissions)
 
 **Interfaces:**
+
 - Window `orb`: `width: 72, height: 72, transparent: true, decorations: false, alwaysOnTop: true, visibleOnAllWorkspaces: true, skipTaskbar: true, resizable: false, shadow: false, visible: false, url: "src/windows/orb/index.html"`.
 - Rust: `pub fn configure_floating(window: &tauri::WebviewWindow)` — on macOS sets `NSWindowCollectionBehavior` = `canJoinAllSpaces | fullScreenAuxiliary | stationary` and level `NSFloatingWindowLevel + 1` so it shows over fullscreen apps; no-op elsewhere. `pub fn toggle_visibility(is_visible: bool) -> bool` in `visibility.rs` (pure: returns the next state) used by `pub fn toggle_orb(app: &tauri::AppHandle)`.
 - Global shortcut `Alt+Space` registered at setup → `toggle_orb`. (Phase 3 rebinds it to the voice overlay; the orb spike reuses the key only to prove the mechanism.)
@@ -286,6 +319,7 @@ test("shows Idle AI status with an orb", …)
 #[cfg(test)] mod tests { use super::*;
   #[test] fn toggle_visibility_is_idempotent() { assert!(toggle_visibility(false)); assert!(!toggle_visibility(true)); assert_eq!(toggle_visibility(toggle_visibility(false)), false); } }
 ```
+
 Run `cargo test` → FAIL (module missing).
 
 - [ ] **Step 2: Implement** `visibility.rs`, `orb.rs`, `configure_floating`, the shortcut registration in `lib.rs` `setup`, the Vite multi-page config and the orb React root.
@@ -293,12 +327,13 @@ Run `cargo test` → FAIL (module missing).
 - [ ] **Step 3: Verify the go/no-go criteria and record them**
 
 Run `pnpm tauri dev`; press ⌥Space: the orb appears in the top-right of the screen, transparent background, animating. Checks (each recorded with result in ADR-0002):
+
 1. Visible over a **fullscreen** app (open Safari fullscreen, press ⌥Space).
 2. Present on every Space (swipe between desktops).
 3. Draggable; position survives hide/show.
 4. 60 fps: Safari/WebKit no dropped frames visually; `top -pid $(pgrep -f NOMA | head -1) -l 3 -stats cpu` shows **< 1 % CPU** idle with the orb animating. If higher, set `will-change: transform` on `.core` and re-measure; record both numbers.
 5. Toggling ⌥Space rapidly five times leaves exactly one orb window (`tauri::Manager::webview_windows().len() == 2`).
-Decision: **Go** if 1, 2, 4 and 5 pass. Otherwise **No-go**: write the Electron fallback in the ADR and stop; Phase 1 must not start.
+   Decision: **Go** if 1, 2, 4 and 5 pass. Otherwise **No-go**: write the Electron fallback in the ADR and stop; Phase 1 must not start.
 
 - [ ] **Step 4: Commit** — `git commit -m "feat: add floating orb window spike with global shortcut; record ADR-0002"`
 
@@ -307,11 +342,13 @@ Decision: **Go** if 1, 2, 4 and 5 pass. Otherwise **No-go**: write the Electron 
 ### Task 7: SQLite data layer in Rust
 
 **Files:**
+
 - Modify: `src-tauri/Cargo.toml` (+ `rusqlite = { version = "0.3x", features = ["bundled", "chrono", "serde_json"] }`, `chrono`, `serde`, `serde_json`, `uuid` (v7), `rrule`, `thiserror`)
 - Create: `src-tauri/src/db/mod.rs`, `src-tauri/src/db/migrations.rs`, `src-tauri/src/db/migrations/0001_init.sql`, `src-tauri/src/db/models.rs`, `src-tauri/src/db/items.rs`, `src-tauri/src/db/projects.rs`, `src-tauri/src/db/boards.rs`, `src-tauri/src/db/placements.rs`, `src-tauri/src/db/recurrence.rs`, `src-tauri/src/db/error.rs`
 - Modify: `docs/specs/foundation.md` (Data section: final schema)
 
 **Interfaces (all `pub`, in `noma::db`):**
+
 ```rust
 pub fn open(path: &Path) -> Result<Connection, DbError>;          // creates parent dirs, WAL, foreign_keys=ON, runs migrations
 pub fn open_in_memory() -> Result<Connection, DbError>;            // for tests
@@ -349,6 +386,7 @@ pub fn place_item(conn, item_id, board_id, x, y) -> Result<Placement, DbError>; 
 pub fn validate_rrule(rule: &str) -> Result<(), DbError>;                                         // subset: FREQ DAILY|WEEKLY|MONTHLY|YEARLY, INTERVAL, BYDAY, BYMONTHDAY, UNTIL, COUNT
 pub fn next_after(rule: &str, dtstart: DateTime<Utc>, after: DateTime<Utc>) -> Result<Option<DateTime<Utc>>, DbError>;
 ```
+
 Schema `0001_init.sql`: tables `schema_version`, `items`, `projects`, `boards`, `placements` (PK item_id, FK cascade), `connections` (id, from_item, to_item, label), `tags`, `item_tags`, `captures` (id, source, raw_text, model_output_json, status, latency_ms, item_id, created_at), `item_occurrences` (id, item_id, scheduled_at, completed_at, skipped), `settings` (key PK, value); indexes on `items(status)`, `items(due_at)`, `items(remind_at)`, `items(project_id)`; `items_fts` FTS5 (title, body, content=items) with insert/update/delete triggers. Timestamps stored as RFC 3339 text.
 
 - [ ] **Step 1: Write failing tests** in each module's `#[cfg(test)]`:
@@ -371,6 +409,7 @@ Schema `0001_init.sql`: tables `schema_version`, `items`, `projects`, `boards`, 
 ### Task 8: Tauri commands, typed TS API and items store
 
 **Files:**
+
 - Create: `src-tauri/src/state.rs` (`pub struct AppState { pub db: Mutex<Connection> }`), `src-tauri/src/commands/mod.rs`, `commands/items.rs`, `commands/projects.rs`, `commands/boards.rs`
 - Modify: `src-tauri/src/lib.rs` (manage state, DB at `app.path().app_data_dir()?.join("noma.db")`, `invoke_handler`), `src-tauri/capabilities/default.json`
 - Create: `src/api/types.ts`, `src/api/items.ts`, `src/api/projects.ts`, `src/api/boards.ts`, `src/api/events.ts`
@@ -378,6 +417,7 @@ Schema `0001_init.sql`: tables `schema_version`, `items`, `projects`, `boards`, 
 - Modify: `src/app/App.tsx` (load stores on mount, pass counts/projects/boards to `Sidebar`), `src/components/Sidebar/Sidebar.tsx` (consume stores directly instead of props)
 
 **Interfaces:**
+
 - Commands (names are the wire contract; all return `Result<T, String>`): `items_list(filter: ItemFilter) -> Vec<Item>`, `items_create(input: NewItem) -> Item`, `items_update(id: String, patch: ItemPatch) -> Item`, `items_delete(id: String)`, `items_complete(id: String) -> Item`, `items_counts() -> Counts`, `projects_list() -> Vec<Project>`, `projects_create(name: String, color: String) -> Project`, `boards_list() -> Vec<Board>`, `boards_create(name: String) -> Board`, `placements_list(boardId: String) -> Vec<Placement>`, `placements_set(itemId: String, boardId: String, x: f64, y: f64) -> Placement`. `now`/`tz` are taken in Rust (`Utc::now()`, `iana_time_zone`). After every mutation the command emits event `"items:changed"` with payload `{ ids: string[] }`.
 - `src/api/types.ts` mirrors the Rust types with camelCase (`#[serde(rename_all = "camelCase")]` on all Rust structs). `ItemFilter` TS union: `{ kind: "inbox" } | { kind: "today" } | { kind: "upcoming"; days: number } | { kind: "ideas" } | { kind: "notes" } | { kind: "project"; id: string } | { kind: "board"; id: string } | { kind: "all" }` (serde adjacently/internally tagged with `tag = "kind"`).
 - `src/api/items.ts`: `listItems(filter)`, `createItem(input)`, `updateItem(id, patch)`, `deleteItem(id)`, `completeItem(id)`, `getCounts()` — each a typed `invoke` wrapper. `src/api/events.ts`: `onItemsChanged(cb: (ids: string[]) => void): Promise<UnlistenFn>`.
@@ -400,10 +440,12 @@ Schema `0001_init.sql`: tables `schema_version`, `items`, `projects`, `boards`, 
 ### Task 9: CI and release pipelines
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `.github/dependabot.yml`
 - Modify: `README.md` (badges, release instructions), `docs/specs/foundation.md`
 
 **Interfaces:**
+
 - `ci.yml`: on `push` to `main` and `pull_request`; `macos-latest`; steps: checkout, `pnpm/action-setup@v4`, `actions/setup-node@v4` (22, cache pnpm), `dtolnay/rust-toolchain@stable`, `Swatinem/rust-cache@v2`, `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` (all in `src-tauri`).
 - `release.yml`: on `push` tags `v*`; matrix `include`: `{ platform: macos-latest, args: "--target universal-apple-darwin" }`, `{ platform: windows-latest, args: "" , experimental: true }`, `{ platform: ubuntu-22.04, args: "", experimental: true }`; `continue-on-error: ${{ matrix.experimental == true }}`; macOS adds `rustup target add aarch64-apple-darwin x86_64-apple-darwin`; ubuntu installs `libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf`; uses `tauri-apps/tauri-action@v0` with `tagName: ${{ github.ref_name }}`, `releaseName: "NOMA ${{ github.ref_name }}"`, `releaseDraft: true`, `prerelease: true`, `args: ${{ matrix.args }}`; `GITHUB_TOKEN` only (no signing secrets yet).
 
@@ -418,6 +460,7 @@ Schema `0001_init.sql`: tables `schema_version`, `items`, `projects`, `boards`, 
 ### Task 10: First release dry run and Phase 0 close-out
 
 **Files:**
+
 - Modify: `CHANGELOG.md`, `docs/specs/README.md`, `docs/specs/foundation.md` (Status: Shipped), `src-tauri/tauri.conf.json` + `package.json` + `Cargo.toml` (`version: "0.0.1"`)
 
 - [ ] **Step 1: Bump versions to 0.0.1, write CHANGELOG entry `## 0.0.1 — Foundation`** listing Tasks 2–9 in one line each.
@@ -428,6 +471,7 @@ Schema `0001_init.sql`: tables `schema_version`, `items`, `projects`, `boards`, 
 git commit -am "chore: release 0.0.1" && git tag v0.0.1 && git push && git push --tags
 gh run watch
 ```
+
 Expected: macOS job green, draft release `NOMA v0.0.1` with `NOMA_0.0.1_universal.dmg`; Windows/Linux may be red (allowed). Download the DMG, `xattr -dr com.apple.quarantine NOMA.app`, launch: main window + ⌥Space orb work from the bundled build.
 
 - [ ] **Step 3: Mark `foundation.md` Shipped, update the index, commit** — `git commit -m "docs: mark foundation spec shipped"` and push.

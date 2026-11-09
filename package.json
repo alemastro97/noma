@@ -1,0 +1,47 @@
+{
+  "name": "noma",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.29.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@tauri-apps/cli": "^2",
+    "@testing-library/jest-dom": "^6",
+    "@testing-library/react": "^16",
+    "@testing-library/user-event": "^14",
+    "@types/node": "^22",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^6.0.2",
+    "eslint": "^9",
+    "eslint-plugin-react-hooks": "^7",
+    "eslint-plugin-react-refresh": "^0.4",
+    "jsdom": "^27",
+    "prettier": "^3",
+    "typescript": "~5.9",
+    "typescript-eslint": "^8",
+    "vite": "^8.0.16",
+    "vitest": "^4"
+  }
+}
