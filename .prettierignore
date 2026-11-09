@@ -4,3 +4,5 @@ src-tauri/target
 src-tauri/gen
 design
 pnpm-lock.yaml
+src/components/NomaOrb/noma-orb.css
+src/styles/tokens.css

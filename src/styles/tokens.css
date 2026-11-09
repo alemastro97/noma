@@ -2,44 +2,44 @@
 :root {
   /* Surfaces */
   --noma-bg: #111116;
-  --noma-bg-2: #17171f;
+  --noma-bg-2: #17171F;
   --noma-sidebar: #141419;
-  --noma-surface: #1e1d27;
+  --noma-surface: #1E1D27;
   --noma-surface-elevated: #262432;
   --noma-border: #343141;
-  --noma-border-card: #302d3c;
-  --noma-border-hover: #4a4560;
+  --noma-border-card: #302D3C;
+  --noma-border-hover: #4A4560;
 
   /* Text */
-  --noma-text: #f4f1fa;
-  --noma-text-2: #a6a0b5; /* use for all small metadata (passes 4.5:1) */
+  --noma-text: #F4F1FA;
+  --noma-text-2: #A6A0B5;   /* use for all small metadata (passes 4.5:1) */
   --noma-text-muted: #777184; /* decorative / large text only */
 
   /* Brand */
-  --noma-lavender: #a78bfa; /* primary accent */
-  --noma-violet: #8b78e8;
-  --noma-pale: #d2c4ff;
-  --noma-ambient: #6d4aff; /* glow only */
+  --noma-lavender: #A78BFA;  /* primary accent */
+  --noma-violet: #8B78E8;
+  --noma-pale: #D2C4FF;
+  --noma-ambient: #6D4AFF;   /* glow only */
 
   /* Semantic */
-  --noma-task: #a78bfa;
-  --noma-reminder: #f2bd73; /* amber */
-  --noma-idea: #dda1c5; /* rose */
-  --noma-project: #79b8f5; /* blue */
-  --noma-done: #78dcc0; /* mint */
-  --noma-urgent: #f28c91; /* coral */
+  --noma-task: #A78BFA;
+  --noma-reminder: #F2BD73;  /* amber */
+  --noma-idea: #DDA1C5;      /* rose */
+  --noma-project: #79B8F5;   /* blue */
+  --noma-done: #78DCC0;      /* mint */
+  --noma-urgent: #F28C91;    /* coral */
   /* Tinted card borders per type */
-  --noma-border-reminder: #4e3f2a;
-  --noma-border-idea: #5a3b50;
-  --noma-border-project: #2e4a66;
+  --noma-border-reminder: #4E3F2A;
+  --noma-border-idea: #5A3B50;
+  --noma-border-project: #2E4A66;
 
   /* Shape & depth */
   --noma-radius-card: 14px;
   --noma-radius-panel: 18px;
   --noma-radius-control: 10px;
-  --noma-shadow-card: 0 10px 30px rgba(0, 0, 0, 0.28);
-  --noma-glass-bg: rgba(30, 29, 39, 0.62);
-  --noma-glass-border: rgba(255, 255, 255, 0.08);
+  --noma-shadow-card: 0 10px 30px rgba(0,0,0,.28);
+  --noma-glass-bg: rgba(30,29,39,.62);
+  --noma-glass-border: rgba(255,255,255,.08);
   --noma-glass-blur: blur(28px) saturate(1.3);
 
   /* Type */
@@ -47,26 +47,26 @@
   --noma-font-mono: "Geist Mono", ui-monospace, monospace;
 
   /* Motion */
-  --noma-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --noma-ease: cubic-bezier(.2,.8,.2,1);
   --noma-fast: 150ms;
   --noma-base: 200ms;
   --noma-slow: 300ms;
 }
 
 [data-theme="light"] {
-  --noma-bg: #f6f5f9;
-  --noma-bg-2: #f1eff6;
-  --noma-sidebar: #f1eff6;
-  --noma-surface: #ffffff;
-  --noma-surface-elevated: #ffffff;
-  --noma-border: #e8e4ef;
-  --noma-border-card: #e8e4ef;
-  --noma-text: #24212d;
+  --noma-bg: #F6F5F9;
+  --noma-bg-2: #F1EFF6;
+  --noma-sidebar: #F1EFF6;
+  --noma-surface: #FFFFFF;
+  --noma-surface-elevated: #FFFFFF;
+  --noma-border: #E8E4EF;
+  --noma-border-card: #E8E4EF;
+  --noma-text: #24212D;
   --noma-text-2: #777181;
-  --noma-lavender: #8065dc;
+  --noma-lavender: #8065DC;
   /* darker semantic text tones for contrast on white */
-  --noma-reminder-text: #a86a12;
-  --noma-project-text: #2f6fb3;
-  --noma-urgent-text: #c8464e;
-  --noma-done-fill: #3fb592;
+  --noma-reminder-text: #A86A12;
+  --noma-project-text: #2F6FB3;
+  --noma-urgent-text: #C8464E;
+  --noma-done-fill: #3FB592;
 }
