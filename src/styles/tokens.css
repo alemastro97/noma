@@ -1,0 +1,72 @@
+/* NOMA design tokens — dark is the default theme */
+:root {
+  /* Surfaces */
+  --noma-bg: #111116;
+  --noma-bg-2: #17171f;
+  --noma-sidebar: #141419;
+  --noma-surface: #1e1d27;
+  --noma-surface-elevated: #262432;
+  --noma-border: #343141;
+  --noma-border-card: #302d3c;
+  --noma-border-hover: #4a4560;
+
+  /* Text */
+  --noma-text: #f4f1fa;
+  --noma-text-2: #a6a0b5; /* use for all small metadata (passes 4.5:1) */
+  --noma-text-muted: #777184; /* decorative / large text only */
+
+  /* Brand */
+  --noma-lavender: #a78bfa; /* primary accent */
+  --noma-violet: #8b78e8;
+  --noma-pale: #d2c4ff;
+  --noma-ambient: #6d4aff; /* glow only */
+
+  /* Semantic */
+  --noma-task: #a78bfa;
+  --noma-reminder: #f2bd73; /* amber */
+  --noma-idea: #dda1c5; /* rose */
+  --noma-project: #79b8f5; /* blue */
+  --noma-done: #78dcc0; /* mint */
+  --noma-urgent: #f28c91; /* coral */
+  /* Tinted card borders per type */
+  --noma-border-reminder: #4e3f2a;
+  --noma-border-idea: #5a3b50;
+  --noma-border-project: #2e4a66;
+
+  /* Shape & depth */
+  --noma-radius-card: 14px;
+  --noma-radius-panel: 18px;
+  --noma-radius-control: 10px;
+  --noma-shadow-card: 0 10px 30px rgba(0, 0, 0, 0.28);
+  --noma-glass-bg: rgba(30, 29, 39, 0.62);
+  --noma-glass-border: rgba(255, 255, 255, 0.08);
+  --noma-glass-blur: blur(28px) saturate(1.3);
+
+  /* Type */
+  --noma-font: "Geist", "Inter", system-ui, sans-serif;
+  --noma-font-mono: "Geist Mono", ui-monospace, monospace;
+
+  /* Motion */
+  --noma-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --noma-fast: 150ms;
+  --noma-base: 200ms;
+  --noma-slow: 300ms;
+}
+
+[data-theme="light"] {
+  --noma-bg: #f6f5f9;
+  --noma-bg-2: #f1eff6;
+  --noma-sidebar: #f1eff6;
+  --noma-surface: #ffffff;
+  --noma-surface-elevated: #ffffff;
+  --noma-border: #e8e4ef;
+  --noma-border-card: #e8e4ef;
+  --noma-text: #24212d;
+  --noma-text-2: #777181;
+  --noma-lavender: #8065dc;
+  /* darker semantic text tones for contrast on white */
+  --noma-reminder-text: #a86a12;
+  --noma-project-text: #2f6fb3;
+  --noma-urgent-text: #c8464e;
+  --noma-done-fill: #3fb592;
+}
