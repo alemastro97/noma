@@ -1,3 +1,4 @@
+pub mod db;
 mod windows;
 
 use tauri::Manager;
