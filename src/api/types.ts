@@ -159,9 +159,20 @@ export interface ModelInfo {
   installed: boolean;
 }
 
+export interface SpeechInfo {
+  id: string;
+  name: string;
+  description: string;
+  file: string;
+  sizeBytes: number;
+  ramGb: number;
+  recommended: boolean;
+  installed: boolean;
+}
+
 export interface DownloadProgress {
   modelId: string;
-  stage: "server" | "model";
+  stage: "server" | "model" | "speech";
   received: number;
   total: number;
 }
@@ -181,12 +192,16 @@ export interface AiState {
   ollamaAvailable: boolean;
   ollamaModels: string[];
   pending: number;
+  speechModelId: string;
+  speechModels: SpeechInfo[];
+  speechReady: boolean;
 }
 
 export interface AiConfigPatch {
   provider?: AiProvider;
   modelId?: string;
   ollamaModel?: string;
+  speechModelId?: string;
 }
 
 export interface CaptureContext {
@@ -209,3 +224,25 @@ export interface CaptureEvent {
   error: string | null;
   latencyMs: number | null;
 }
+
+// ── Desktop presence ─────────────────────────────────────────────────────
+
+export type VoicePhase =
+  "idle" | "listening" | "transcribing" | "editing" | "saved" | "empty" | "unavailable" | "error";
+
+export interface VoiceState {
+  phase: VoicePhase;
+  text: string | null;
+  message: string | null;
+  captureId: string | null;
+  itemId: string | null;
+}
+
+export interface ReminderToast {
+  /** Item id, or "away" for the grouped "while you were away" toast. */
+  id: string;
+  items: Item[];
+  missed: boolean;
+}
+
+export type PanelName = "orb" | "overlay" | "capture" | "panel" | "toasts";

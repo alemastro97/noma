@@ -221,7 +221,7 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
   async refreshCounts() {
     try {
       const counts = await api.getCounts();
-      set({ counts });
+      if (counts) set({ counts });
     } catch (err) {
       set({ error: message(err) });
     }

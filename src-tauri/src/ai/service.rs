@@ -12,7 +12,7 @@ use tokio::sync::{Mutex as AsyncMutex, Notify};
 
 use super::download::{self, find_file, server_binary_name};
 use super::extract::{self, Context};
-use super::manifest::{self, ModelSpec};
+use super::manifest::{self, ModelSpec, SpeechSpec};
 use super::provider::{self, Provider};
 use super::server::{self, LlamaServer};
 use super::{AiError, Paths};
@@ -68,6 +68,14 @@ pub struct ModelInfo {
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct SpeechInfo {
+    #[serde(flatten)]
+    pub spec: SpeechSpec,
+    pub installed: bool,
+}
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct AiState {
     pub provider: ProviderKind,
     pub model_id: String,
@@ -84,6 +92,10 @@ pub struct AiState {
     pub ollama_available: bool,
     pub ollama_models: Vec<String>,
     pub pending: u32,
+    pub speech_model_id: String,
+    pub speech_models: Vec<SpeechInfo>,
+    /// A speech model is installed: voice capture works.
+    pub speech_ready: bool,
 }
 
 #[derive(Deserialize, Debug, Default)]
@@ -92,6 +104,7 @@ pub struct AiConfigPatch {
     pub provider: Option<ProviderKind>,
     pub model_id: Option<String>,
     pub ollama_model: Option<String>,
+    pub speech_model_id: Option<String>,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -107,6 +120,7 @@ pub struct CaptureEvent {
 struct Config {
     provider: ProviderKind,
     model_id: String,
+    speech_model_id: String,
     ollama_model: Option<String>,
     ollama_url: String,
     keep_warm: Duration,
@@ -166,6 +180,9 @@ impl AiService {
                 model_id: get("ai.model")
                     .filter(|id| manifest::model(id).is_some())
                     .unwrap_or_else(|| manifest::default_model().id.clone()),
+                speech_model_id: get("ai.speechModel")
+                    .filter(|id| manifest::speech_model(id).is_some())
+                    .unwrap_or_else(|| manifest::default_speech_model().id.clone()),
                 ollama_model: get("ai.ollamaModel").filter(|m| !m.is_empty()),
                 ollama_url: get("ai.ollamaUrl").unwrap_or_else(|| DEFAULT_OLLAMA_URL.into()),
                 keep_warm: Duration::from_secs(
@@ -178,6 +195,7 @@ impl AiService {
         .unwrap_or(Config {
             provider: ProviderKind::Builtin,
             model_id: manifest::default_model().id.clone(),
+            speech_model_id: manifest::default_speech_model().id.clone(),
             ollama_model: None,
             ollama_url: DEFAULT_OLLAMA_URL.into(),
             keep_warm: Duration::from_secs(60 * DEFAULT_KEEP_WARM_MIN),
@@ -191,6 +209,14 @@ impl AiService {
 
     fn model_installed(&self, spec: &ModelSpec) -> bool {
         self.paths.model_file(&spec.file).exists()
+    }
+
+    /// The configured speech model, when installed.
+    pub fn speech_model(&self) -> Option<(String, std::path::PathBuf)> {
+        let cfg = self.config();
+        let spec = manifest::speech_model(&cfg.speech_model_id)?;
+        let path = self.paths.model_file(&spec.file);
+        path.exists().then(|| (spec.id.clone(), path))
     }
 
     fn ready(&self, cfg: &Config, ollama: &Option<Vec<String>>) -> bool {
@@ -240,6 +266,17 @@ impl AiService {
             ollama_available: rt.ollama.is_some(),
             ollama_models: rt.ollama.clone().unwrap_or_default(),
             pending,
+            speech_ready: manifest::speech_model(&cfg.speech_model_id)
+                .is_some_and(|m| self.paths.model_file(&m.file).exists()),
+            speech_model_id: cfg.speech_model_id.clone(),
+            speech_models: manifest::manifest()
+                .speech
+                .iter()
+                .map(|m| SpeechInfo {
+                    spec: m.clone(),
+                    installed: self.paths.model_file(&m.file).exists(),
+                })
+                .collect(),
         }
     }
 
@@ -280,6 +317,12 @@ impl AiService {
             if let Some(m) = &patch.ollama_model {
                 set_setting(conn, "ai.ollamaModel", m)?;
             }
+            if let Some(m) = &patch.speech_model_id {
+                if manifest::speech_model(m).is_none() {
+                    return Err(AiError::NotReady(format!("unknown speech model {m}")));
+                }
+                set_setting(conn, "ai.speechModel", m)?;
+            }
             Ok(())
         })
         .ok_or_else(|| AiError::NotReady("database unavailable".into()))??;
@@ -295,6 +338,9 @@ impl AiService {
 
     /// Downloads the server build (if missing) and `model_id`, publishing progress.
     pub async fn download(self: &Arc<Self>, model_id: String) -> Result<(), AiError> {
+        if let Some(speech) = manifest::speech_model(&model_id) {
+            return self.download_speech(speech.clone()).await;
+        }
         let spec = manifest::model(&model_id)
             .ok_or_else(|| AiError::NotReady(format!("unknown model {model_id}")))?
             .clone();
@@ -316,7 +362,60 @@ impl AiService {
                     .configure(AiConfigPatch {
                         provider: Some(ProviderKind::Builtin),
                         model_id: Some(spec.id.clone()),
-                        ollama_model: None,
+                        ..Default::default()
+                    })
+                    .await;
+            }
+            Err(AiError::Cancelled) => self.set_phase(Phase::Idle, None),
+            Err(e) => self.set_phase(Phase::Error, Some(e.to_string())),
+        }
+        self.publish().await;
+        result
+    }
+
+    async fn download_speech(self: &Arc<Self>, spec: SpeechSpec) -> Result<(), AiError> {
+        let cancel = Arc::new(AtomicBool::new(false));
+        {
+            let mut slot = self.cancel.lock().expect("cancel lock");
+            if slot.is_some() {
+                return Err(AiError::NotReady("a download is already running".into()));
+            }
+            *slot = Some(cancel.clone());
+        }
+        let me = Arc::clone(self);
+        let model_id = spec.id.clone();
+        let progress = move |received: u64, total: u64| {
+            me.runtime.lock().expect("runtime lock").download = Some(DownloadProgress {
+                model_id: model_id.clone(),
+                stage: "speech".into(),
+                received,
+                total,
+            });
+            let me = Arc::clone(&me);
+            tauri::async_runtime::spawn(async move { me.publish().await });
+        };
+        let dest = self.paths.model_file(&spec.file);
+        let result = if dest.exists() {
+            Ok(())
+        } else {
+            download::download(
+                &spec.url,
+                &dest,
+                &spec.sha256,
+                spec.size_bytes,
+                cancel,
+                &progress,
+            )
+            .await
+        };
+        *self.cancel.lock().expect("cancel lock") = None;
+        self.runtime.lock().expect("runtime lock").download = None;
+        match &result {
+            Ok(()) => {
+                let _ = self
+                    .configure(AiConfigPatch {
+                        speech_model_id: Some(spec.id.clone()),
+                        ..Default::default()
                     })
                     .await;
             }
@@ -395,6 +494,14 @@ impl AiService {
     }
 
     pub async fn remove_model(&self, model_id: &str) -> Result<(), AiError> {
+        if let Some(speech) = manifest::speech_model(model_id) {
+            let path = self.paths.model_file(&speech.file);
+            if path.exists() {
+                tokio::fs::remove_file(path).await?;
+            }
+            self.publish().await;
+            return Ok(());
+        }
         let spec = manifest::model(model_id)
             .ok_or_else(|| AiError::NotReady(format!("unknown model {model_id}")))?;
         {

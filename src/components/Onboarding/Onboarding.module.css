@@ -1,0 +1,173 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(600px 420px at 50% 40%, rgba(109, 74, 255, 0.18), transparent 70%),
+    rgba(10, 10, 14, 0.72);
+  animation: fade var(--noma-slow) var(--noma-ease) both;
+}
+[data-theme="light"] .backdrop {
+  background:
+    radial-gradient(600px 420px at 50% 40%, rgba(128, 101, 220, 0.14), transparent 70%),
+    rgba(246, 245, 249, 0.8);
+}
+
+.card {
+  width: 480px;
+  box-sizing: border-box;
+  padding: 36px 36px 24px;
+  border-radius: var(--noma-radius-panel);
+  background: var(--noma-surface);
+  border: 1px solid var(--noma-border);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: rise var(--noma-slow) var(--noma-ease) both;
+}
+
+.orb {
+  height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--noma-text-2);
+}
+
+.models {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+.model {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--noma-radius-control);
+  border: 1px solid var(--noma-border-card);
+  background: var(--noma-bg-2);
+}
+.modelText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.modelLabel {
+  font-size: 14px;
+  font-weight: 500;
+}
+.meta {
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+.ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--noma-done);
+}
+[data-theme="light"] .ready {
+  color: var(--noma-done-fill);
+}
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 140px;
+}
+.track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--noma-border);
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  background: var(--noma-lavender);
+  transition: width var(--noma-base) linear;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.primary,
+.secondary,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: var(--noma-radius-control);
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid transparent;
+  transition: background var(--noma-fast) ease;
+}
+.primary {
+  background: var(--noma-lavender);
+  color: #17131f;
+  font-weight: 500;
+}
+.primary:hover {
+  background: var(--noma-pale);
+}
+.secondary {
+  background: var(--noma-surface-elevated);
+  border-color: var(--noma-border);
+  color: var(--noma-text);
+}
+.secondary:hover:not(:disabled) {
+  border-color: var(--noma-border-hover);
+}
+.secondary:disabled {
+  opacity: 0.5;
+}
+.ghost {
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.ghost:hover {
+  color: var(--noma-text);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}

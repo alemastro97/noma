@@ -16,6 +16,9 @@ const base: AiState = {
   ollamaAvailable: false,
   ollamaModels: [],
   pending: 0,
+  speechModelId: "s",
+  speechModels: [],
+  speechReady: false,
 };
 
 test("status label follows download, phase and readiness", () => {

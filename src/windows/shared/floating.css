@@ -1,0 +1,12 @@
+/* Floating panels: the window is transparent; only the glass surface paints. */
+html.noma-floating,
+html.noma-floating body,
+html.noma-floating #root {
+  background: transparent !important;
+  overflow: hidden;
+}
+
+html.noma-floating body {
+  user-select: none;
+  -webkit-user-select: none;
+}

@@ -11,6 +11,7 @@ pub mod models;
 pub mod placements;
 pub mod projects;
 pub mod recurrence;
+pub mod reminders;
 #[cfg(debug_assertions)]
 pub mod seed;
 pub mod settings;

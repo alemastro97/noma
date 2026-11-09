@@ -239,3 +239,78 @@
   color: var(--noma-text);
   font-size: 13px;
 }
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+}
+.toggleText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.toggleLabel {
+  font-size: 14px;
+  color: var(--noma-text);
+}
+
+.switch {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--noma-border);
+  transition: background var(--noma-fast) ease;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--noma-text);
+  transition: transform var(--noma-fast) var(--noma-ease);
+}
+.switch:checked {
+  background: var(--noma-lavender);
+}
+.switch:checked::after {
+  transform: translateX(14px);
+  background: #fff;
+}
+.switch:focus-visible {
+  outline: 2px solid var(--noma-lavender);
+  outline-offset: 2px;
+}
+
+.shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+}
+.shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--noma-text-2);
+}
+.kbd {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text);
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--noma-border);
+  background: var(--noma-surface);
+}

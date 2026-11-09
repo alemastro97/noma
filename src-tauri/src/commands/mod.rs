@@ -2,11 +2,12 @@
 
 pub mod ai;
 pub mod boards;
+pub mod desktop;
 pub mod items;
 pub mod projects;
 
 use serde::Serialize;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 use crate::db::DbError;
 
@@ -19,6 +20,10 @@ pub struct ItemsChanged {
 }
 
 pub fn emit_items_changed(app: &AppHandle, ids: Vec<String>) {
+    // Any change may move a reminder time.
+    if let Some(r) = app.try_state::<std::sync::Arc<crate::reminders::Reminders>>() {
+        r.nudge();
+    }
     if let Err(err) = app.emit(ITEMS_CHANGED, ItemsChanged { ids }) {
         log::warn!("failed to emit {ITEMS_CHANGED}: {err}");
     }

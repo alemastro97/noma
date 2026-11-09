@@ -3,7 +3,8 @@
 //! A regular `NSWindow` cannot float over *other* apps' fullscreen Spaces, no
 //! matter its level or collection behavior. A non-activating `NSPanel` with
 //! `FullScreenAuxiliary | CanJoinAllSpaces` can — this is what Spotlight-style
-//! launchers do. `tauri-nspanel` swaps the window's class to an NSPanel subclass.
+//! launchers do (ADR-0002). Panels that take typing (voice overlay, quick
+//! capture) use a key-capable class.
 
 use objc2_app_kit::{NSWindowCollectionBehavior, NSWindowStyleMask};
 use tauri::Manager;
@@ -13,6 +14,13 @@ tauri_panel! {
     panel!(FloatingPanel {
         config: {
             can_become_key_window: false,
+            is_floating_panel: true
+        }
+    })
+
+    panel!(KeyPanel {
+        config: {
+            can_become_key_window: true,
             is_floating_panel: true
         }
     })
@@ -26,20 +34,27 @@ fn floating_behavior() -> NSWindowCollectionBehavior {
 }
 
 /// Converts `window` to a floating non-activating panel (once) and applies the
-/// floating behavior. Idempotent: later calls only re-apply the behavior.
-pub fn configure_floating(window: &tauri::WebviewWindow) {
+/// floating behavior. `key` panels can take keyboard focus.
+pub fn configure_floating(window: &tauri::WebviewWindow, key: bool) {
     let app = window.app_handle();
     let label = window.label().to_string();
 
     let panel = match app.get_webview_panel(&label) {
         Ok(panel) => panel,
-        Err(_) => match window.to_panel::<FloatingPanel>() {
-            Ok(panel) => panel,
-            Err(err) => {
-                log::warn!("could not convert window {label} to panel: {err}");
-                return;
+        Err(_) => {
+            let converted = if key {
+                window.to_panel::<KeyPanel>()
+            } else {
+                window.to_panel::<FloatingPanel>()
+            };
+            match converted {
+                Ok(panel) => panel,
+                Err(err) => {
+                    log::warn!("could not convert window {label} to panel: {err}");
+                    return;
+                }
             }
-        },
+        }
     };
 
     let _ = panel.add_style_mask(NSWindowStyleMask::NonactivatingPanel);
@@ -50,10 +65,11 @@ pub fn configure_floating(window: &tauri::WebviewWindow) {
     panel.set_floating_panel(true);
 }
 
-/// Orders the panel front without activating the app. Falls back to the plain
-/// window `show()` if the window was never converted.
-pub fn order_front_regardless(window: &tauri::WebviewWindow) {
+/// Orders the panel front (making it key when it accepts typing) without
+/// activating the app.
+pub fn show(window: &tauri::WebviewWindow, key: bool) {
     match window.app_handle().get_webview_panel(window.label()) {
+        Ok(panel) if key => panel.show_and_make_key(),
         Ok(panel) => panel.order_front_regardless(),
         Err(_) => {
             let _ = window.show();
@@ -62,7 +78,7 @@ pub fn order_front_regardless(window: &tauri::WebviewWindow) {
 }
 
 /// Hides the panel (or the window if never converted).
-pub fn order_out(window: &tauri::WebviewWindow) {
+pub fn hide(window: &tauri::WebviewWindow) {
     match window.app_handle().get_webview_panel(window.label()) {
         Ok(panel) => panel.hide(),
         Err(_) => {

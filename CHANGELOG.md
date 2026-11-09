@@ -4,6 +4,15 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+## 0.3.0 — Desktop presence (2026-11-09)
+
+- **Talk to NOMA anywhere:** hold or tap ⌥ Space, speak, and the card is created — transcribed on your Mac by Whisper (Large v3 Turbo, 574 MB) with live transcript, waveform and a summary of what was captured. ↵ save · Tab edit · Esc cancel.
+- **Quick capture anywhere** with ⌘⇧N, without leaving the app you're in.
+- **Floating orb** over every app and fullscreen Space; click it for today's list, a mic button and Open NOMA.
+- **Reminders that reach you:** glass toasts with Snooze 1h / Tomorrow / Done, grouped "while you were away" catch-up, macOS notifications when NOMA is in the background, pause from the menu bar.
+- NOMA keeps running in the menu bar when you close the window.
+- First-run onboarding with the model downloads; Settings → Voice and On your desktop.
+
 ## 0.2.0 — On-device AI capture (2026-11-09)
 
 - Quick add has an **Auto** mode: say or type anything and NOMA turns it into one to three typed cards — dates, reminders, repeats, priority and project included — with a model running entirely on your Mac.

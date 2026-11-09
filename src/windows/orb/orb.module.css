@@ -6,6 +6,9 @@
 }
 
 .root {
+  border: 0;
+  padding: 0;
+  background: transparent;
   width: 100vw;
   height: 100vh;
   display: flex;

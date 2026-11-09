@@ -304,7 +304,22 @@ const aiState = {
   ollamaAvailable: false,
   ollamaModels: [] as string[],
   pending: 0,
+  speechModelId: "whisper-large-v3-turbo-q5",
+  speechReady: false,
+  speechModels: [
+    {
+      id: "whisper-large-v3-turbo-q5",
+      name: "Whisper Large v3 Turbo",
+      description: "Accurate in Italian and English, fast on Apple Silicon.",
+      file: "ggml-large-v3-turbo-q5_0.bin",
+      sizeBytes: 574041195,
+      ramGb: 1,
+      recommended: true,
+      installed: false,
+    },
+  ],
 };
+const settings = new Map<string, string>();
 const capturing = new Set<string>();
 
 function publishAi() {
@@ -498,6 +513,28 @@ function handle(cmd: string, a: Args): unknown {
       publishAi();
       return { ...aiState, pending: capturing.size };
     case "ai_download": {
+      const speech = aiState.speechModels.find((m) => m.id === a.modelId);
+      if (speech) {
+        let got = 0;
+        const tick = setInterval(() => {
+          got = Math.min(speech.sizeBytes, got + speech.sizeBytes / 10);
+          aiState.download = {
+            modelId: speech.id,
+            stage: "speech",
+            received: got,
+            total: speech.sizeBytes,
+          };
+          if (got >= speech.sizeBytes) {
+            clearInterval(tick);
+            aiState.download = null;
+            speech.installed = true;
+            aiState.speechModelId = speech.id;
+            aiState.speechReady = true;
+          }
+          publishAi();
+        }, 250);
+        return null;
+      }
       const model = aiState.models.find((m) => m.id === a.modelId);
       if (!model) return null;
       let received = 0;
@@ -519,6 +556,11 @@ function handle(cmd: string, a: Args): unknown {
       publishAi();
       return null;
     case "ai_remove_model": {
+      const sp = aiState.speechModels.find((m) => m.id === a.modelId);
+      if (sp) {
+        sp.installed = false;
+        aiState.speechReady = false;
+      }
       const model = aiState.models.find((m) => m.id === a.modelId);
       if (model) model.installed = false;
       aiState.ready = aiState.models.some((m) => m.installed && m.id === aiState.modelId);
@@ -549,6 +591,47 @@ function handle(cmd: string, a: Args): unknown {
     }
     case "capture_retry":
       return null;
+    case "settings_get":
+      return settings.get(String(a.key)) ?? null;
+    case "settings_set":
+      settings.set(String(a.key), String(a.value));
+      return null;
+    case "voice_current":
+      if (location.search.includes("demo")) {
+        setTimeout(() => {
+          for (let i = 0; i < 40; i++) emit("voice:level", Math.random() * 0.06);
+        }, 50);
+        return {
+          phase: "listening",
+          text: "Book the photographer for the launch shoot next Monday, and remind me on Friday",
+          message: null,
+          captureId: null,
+          itemId: null,
+        };
+      }
+      return { phase: "idle", text: null, message: null, captureId: null, itemId: null };
+    case "voice_edit":
+      return null;
+    case "voice_start":
+    case "voice_stop":
+    case "voice_cancel":
+    case "panel_show":
+    case "panel_hide":
+    case "panel_toggle":
+    case "main_show":
+    case "reminder_dismiss":
+    case "reminder_snooze":
+    case "reminder_done":
+      return null;
+    case "reminders_active": {
+      const r = [...items.values()].find((i) => i.kind === "reminder");
+      if (!r) return [];
+      const soon = { ...r, remindAt: iso(new Date(Date.now() + 15 * 60_000)) };
+      return [
+        { id: r.id, items: [withLinks(soon)], missed: false },
+        { id: "away", items: [...items.values()].slice(0, 3).map(withLinks), missed: true },
+      ];
+    }
     case "links_delete":
       links = links.filter((l) => l.id !== a.id);
       changed();

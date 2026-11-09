@@ -41,10 +41,26 @@ pub struct ModelSpec {
     pub recommended: bool,
 }
 
+/// A speech-to-text (whisper.cpp ggml) model.
+#[derive(Deserialize, Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SpeechSpec {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub file: String,
+    pub url: String,
+    pub sha256: String,
+    pub size_bytes: u64,
+    pub ram_gb: f32,
+    pub recommended: bool,
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Manifest {
     pub server: ServerSpec,
     pub models: Vec<ModelSpec>,
+    pub speech: Vec<SpeechSpec>,
 }
 
 pub fn manifest() -> &'static Manifest {
@@ -75,6 +91,18 @@ pub fn model(id: &str) -> Option<&'static ModelSpec> {
     manifest().models.iter().find(|m| m.id == id)
 }
 
+pub fn speech_model(id: &str) -> Option<&'static SpeechSpec> {
+    manifest().speech.iter().find(|m| m.id == id)
+}
+
+pub fn default_speech_model() -> &'static SpeechSpec {
+    let m = manifest();
+    m.speech
+        .iter()
+        .find(|x| x.recommended)
+        .unwrap_or(&m.speech[0])
+}
+
 pub fn default_model() -> &'static ModelSpec {
     let m = manifest();
     m.models
@@ -96,6 +124,10 @@ mod tests {
             assert_eq!(model.sha256.len(), 64, "{} sha256", model.id);
             assert!(model.url.ends_with(&model.file));
         }
+        for speech in &m.speech {
+            assert_eq!(speech.sha256.len(), 64, "{} sha256", speech.id);
+        }
+        assert!(default_speech_model().recommended);
         for asset in m.server.assets.values() {
             assert_eq!(asset.sha256.len(), 64);
         }

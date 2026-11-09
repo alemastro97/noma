@@ -1,4 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { settingGet } from "../api/desktop";
+import { Onboarding } from "../components/Onboarding/Onboarding";
 import type { Board, ItemFilter, Project } from "../api/types";
 import { copy } from "../copy";
 import { CommandPalette } from "../components/CommandPalette/CommandPalette";
@@ -48,6 +50,13 @@ export function App() {
   const itemsById = useItemsStore((s) => s.items);
 
   useGlobalHotkeys();
+
+  const [onboarding, setOnboarding] = useState(false);
+  useEffect(() => {
+    settingGet("onboarding.done")
+      .then((v) => setOnboarding(typeof v !== "undefined" && v !== "1"))
+      .catch(() => undefined);
+  }, []);
 
   // Initial data and backend change events. Safe under StrictMode's double effect.
   useEffect(() => {
@@ -121,6 +130,7 @@ export function App() {
       <QuickAdd />
       <CommandPalette />
       <Toasts />
+      {onboarding && <Onboarding onDone={() => setOnboarding(false)} />}
     </div>
   );
 }

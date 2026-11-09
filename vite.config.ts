@@ -13,6 +13,10 @@ export default defineConfig({
       input: {
         main: new URL("./index.html", import.meta.url).pathname,
         orb: new URL("./src/windows/orb/index.html", import.meta.url).pathname,
+        overlay: new URL("./src/windows/overlay/index.html", import.meta.url).pathname,
+        capture: new URL("./src/windows/capture/index.html", import.meta.url).pathname,
+        panel: new URL("./src/windows/panel/index.html", import.meta.url).pathname,
+        toasts: new URL("./src/windows/toasts/index.html", import.meta.url).pathname,
       },
     },
   },

@@ -1,0 +1,129 @@
+.root {
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.panel {
+  box-sizing: border-box;
+  width: 300px;
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: enter var(--noma-base) var(--noma-ease) both;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.title {
+  font-size: 14px;
+  font-weight: 500;
+}
+.meta,
+.time {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+.time {
+  margin-left: auto;
+  flex: none;
+}
+
+.empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--noma-text-2);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--noma-text);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: default;
+}
+.label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check {
+  width: 15px;
+  height: 15px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1.5px solid var(--noma-lavender);
+  flex: none;
+  transition: background var(--noma-fast) ease;
+}
+.row:hover .check {
+  background: rgba(167, 139, 250, 0.16);
+}
+.amber {
+  border-color: var(--noma-reminder);
+}
+
+.done {
+  color: var(--noma-text-2);
+}
+.done .label {
+  text-decoration: line-through;
+}
+.done .check {
+  border: 0;
+  background: var(--noma-done);
+}
+
+.foot {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-theme="light"] .foot {
+  border-top-color: rgba(36, 33, 45, 0.07);
+}
+.foot button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.open {
+  margin-left: auto;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
