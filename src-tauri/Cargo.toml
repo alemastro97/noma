@@ -1,6 +1,6 @@
 [package]
 name = "noma"
-version = "0.0.0"
+version = "0.0.1"
 description = "NOMA — your second mind. Personal AI desktop companion."
 authors = ["Alessandro Mastropasqua"]
 license = "MIT"

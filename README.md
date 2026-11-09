@@ -1,5 +1,7 @@
 # NOMA
 
+[![CI](https://github.com/alemastro97/noma/actions/workflows/ci.yml/badge.svg)](https://github.com/alemastro97/noma/actions/workflows/ci.yml)
+
 **YOUR SECOND MIND.**
 
 NOMA is a personal AI desktop companion. A small violet orb lives on your desktop; press a shortcut, say or type something, and a correctly typed card — task, reminder, note, idea, project, event — appears on the right board with the right date and reminder. Speech-to-text and the language model run on your machine; your data stays in a local SQLite database.
@@ -33,7 +35,7 @@ cd src-tauri && cargo test && cargo clippy --all-targets -- -D warnings
 
 ## Releases
 
-Tagging `v*` builds a universal macOS DMG via GitHub Actions. v1 builds are **unsigned**: on first launch macOS will block the app. Either right-click → Open, or run:
+Bump the version in `package.json`, `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json`, add a CHANGELOG entry, then `git tag vX.Y.Z && git push --tags`. Tagging `v*` builds a universal macOS DMG via GitHub Actions. v1 builds are **unsigned**: on first launch macOS will block the app. Either right-click → Open, or run:
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/NOMA.app

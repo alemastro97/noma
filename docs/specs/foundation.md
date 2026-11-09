@@ -1,6 +1,6 @@
 # Foundation
 
-**Status:** In progress · **Phase:** 0 · **Plan:** [../plans/2026-11-09-phase-0-foundation.md](../plans/2026-11-09-phase-0-foundation.md)
+**Status:** Shipped (0.0.1) · **Phase:** 0 · **Plan:** [../plans/2026-11-09-phase-0-foundation.md](../plans/2026-11-09-phase-0-foundation.md)
 
 ## Scope
 
@@ -47,4 +47,4 @@ None.
 ## Changelog
 
 - 2026-11-09 — created
-- 2026-11-09 — Tasks 1–7 landed: repo, scaffold, tokens, orb, shell, floating-window spike (ADR-0002, go), data layer
+- 2026-11-09 — Tasks 1–10 landed; released 0.0.1. Tasks 1–7: repo, scaffold, tokens, orb, shell, floating-window spike (ADR-0002, go), data layer
