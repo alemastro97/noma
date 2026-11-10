@@ -25,7 +25,8 @@ pub const VOICE_PARTIAL: &str = "voice:partial";
 const TICK: Duration = Duration::from_millis(60);
 const PARTIAL_EVERY: Duration = Duration::from_millis(900);
 const PARTIAL_WINDOW_S: usize = 15;
-const UNLOAD_AFTER: Duration = Duration::from_secs(60);
+/// The model stays resident (instant ⌥ Space); it is freed after a long idle.
+const UNLOAD_AFTER: Duration = Duration::from_secs(30 * 60);
 /// Holding ⌥ Space longer than this makes it push-to-talk.
 const HOLD_TO_TALK: Duration = Duration::from_millis(600);
 
@@ -107,6 +108,35 @@ impl VoiceService {
                     .and_then(|c| get_setting(&c, "voice.autoStop").ok().flatten())
             })
             .is_none_or(|v| v != "0")
+    }
+
+    /// Language to transcribe: `voice.language` ("it" default, "en", or "auto").
+    fn language(&self) -> Option<String> {
+        let setting = self.app.try_state::<AppState>().and_then(|s| {
+            s.db.lock()
+                .ok()
+                .and_then(|c| get_setting(&c, "voice.language").ok().flatten())
+        });
+        match setting.as_deref() {
+            Some("auto") => None,
+            Some(l) if !l.is_empty() => Some(l.to_string()),
+            _ => Some("it".to_string()),
+        }
+    }
+
+    /// Loads and warms the model in the background so the first ⌥ Space is instant.
+    pub fn preload(self: &Arc<Self>) {
+        let me = Arc::clone(self);
+        tauri::async_runtime::spawn(async move {
+            if me.app.state::<Arc<AiService>>().speech_model().is_none() {
+                return;
+            }
+            let t = Instant::now();
+            match me.ensure_model().await {
+                Ok(()) => log::info!("speech model ready in {} ms", t.elapsed().as_millis()),
+                Err(e) => log::warn!("speech preload: {e}"),
+            }
+        });
     }
 
     /// Loads the speech model on a blocking thread if it is not loaded yet.
@@ -194,7 +224,7 @@ impl VoiceService {
         let mut vad = Endpointer::default();
         let mut last_partial = Instant::now();
         let mut partial_len = 0usize;
-        let mut language: Option<String> = None;
+        let language = self.language();
         loop {
             tokio::time::sleep(TICK).await;
             let (level, len) = {
@@ -230,9 +260,6 @@ impl VoiceService {
                 let result = me.transcribe(audio, lang).await;
                 self.partial_running.store(false, Ordering::SeqCst);
                 if let Ok(t) = result {
-                    if language.is_none() {
-                        language = t.language.clone();
-                    }
                     let still = self
                         .active
                         .lock()
@@ -263,7 +290,7 @@ impl VoiceService {
             });
             return None;
         }
-        let transcript = match self.transcribe(samples, None).await {
+        let transcript = match self.transcribe(samples, self.language()).await {
             Ok(t) => t,
             Err(e) => {
                 self.emit_state(VoiceState {

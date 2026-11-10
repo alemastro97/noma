@@ -71,7 +71,9 @@ pub fn run() {
             app.manage(Arc::clone(&ai_service));
             tauri::async_runtime::spawn(ai_service.run_worker());
 
-            app.manage(VoiceService::new(app.handle().clone()));
+            let voice = VoiceService::new(app.handle().clone());
+            app.manage(Arc::clone(&voice));
+            voice.preload();
 
             let reminders = Reminders::new(app.handle().clone());
             app.manage(Arc::clone(&reminders));

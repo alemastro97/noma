@@ -146,6 +146,7 @@ pub struct AiService {
 
 impl AiService {
     pub fn new(app: AppHandle, paths: Paths) -> Arc<Self> {
+        server::reap_stale(&paths.server_log());
         Arc::new(Self {
             app,
             paths,

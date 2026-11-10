@@ -10,6 +10,7 @@ use crate::db::{
     models::{Item, ItemType, NewItem, Status},
 };
 use crate::state::{AppState, now};
+use crate::voice::session::VoiceService;
 
 /// Where the capture happened, so the card lands in the right place.
 #[derive(Deserialize, Debug, Default)]
@@ -63,20 +64,35 @@ pub async fn ai_refresh(ai: State<'_, Arc<AiService>>) -> Result<AiState, String
 
 #[tauri::command]
 pub async fn ai_configure(
+    app: AppHandle,
     ai: State<'_, Arc<AiService>>,
     patch: AiConfigPatch,
 ) -> Result<AiState, String> {
+    let speech_changed = patch.speech_model_id.is_some();
     ai.configure(patch).await.map_err(|e| e.to_string())?;
+    if speech_changed && let Some(voice) = app.try_state::<Arc<VoiceService>>() {
+        voice.preload();
+    }
     Ok(ai.snapshot().await)
 }
 
 /// Starts a download in the background; progress arrives as `ai:state` events.
 #[tauri::command]
-pub async fn ai_download(ai: State<'_, Arc<AiService>>, model_id: String) -> Result<(), String> {
+pub async fn ai_download(
+    app: AppHandle,
+    ai: State<'_, Arc<AiService>>,
+    model_id: String,
+) -> Result<(), String> {
     let service = Arc::clone(&ai);
     tauri::async_runtime::spawn(async move {
-        if let Err(e) = service.download(model_id).await {
-            log::warn!("model download failed: {e}");
+        match service.download(model_id).await {
+            Ok(()) => {
+                // A freshly downloaded speech model is loaded right away.
+                if let Some(voice) = app.try_state::<Arc<VoiceService>>() {
+                    voice.preload();
+                }
+            }
+            Err(e) => log::warn!("model download failed: {e}"),
         }
     });
     Ok(())

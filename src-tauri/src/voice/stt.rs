@@ -28,6 +28,13 @@ const HALLUCINATIONS: &[&str] = &[
     ".",
 ];
 
+/// Encoder frames (50 per second) for a clip, with margin, rounded to 64 and
+/// clamped to Whisper's 30 s maximum of 1500.
+pub fn audio_ctx_for(samples: usize) -> i32 {
+    let frames = (samples as f32 / SAMPLE_RATE as f32 * 50.0) as i32 + 250;
+    ((frames + 63) / 64 * 64).clamp(512, 1500)
+}
+
 /// Removes bracketed annotations ("[Music]", "(applause)") and known
 /// silence hallucinations; collapses whitespace.
 pub fn clean_transcript(raw: &str) -> String {
@@ -51,22 +58,31 @@ pub fn clean_transcript(raw: &str) -> String {
 
 #[cfg(target_os = "macos")]
 pub struct Stt {
+    #[allow(dead_code)]
     ctx: whisper_rs::WhisperContext,
+    state: std::sync::Mutex<whisper_rs::WhisperState>,
     pub model_id: String,
 }
 
 #[cfg(target_os = "macos")]
 impl Stt {
+    /// Loads the model and runs one silent pass so Metal kernels are compiled
+    /// and buffers allocated before the first real capture.
     pub fn load(path: &Path, model_id: &str) -> Result<Self, VoiceError> {
-        let ctx = whisper_rs::WhisperContext::new_with_params(
-            path,
-            whisper_rs::WhisperContextParameters::default(),
-        )
-        .map_err(|e| VoiceError::Stt(e.to_string()))?;
-        Ok(Self {
+        let mut params = whisper_rs::WhisperContextParameters::default();
+        params.flash_attn(true);
+        let ctx = whisper_rs::WhisperContext::new_with_params(path, params)
+            .map_err(|e| VoiceError::Stt(e.to_string()))?;
+        let state = ctx
+            .create_state()
+            .map_err(|e| VoiceError::Stt(e.to_string()))?;
+        let stt = Self {
             ctx,
+            state: std::sync::Mutex::new(state),
             model_id: model_id.to_string(),
-        })
+        };
+        let _ = stt.run(&vec![0.0; SAMPLE_RATE as usize * 2], Some("en"));
+        Ok(stt)
     }
 
     /// Transcribes 16 kHz mono audio. `language` pins the language (for
@@ -76,18 +92,27 @@ impl Stt {
         audio: &[f32],
         language: Option<&str>,
     ) -> Result<Transcript, VoiceError> {
-        use whisper_rs::{FullParams, SamplingStrategy};
         if audio.len() < SAMPLE_RATE as usize / 4 {
             return Ok(Transcript::default());
         }
+        self.run(audio, language)
+    }
+
+    fn run(&self, audio: &[f32], language: Option<&str>) -> Result<Transcript, VoiceError> {
+        use whisper_rs::{FullParams, SamplingStrategy};
         let mut state = self
-            .ctx
-            .create_state()
-            .map_err(|e| VoiceError::Stt(e.to_string()))?;
+            .state
+            .lock()
+            .map_err(|_| VoiceError::Stt("speech state lock".into()))?;
         let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
         params.set_language(Some(language.unwrap_or("auto")));
         params.set_n_threads(4);
         params.set_no_timestamps(true);
+        // Whisper always encodes a 30 s window; shrink it to the real clip
+        // (plus margin) so a 3 s utterance doesn't cost a 30 s encode.
+        params.set_audio_ctx(audio_ctx_for(audio.len()));
+        // No temperature fallback: it silently re-decodes and doubles latency.
+        params.set_temperature_inc(0.0);
         params.set_no_context(true);
         params.set_suppress_blank(true);
         params.set_print_special(false);
@@ -147,6 +172,13 @@ impl Stt {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn audio_ctx_scales_with_clip_and_is_capped() {
+        assert_eq!(audio_ctx_for(16_000), 512);
+        assert_eq!(audio_ctx_for(16_000 * 10), 768);
+        assert_eq!(audio_ctx_for(16_000 * 60), 1500);
+    }
 
     #[test]
     fn cleans_annotations_and_hallucinations() {

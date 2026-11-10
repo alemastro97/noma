@@ -208,6 +208,7 @@ function SpeechCard({ model }: { model: SpeechInfo }) {
 function VoiceSection() {
   const state = useAiStore((s) => s.state);
   const [autoStop, setAutoStop] = useSetting("voice.autoStop", "1");
+  const [language, setLanguage] = useSetting("voice.language", "it");
   if (!state) return null;
   return (
     <section className={styles.section} aria-labelledby="voice-title">
@@ -222,6 +223,22 @@ function VoiceSection() {
         {(state.speechModels ?? []).map((m) => (
           <SpeechCard key={m.id} model={m} />
         ))}
+      </div>
+      <div className={styles.row}>
+        <span className={styles.toggleText}>
+          <span className={styles.toggleLabel}>{t.language}</span>
+          <span className={styles.meta}>{t.languageHint}</span>
+        </span>
+        <Segmented
+          label={t.language}
+          value={language ?? "it"}
+          options={[
+            { value: "it", label: t.languages.it },
+            { value: "en", label: t.languages.en },
+            { value: "auto", label: t.languages.auto },
+          ]}
+          onChange={setLanguage}
+        />
       </div>
       <Toggle
         label={t.autoStop}

@@ -37,6 +37,35 @@ impl LlamaServer {
     }
 }
 
+/// The pid file sits next to the log: `llama-server.pid`.
+fn pid_path(log_path: &Path) -> PathBuf {
+    log_path.with_extension("pid")
+}
+
+/// Kills a server left behind by a previous NOMA that died without cleaning up
+/// (crash, `kill -9`, dev restart). Only kills if the pid is still llama-server.
+pub fn reap_stale(log_path: &Path) {
+    let pid_file = pid_path(log_path);
+    let Some(pid) = std::fs::read_to_string(&pid_file)
+        .ok()
+        .and_then(|s| s.trim().parse::<u32>().ok())
+    else {
+        return;
+    };
+    let _ = std::fs::remove_file(&pid_file);
+    let comm = std::process::Command::new("ps")
+        .args(["-p", &pid.to_string(), "-o", "comm="])
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
+        .unwrap_or_default();
+    if comm.contains("llama-server") {
+        log::info!("stopping stale llama-server (pid {pid})");
+        let _ = std::process::Command::new("kill")
+            .arg(pid.to_string())
+            .status();
+    }
+}
+
 fn free_port() -> Result<u16, AiError> {
     Ok(TcpListener::bind("127.0.0.1:0")?.local_addr()?.port())
 }
@@ -59,6 +88,7 @@ pub async fn start(
     context_size: u32,
     log_path: &Path,
 ) -> Result<LlamaServer, AiError> {
+    reap_stale(log_path);
     let port = free_port()?;
     if let Some(parent) = log_path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -91,6 +121,9 @@ pub async fn start(
         .spawn()
         .map_err(|e| AiError::Server(format!("could not start {}: {e}", binary.display())))?;
 
+    if let Some(pid) = child.id() {
+        let _ = std::fs::write(pid_path(log_path), pid.to_string());
+    }
     let mut server = LlamaServer {
         child,
         port,
