@@ -170,6 +170,11 @@ pub fn run() {
                 if let Some(ai) = app.try_state::<Arc<AiService>>() {
                     ai.kill_server_now();
                 }
+                // Whisper's Metal device asserts at process exit if a model is still
+                // loaded, which macOS reports as a crash: free it first.
+                if let Some(voice) = app.try_state::<Arc<VoiceService>>() {
+                    voice.shutdown();
+                }
             }
             // Clicking the Dock icon brings the main window back.
             #[cfg(target_os = "macos")]

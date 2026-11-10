@@ -399,6 +399,16 @@ impl VoiceService {
         Some(transcript.text)
     }
 
+    /// Drops the speech model and any recording right now (app exit).
+    pub fn shutdown(&self) {
+        if let Ok(mut a) = self.active.lock() {
+            *a = None;
+        }
+        if let Ok(mut g) = self.stt.lock() {
+            *g = None;
+        }
+    }
+
     /// Frees the speech model a minute after the last capture.
     fn schedule_unload(self: &Arc<Self>) {
         let generation = self.generation.load(Ordering::SeqCst);
