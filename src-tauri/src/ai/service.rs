@@ -713,17 +713,35 @@ impl AiService {
         self.set_phase(Phase::Processing, None);
         self.publish().await;
 
-        let projects: Vec<(String, String)> = self
-            .with_db(db::projects::list_projects)
-            .ok_or_else(|| AiError::NotReady("database unavailable".into()))??
-            .into_iter()
-            .map(|p| (p.id, p.name))
-            .collect();
+        let (projects, boards, recent) = self
+            .with_db(|c| -> db::DbResult<_> {
+                let projects: Vec<(String, String)> = db::projects::list_projects(c)?
+                    .into_iter()
+                    .map(|p| (p.id, p.name))
+                    .collect();
+                let boards: Vec<(String, String)> = db::boards::list_boards(c)?
+                    .into_iter()
+                    .filter(|b| b.kind == db::models::BoardKind::Personal)
+                    .map(|b| (b.id, b.name))
+                    .collect();
+                // What each place is about: its latest cards.
+                let mut recent = Vec::new();
+                for (id, _) in &projects {
+                    recent.push((id.clone(), db::items::recent_titles(c, id, false, 3)?));
+                }
+                for (id, _) in &boards {
+                    recent.push((id.clone(), db::items::recent_titles(c, id, true, 3)?));
+                }
+                Ok((projects, boards, recent))
+            })
+            .ok_or_else(|| AiError::NotReady("database unavailable".into()))??;
         let (now, tz) = (now(), local_tz());
         let ctx = Context {
             now,
             tz,
             projects: &projects,
+            boards: &boards,
+            recent: &recent,
         };
         let user = extract::user_prompt(&capture.raw_text, &ctx);
         let output = provider
@@ -731,7 +749,7 @@ impl AiService {
                 &self.client,
                 extract::SYSTEM_PROMPT,
                 &user,
-                &extract::schema(),
+                &extract::schema_for(&capture.raw_text),
             )
             .await?;
         let extracted = extract::parse_output(&output, &capture.raw_text, &ctx)?;

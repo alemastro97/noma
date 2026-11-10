@@ -66,6 +66,25 @@ pub fn reap_stale(log_path: &Path) {
     }
 }
 
+/// Memory flags: flash attention + 8-bit KV cache halve the cache (576 → 306 MiB
+/// at 4096 ctx) and a smaller micro-batch trims the compute buffer.
+/// `NOMA_LLAMA_FULL_KV=1` turns this off (for A/B measurements).
+fn memory_flags() -> Vec<&'static str> {
+    if std::env::var_os("NOMA_LLAMA_FULL_KV").is_some() {
+        return vec![];
+    }
+    vec![
+        "--flash-attn",
+        "on",
+        "--cache-type-k",
+        "q8_0",
+        "--cache-type-v",
+        "q8_0",
+        "--ubatch-size",
+        "256",
+    ]
+}
+
 fn free_port() -> Result<u16, AiError> {
     Ok(TcpListener::bind("127.0.0.1:0")?.local_addr()?.port())
 }
@@ -114,6 +133,7 @@ pub async fn start(
             "--jinja",
             "--offline",
         ])
+        .args(memory_flags())
         .stdin(Stdio::null())
         .stdout(Stdio::from(log.try_clone()?))
         .stderr(Stdio::from(log))

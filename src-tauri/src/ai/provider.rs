@@ -45,7 +45,7 @@ impl Provider {
                 let mut body = json!({
                     "messages": messages,
                     "temperature": 0,
-                    "max_tokens": 300,
+                    "max_tokens": 420,
                     "cache_prompt": true,
                     "response_format": {
                         "type": "json_schema",
@@ -55,15 +55,21 @@ impl Provider {
                 if *thinking {
                     body["chat_template_kwargs"] = json!({ "enable_thinking": false });
                 }
-                let resp: Value = client
+                let resp = client
                     .post(format!("{base_url}/v1/chat/completions"))
                     .timeout(Duration::from_secs(60))
                     .json(&body)
                     .send()
-                    .await?
-                    .error_for_status()?
-                    .json()
                     .await?;
+                if !resp.status().is_success() {
+                    let status = resp.status();
+                    let detail = resp.text().await.unwrap_or_default();
+                    let detail: String = detail.chars().take(300).collect();
+                    return Err(AiError::BadOutput(format!(
+                        "server said {status}: {detail}"
+                    )));
+                }
+                let resp: Value = resp.json().await?;
                 resp["choices"][0]["message"]["content"]
                     .as_str()
                     .map(str::to_string)
@@ -77,7 +83,7 @@ impl Provider {
                     "stream": false,
                     "think": false,
                     "keep_alive": "10m",
-                    "options": { "temperature": 0, "num_predict": 300 },
+                    "options": { "temperature": 0, "num_predict": 420 },
                 });
                 let resp: Value = client
                     .post(format!("{base_url}/api/chat"))

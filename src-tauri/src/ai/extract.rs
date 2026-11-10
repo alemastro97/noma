@@ -24,6 +24,10 @@ pub struct Context<'a> {
     pub tz: Tz,
     /// (id, name) of existing projects.
     pub projects: &'a [(String, String)],
+    /// (id, name) of personal boards.
+    pub boards: &'a [(String, String)],
+    /// Latest card titles per project / board id: what each place is about.
+    pub recent: &'a [(String, Vec<String>)],
 }
 
 /// One validated card, ready to be written.
@@ -40,6 +44,8 @@ pub struct Extracted {
     pub recurrence: Option<String>,
     pub priority: Priority,
     pub project_id: Option<String>,
+    /// Personal board the card belongs on when no project fits.
+    pub board_id: Option<String>,
     pub tags: Vec<String>,
     pub hint: Option<CaptureHint>,
 }
@@ -55,13 +61,14 @@ struct RawItem {
     #[serde(rename = "type")]
     kind: String,
     title: String,
-    body: Option<String>,
+    summary: Option<String>,
     due: Option<String>,
     end: Option<String>,
     remind: Option<String>,
     repeat: Option<String>,
     priority: Option<String>,
     project: Option<String>,
+    board: Option<String>,
     tags: Option<Vec<String>>,
     date_phrase: Option<String>,
     confidence: Option<f64>,
@@ -72,34 +79,46 @@ pub const SYSTEM_PROMPT: &str = r#"You turn one short note the user said or type
 
 Fields:
 - type: "task" (something to do), "reminder" (a nudge at a moment: "remind me", "ricordami"), "event" (an appointment, meeting, lunch, flight or dinner at a time; a call the user has to make is a task), "note" (information to keep: codes, passwords, quotes, what someone said), "idea" (a thought or possibility: "idea", "what if", "maybe", "e se", "potrei"), "project" (only when the user explicitly starts a new project).
-- title: short, in the user's language, without the date and time words and without "remind me to" / "ricordami di"; first letter capitalized, the rest as normal sentence case.
+- title: a short headline of 2 to 6 words that says what the note is about, in the user's language; no date or time words, no "remind me to" / "ricordami di"; first letter capitalized, the rest as normal sentence case. Never copy a long note: condense it.
+- summary: one short sentence restating the note in your own words. Only for notes longer than 15 words (always include it then); never for shorter ones.
 - due: when a task is due or an event starts, local "YYYY-MM-DDTHH:MM", or "YYYY-MM-DD" for a task with only a day.
 - end: the end of an event, only when said.
 - remind: when to notify, local "YYYY-MM-DDTHH:MM". Reminders use remind, never due.
 - repeat: only when the note repeats: "daily", "weekdays", "weekly", "monthly" or "yearly".
 - priority: "urgent" for urgent/ASAP/subito/urgente, "high" for important/importante; otherwise omit.
-- project: the exact name from Projects, only when the note clearly belongs to that project.
+- project: the exact name from Projects, when the note is about that project. Judge by topic, people and the recent cards listed in brackets, not only by the name.
+- board: the exact name from Boards, only when no project fits and the note shares a specific topic with that board's name or its recent cards. A board is not a bucket for ideas or notes in general. Never use both project and board. When unsure, omit both: the note goes to the inbox.
 - unsure: true only when you are unsure about the type or the date.
 
-Dates: use the Calendar line to turn weekday names into dates; never compute weekdays yourself. A day-and-month date ("3 March", "il 5") means its next occurrence after today. Resolve relative words against Now. today/oggi = Now's date; tomorrow/domani = +1 day; dopodomani/day after tomorrow = +2; a weekday name = its next occurrence after today; next week/la prossima settimana = next Monday; by the end of the week/entro la settimana = this Friday. Times when only a part of the day is said: morning/mattina 09:00, noon/mezzogiorno 12:00, afternoon/pomeriggio 15:00, evening/sera/stasera/tonight 20:00. A reminder with only a day: 09:00. An event with only a day: 09:00.
+Dates: use the Calendar line to turn weekday names into dates; never compute weekdays yourself. A day-and-month date ("3 March", "il 5") means its next occurrence after today. Resolve relative words against Now. today/oggi = Now's date; tomorrow/domani = +1 day; dopodomani/day after tomorrow = +2; a weekday name = its next occurrence after today; next week/la prossima settimana = next Monday; by the end of the week/entro la settimana = this Friday. Times when only a part of the day is said: morning/mattina 09:00, noon/mezzogiorno 12:00, afternoon/pomeriggio 15:00, evening/sera/stasera/tonight 20:00. A reminder with only a day (including a weekday name): 09:00, and no repeat unless the note says every/ogni. An event with only a day: 09:00.
 
 Several items only when the note clearly lists separate things to do (max 3). Never invent dates, projects or details.
 
-Examples with Now 2026-11-09T10:00 (Monday), Projects: Spring launch, Studio move:
+Examples with Now 2026-11-09T10:00 (Monday), Projects: Spring launch (Draft launch email; Shortlist three venues), Studio move (Pack the printer; Book movers); Boards: Thinking space (A calmer notification sound), Trips 2027:
 Note: ricordami di chiamare la mamma stasera
 {"items":[{"type":"reminder","title":"Chiamare la mamma","remind":"2026-11-09T20:00"}]}
 Note: buy milk and call the plumber tomorrow morning
 {"items":[{"type":"task","title":"Buy milk","due":"2026-11-10"},{"type":"task","title":"Call the plumber","due":"2026-11-10T09:00"}]}
 Note: every Monday at 9 remind me to do the weekly review
 {"items":[{"type":"reminder","title":"Do the weekly review","remind":"2026-11-16T09:00","repeat":"weekly"}]}
+Note: ricordami di mandare il preventivo a Luca venerdì
+{"items":[{"type":"reminder","title":"Preventivo a Luca","remind":"2026-11-13T09:00"}]}
 Note: call Marta at 11 about the contract
 {"items":[{"type":"task","title":"Call Marta about the contract","due":"2026-11-09T11:00"}]}
 Note: dentist Thursday at 3pm
 {"items":[{"type":"event","title":"Dentist","due":"2026-11-12T15:00"}]}
 Note: book the photographer for the spring launch shoot
-{"items":[{"type":"task","title":"Book the photographer for the shoot","project":"Spring launch"}]}
+{"items":[{"type":"task","title":"Book the photographer","project":"Spring launch"}]}
+Note: ricordami di chiedere ai traslocatori se portano anche la stampante
+{"items":[{"type":"reminder","title":"Stampante ai traslocatori","remind":"2026-11-10T09:00","project":"Studio move"}]}
+Note: per il viaggio in Giappone devo prenotare l'hotel a Kyoto
+{"items":[{"type":"task","title":"Hotel a Kyoto","board":"Trips 2027"}]}
+Note: comprare le batterie per il telecomando
+{"items":[{"type":"task","title":"Batterie per il telecomando"}]}
 Note: e se l'orb si attenuasse durante le riunioni?
-{"items":[{"type":"idea","title":"E se l'orb si attenuasse durante le riunioni?"}]}
+{"items":[{"type":"idea","title":"Orb che si attenua in riunione","board":"Thinking space"}]}
+Note: I should really rethink how the onboarding explains the first capture, maybe a short video instead of three screens of text, and ask Luca what he thinks before we commit
+{"items":[{"type":"idea","title":"Rethink onboarding explanation","summary":"Consider a short video instead of three text screens for onboarding, and get Luca's opinion first."}]}
 Note: il codice del portone è 4821
 {"items":[{"type":"note","title":"Codice del portone: 4821"}]}
 Note: urgente: rinnovare la carta d'identità
@@ -132,7 +151,9 @@ pub fn schema() -> Value {
                         "remind": datetime,
                         "repeat": { "type": "string", "enum": ["daily", "weekdays", "weekly", "monthly", "yearly"] },
                         "priority": { "type": "string", "enum": ["high", "urgent"] },
+                        "summary": { "type": "string", "maxLength": 240 },
                         "project": { "type": "string" },
+                        "board": { "type": "string" },
                         "unsure": { "type": "boolean" }
                     },
                     "required": ["type", "title"]
@@ -143,19 +164,50 @@ pub fn schema() -> Value {
     })
 }
 
+/// Like [`schema`], but a note longer than 15 words must come with a summary
+/// (the constrained decoder enforces it; a prompt rule alone is ignored by a
+/// small model). Short notes keep the lean schema.
+pub fn schema_for(text: &str) -> Value {
+    let mut s = schema();
+    if text.split_whitespace().count() > 15 {
+        s["properties"]["items"]["items"]["required"] = json!(["type", "title", "summary"]);
+    }
+    s
+}
+
 /// The user message: the moment, a short calendar (small models are bad at
 /// weekday arithmetic), the projects and the note itself.
 pub fn user_prompt(text: &str, ctx: &Context<'_>) -> String {
     let local = ctx.now.with_timezone(&ctx.tz);
-    let projects = if ctx.projects.is_empty() {
-        "(none)".to_string()
-    } else {
-        ctx.projects
-            .iter()
-            .map(|(_, n)| n.as_str())
+    let places = |list: &[(String, String)]| {
+        if list.is_empty() {
+            return "(none)".to_string();
+        }
+        list.iter()
+            .map(|(id, name)| {
+                let recent: Vec<String> = ctx
+                    .recent
+                    .iter()
+                    .find(|(rid, _)| rid == id)
+                    .map(|(_, titles)| {
+                        titles
+                            .iter()
+                            .take(3)
+                            .map(|t| t.chars().take(40).collect::<String>())
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                if recent.is_empty() {
+                    name.clone()
+                } else {
+                    format!("{name} ({})", recent.join("; "))
+                }
+            })
             .collect::<Vec<_>>()
             .join(", ")
     };
+    let projects = places(ctx.projects);
+    let boards = places(ctx.boards);
     let today = local.date_naive();
     let calendar = (1..=8)
         .map(|d| {
@@ -165,12 +217,13 @@ pub fn user_prompt(text: &str, ctx: &Context<'_>) -> String {
         .collect::<Vec<_>>()
         .join(", ");
     format!(
-        "Now: {} ({}), time zone {}\nCalendar: {}\nProjects: {}\nNote: {}",
+        "Now: {} ({}), time zone {}\nCalendar: {}\nProjects: {}\nBoards: {}\nNote: {}",
         local.format("%Y-%m-%dT%H:%M"),
         local.format("%A"),
         ctx.tz.name(),
         calendar,
         projects,
+        boards,
         text.trim()
     )
 }
@@ -309,6 +362,16 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
         _ => None,
     };
 
+    let board_id = if project_id.is_none() && !creates_project {
+        raw.board
+            .as_deref()
+            .map(str::trim)
+            .filter(|n| !n.is_empty())
+            .and_then(|name| match_project(name, ctx.boards))
+    } else {
+        None
+    };
+
     if raw.unsure == Some(true) || raw.confidence.unwrap_or(1.0) < LOW_CONFIDENCE {
         hint.low_confidence = true;
     }
@@ -319,10 +382,7 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
         .take(3)
         .collect();
 
-    let body = raw
-        .body
-        .map(|b| b.trim().to_string())
-        .filter(|b| !b.is_empty() && b != &title);
+    let body = compose_body(raw_text, raw.summary.as_deref(), &title);
 
     Extracted {
         kind,
@@ -335,8 +395,35 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
         recurrence,
         priority,
         project_id,
+        board_id,
         tags,
         hint: (!hint.is_empty()).then_some(hint),
+    }
+}
+
+fn plain(s: &str) -> String {
+    s.chars()
+        .filter(|c| c.is_alphanumeric() || c.is_whitespace())
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
+}
+
+/// The card description: an AI summary (only for long notes) above what the
+/// user actually said. A note that is just its own title needs no description.
+pub fn compose_body(raw_text: &str, summary: Option<&str>, title: &str) -> Option<String> {
+    let original = raw_text.trim();
+    let summary = summary
+        .map(str::trim)
+        .filter(|s| !s.is_empty() && plain(s) != plain(title) && plain(s) != plain(original));
+    let original = (!original.is_empty() && plain(original) != plain(title)).then_some(original);
+    match (summary, original) {
+        (Some(s), Some(o)) => Some(format!("{s}\n\nYou said:\n{o}")),
+        (Some(s), None) => Some(s.to_string()),
+        (None, Some(o)) => Some(o.to_string()),
+        (None, None) => None,
     }
 }
 
@@ -429,12 +516,66 @@ pub fn match_project(name: &str, projects: &[(String, String)]) -> Option<String
 mod tests {
     use super::*;
 
+    #[test]
+    fn body_keeps_what_was_said_and_adds_a_summary_for_long_notes() {
+        // Short capture: the description is the original words.
+        assert_eq!(
+            compose_body("ricordami di chiamare Marta domani", None, "Chiamare Marta").as_deref(),
+            Some("ricordami di chiamare Marta domani")
+        );
+        // A capture that is just its title adds nothing.
+        assert_eq!(compose_body("Buy milk.", None, "Buy milk"), None);
+        // Long capture: summary on top, original below.
+        assert_eq!(
+            compose_body("a very long ramble", Some("A ramble."), "Ramble").as_deref(),
+            Some("A ramble.\n\nYou said:\na very long ramble")
+        );
+    }
+
+    #[test]
+    fn prompt_lists_boards_and_what_each_place_is_about() {
+        let projects = vec![("p1".to_string(), "Spring launch".to_string())];
+        let boards = vec![("b1".to_string(), "Trips 2027".to_string())];
+        let recent = vec![(
+            "p1".to_string(),
+            vec![
+                "Book the photographer".to_string(),
+                "Draft launch email".to_string(),
+            ],
+        )];
+        let c = Context {
+            boards: &boards,
+            recent: &recent,
+            ..ctx(&projects)
+        };
+        let p = user_prompt("x", &c);
+        assert!(p.contains("Projects: Spring launch (Book the photographer; Draft launch email)"));
+        assert!(p.contains("Boards: Trips 2027"));
+    }
+
+    #[test]
+    fn board_is_matched_only_when_no_project_applies() {
+        let boards = vec![("b1".to_string(), "Trips 2027".to_string())];
+        let c = Context {
+            boards: &boards,
+            ..ctx(&[])
+        };
+        let json = item(r#""type":"note","title":"Ciliegi","board":"trips 2027""#);
+        let e = parse_output(&json, "raw", &c).unwrap().remove(0);
+        assert_eq!(e.board_id.as_deref(), Some("b1"));
+        let json = item(r#""type":"note","title":"Ciliegi","board":"Unknown board""#);
+        let e = parse_output(&json, "raw", &c).unwrap().remove(0);
+        assert_eq!(e.board_id, None);
+    }
+
     fn ctx(projects: &[(String, String)]) -> Context<'_> {
         // Monday 9 November 2026, 10:00 in Rome (09:00 UTC).
         Context {
             now: Utc.with_ymd_and_hms(2026, 11, 9, 9, 0, 0).unwrap(),
             tz: "Europe/Rome".parse().unwrap(),
             projects,
+            boards: &[],
+            recent: &[],
         }
     }
 
@@ -459,6 +600,15 @@ mod tests {
             serde_json::from_str(&format!("{{{fields}}}")).unwrap();
         base.extend(over);
         json!({ "items": [Value::Object(base)] }).to_string()
+    }
+
+    #[test]
+    fn long_notes_require_a_summary() {
+        let short = schema_for("buy milk");
+        let long = schema_for(&"word ".repeat(20));
+        let req = |s: &Value| s["properties"]["items"]["items"]["required"].clone();
+        assert_eq!(req(&short), json!(["type", "title"]));
+        assert_eq!(req(&long), json!(["type", "title", "summary"]));
     }
 
     #[test]

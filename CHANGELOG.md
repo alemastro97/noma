@@ -4,6 +4,12 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- Captures get a **short headline title**; the card description keeps what you said, plus an AI summary for longer notes.
+- NOMA now files a capture in the **right project or personal board** by topic, using what each already contains; when unsure it goes to the Inbox.
+- New cards are **linked automatically** to clearly related cards.
+- Lower memory use: smaller AI cache, and the AI and speech models are released sooner when idle.
+- Voice: hold-to-talk by default, rebindable shortcuts with a live recorder, orb-only mode.
+
 ## 0.3.0 — Desktop presence (2026-11-09)
 
 - **Talk to NOMA anywhere:** hold or tap ⌥ Space, speak, and the card is created — transcribed on your Mac by Whisper (Large v3 Turbo, 574 MB) with live transcript, waveform and a summary of what was captured. ↵ save · Tab edit · Esc cancel.

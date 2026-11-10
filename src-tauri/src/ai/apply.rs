@@ -83,6 +83,12 @@ pub fn apply(
                     patch.project_id = Some(project_id.clone());
                 }
                 db::items::update_item(conn, &p.id, patch, now, tz)?;
+                // The model found a personal board for it; a board or project the
+                // user was already looking at wins.
+                if let (None, None, Some(b)) = (&project_id, &board, &e.board_id) {
+                    let (x, y) = db::items::next_slot(conn, b)?;
+                    db::placements::place_item(conn, &p.id, b, x, y)?;
+                }
                 ids.push(p.id.clone());
             }
             _ => {
@@ -101,7 +107,7 @@ pub fn apply(
                         board_id: if project_id.is_some() {
                             None
                         } else {
-                            board.clone()
+                            board.clone().or_else(|| e.board_id.clone())
                         },
                         project_id,
                         tags: Some(e.tags.clone()),
@@ -114,6 +120,10 @@ pub fn apply(
                 ids.push(item.id);
             }
         }
+    }
+    // Related cards: failure to link never fails the capture.
+    if let Err(e) = super::related::link_related(conn, &ids, now) {
+        log::warn!("linking related cards failed: {e}");
     }
     Ok(ids)
 }
@@ -136,9 +146,39 @@ mod tests {
             recurrence: None,
             priority: Priority::Normal,
             project_id: None,
+            board_id: None,
             tags: vec![],
             hint: None,
         }
+    }
+
+    #[test]
+    fn model_board_places_the_card_and_body_is_stored() {
+        let conn = db::open_in_memory().unwrap();
+        let now = Utc::now();
+        let board = db::boards::create_board(&conn, "Trips 2027", now).unwrap();
+        let placeholder = db::items::create_item(
+            &conn,
+            NewItem {
+                kind: ItemType::Note,
+                title: "cherry blossoms in japan".into(),
+                ..Default::default()
+            },
+            now,
+        )
+        .unwrap();
+        let mut e = ex(ItemType::Note, "Cherry blossoms");
+        e.board_id = Some(board.id.clone());
+        e.body = Some("cherry blossoms in japan".into());
+        let ids = apply(&conn, Some(&placeholder.id), &[e], now, chrono_tz::UTC).unwrap();
+        let card = db::items::get_item(&conn, &ids[0]).unwrap().unwrap();
+        assert_eq!(card.body.as_deref(), Some("cherry blossoms in japan"));
+        assert_eq!(
+            db::placements::list_placements(&conn, &board.id)
+                .unwrap()
+                .len(),
+            1
+        );
     }
 
     #[test]

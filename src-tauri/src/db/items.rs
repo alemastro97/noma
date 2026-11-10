@@ -70,7 +70,7 @@ fn query_items(conn: &Connection, sql: &str, params: &[&dyn ToSql]) -> DbResult<
 
 /// Next free slot on `board_id`: the first cell of a 4-column grid that no
 /// existing card overlaps (cards placed by hand can sit anywhere).
-fn next_slot(conn: &Connection, board_id: &str) -> DbResult<(f64, f64)> {
+pub(crate) fn next_slot(conn: &Connection, board_id: &str) -> DbResult<(f64, f64)> {
     let mut stmt = conn.prepare_cached("SELECT x, y FROM placements WHERE board_id = ?1")?;
     let taken: Vec<(f64, f64)> = stmt
         .query_map([board_id], |r| Ok((r.get(0)?, r.get(1)?)))?
@@ -575,6 +575,26 @@ pub fn duplicate_item(conn: &Connection, id: &str, now: DateTime<Utc>) -> DbResu
 }
 
 /// Full-text search over title and body (FTS5 prefix query).
+/// Titles of the latest cards in a project (`board = false`) or on a board
+/// (`board = true`), newest first. Used to tell the AI what a place is about.
+pub fn recent_titles(
+    conn: &Connection,
+    id: &str,
+    board: bool,
+    limit: u32,
+) -> DbResult<Vec<String>> {
+    let sql = if board {
+        "SELECT i.title FROM items i JOIN placements p ON p.item_id = i.id \
+         WHERE p.board_id = ?1 AND i.kind != 'project_ref' ORDER BY i.updated_at DESC LIMIT ?2"
+    } else {
+        "SELECT title FROM items WHERE project_id = ?1 AND kind != 'project_ref' \
+         ORDER BY updated_at DESC LIMIT ?2"
+    };
+    let mut stmt = conn.prepare_cached(sql)?;
+    let rows = stmt.query_map(params![id, limit], |r| r.get::<_, String>(0))?;
+    Ok(rows.collect::<Result<_, _>>()?)
+}
+
 pub fn search_items(conn: &Connection, query: &str, limit: u32) -> DbResult<Vec<Item>> {
     let terms: Vec<String> = query
         .split_whitespace()

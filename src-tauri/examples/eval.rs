@@ -34,6 +34,12 @@ struct Case {
     when: Option<String>,
     repeat: String,
     project: Option<String>,
+    /// Expected personal board (null = none).
+    #[serde(default)]
+    board: Option<String>,
+    /// A long note: the model should add a summary above what was said.
+    #[serde(default)]
+    long: bool,
     count: usize,
 }
 
@@ -123,10 +129,36 @@ async fn main() {
         ("p2".to_string(), "Studio move".to_string()),
         ("p3".to_string(), "Reading list".to_string()),
     ];
+    let boards = vec![
+        ("b1".to_string(), "Thinking space".to_string()),
+        ("b2".to_string(), "Trips 2027".to_string()),
+    ];
+    let titles = |t: &[&str]| t.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+    let recent = vec![
+        (
+            "p1".to_string(),
+            titles(&["Press kit copy", "Venue shortlist", "Launch email"]),
+        ),
+        (
+            "p2".to_string(),
+            titles(&["Boxes for the studio", "Electrician for the new space"]),
+        ),
+        ("p3".to_string(), titles(&["Finish the Calvino novel"])),
+        (
+            "b1".to_string(),
+            titles(&["A calmer notification sound", "Orb dimming in meetings"]),
+        ),
+        (
+            "b2".to_string(),
+            titles(&["Japan itinerary", "Flights to Tokyo"]),
+        ),
+    ];
     let ctx = Context {
         now,
         tz,
         projects: &projects,
+        boards: &boards,
+        recent: &recent,
     };
 
     // Warm-up: load the model and fill the prompt cache.
@@ -141,7 +173,9 @@ async fn main() {
 
     let (mut ok_type, mut ok_when, mut n_when, mut ok_repeat, mut ok_project, mut ok_count) =
         (0, 0, 0, 0, 0, 0);
+    let (mut ok_board, mut ok_title, mut n_long, mut ok_summary) = (0, 0, 0, 0);
     let mut latencies = Vec::new();
+    let mut short_latencies = Vec::new();
     let mut failures = Vec::new();
 
     for case in &cases {
@@ -151,10 +185,14 @@ async fn main() {
                 &client,
                 extract::SYSTEM_PROMPT,
                 &extract::user_prompt(&case.text, &ctx),
-                &extract::schema(),
+                &extract::schema_for(&case.text),
             )
             .await;
-        latencies.push(started.elapsed().as_millis() as u64);
+        let took = started.elapsed().as_millis() as u64;
+        latencies.push(took);
+        if !case.long {
+            short_latencies.push(took);
+        }
         let items = match reply
             .map_err(|e| e.to_string())
             .and_then(|r| extract::parse_output(&r, &case.text, &ctx).map_err(|e| e.to_string()))
@@ -207,6 +245,32 @@ async fn main() {
         } else {
             miss.push(format!("project {:?}≠{:?}", got_project, case.project));
         }
+        let got_board = first
+            .board_id
+            .as_ref()
+            .and_then(|id| boards.iter().find(|(b, _)| b == id).map(|(_, n)| n.clone()));
+        if got_board == case.board {
+            ok_board += 1;
+        } else {
+            miss.push(format!("board {:?}≠{:?}", got_board, case.board));
+        }
+        if first.title.split_whitespace().count() <= 7 {
+            ok_title += 1;
+        } else {
+            miss.push(format!("title too long: {}", first.title));
+        }
+        if case.long {
+            n_long += 1;
+            let has = first
+                .body
+                .as_deref()
+                .is_some_and(|b| b.contains("You said:"));
+            if has {
+                ok_summary += 1;
+            } else {
+                miss.push("no summary on a long note".into());
+            }
+        }
         if items.len() == case.count {
             ok_count += 1;
         } else {
@@ -235,9 +299,22 @@ async fn main() {
     );
     println!("repeat   {:5.1} %", pct(ok_repeat, n));
     println!("project  {:5.1} %", pct(ok_project, n));
+    println!("board    {:5.1} %", pct(ok_board, n));
+    println!("title    {:5.1} %  (≤ 7 words)", pct(ok_title, n));
+    println!(
+        "summary  {:5.1} %  ({n_long} long notes)",
+        pct(ok_summary, n_long.max(1))
+    );
     println!("count    {:5.1} %", pct(ok_count, n));
     println!("latency  p50 {} ms · p95 {} ms", p(0.5), p(0.95));
-    let pass = pct(ok_type, n) >= 90.0 && pct(ok_when, n_when) >= 85.0 && p(0.95) < 2500;
+    short_latencies.sort_unstable();
+    let ps = |q: f64| short_latencies[((short_latencies.len() as f64 - 1.0) * q).round() as usize];
+    println!(
+        "short    p50 {} ms · p95 {} ms (notes without a summary)",
+        ps(0.5),
+        ps(0.95)
+    );
+    let pass = pct(ok_type, n) >= 90.0 && pct(ok_when, n_when) >= 85.0 && ps(0.95) < 2500;
     println!("\ngate     {}", if pass { "PASS" } else { "FAIL" });
     if let Some(s) = server {
         s.stop().await;

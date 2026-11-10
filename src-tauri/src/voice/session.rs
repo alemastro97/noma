@@ -25,8 +25,9 @@ pub const VOICE_PARTIAL: &str = "voice:partial";
 const TICK: Duration = Duration::from_millis(60);
 const PARTIAL_EVERY: Duration = Duration::from_millis(1200);
 const PARTIAL_WINDOW_S: usize = 15;
-/// The model stays resident (instant ⌥ Space); it is freed after a long idle.
-const UNLOAD_AFTER: Duration = Duration::from_secs(30 * 60);
+/// The speech model stays resident for a while (instant ⌥ Space) and is freed
+/// after this idle time; the next press reloads it in about a second.
+const UNLOAD_AFTER: Duration = Duration::from_secs(10 * 60);
 /// Trailing silence that ends a capture when auto-stop is on (opt-in).
 const AUTO_STOP_SILENCE_MS: u32 = 2200;
 /// Holding ⌥ Space longer than this makes it push-to-talk.

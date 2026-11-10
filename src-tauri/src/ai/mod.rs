@@ -6,6 +6,7 @@ pub mod download;
 pub mod extract;
 pub mod manifest;
 pub mod provider;
+pub mod related;
 pub mod server;
 pub mod service;
 

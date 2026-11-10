@@ -3,7 +3,7 @@
 {"text": "Remind me to water the plants tomorrow at 8", "type": "reminder", "when": "2026-11-10T08:00", "repeat": "none", "project": null, "count": 1}
 {"text": "Dentist appointment Thursday at 3pm", "type": "event", "when": "2026-11-12T15:00", "repeat": "none", "project": null, "count": 1}
 {"text": "Riunione con Marta mercoledì alle 14:30", "type": "event", "when": "2026-11-11T14:30", "repeat": "none", "project": null, "count": 1}
-{"text": "Idea: what if the orb dims during meetings", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Idea: what if the orb dims during meetings", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1, "board": "Thinking space"}
 {"text": "E se l'app suggerisse da sola le connessioni tra le note?", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1}
 {"text": "Send the revised deck to Marta by Friday, it's important", "type": "task", "when": "2026-11-13", "repeat": "none", "project": null, "count": 1}
 {"text": "Il codice del cancello è 4821", "type": "note", "when": null, "repeat": "none", "project": null, "count": 1}
@@ -25,7 +25,7 @@
 {"text": "Remind me in the afternoon to stretch", "type": "reminder", "when": "2026-11-09T15:00", "repeat": "none", "project": null, "count": 1}
 {"text": "Cena di compleanno di Sara sabato alle 20", "type": "event", "when": "2026-11-14T20:00", "repeat": "none", "project": null, "count": 1}
 {"text": "Quote I liked: the best way out is always through", "type": "note", "when": null, "repeat": "none", "project": null, "count": 1}
-{"text": "Maybe a calmer notification sound would feel more like NOMA", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "Maybe a calmer notification sound would feel more like NOMA", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1, "board": "Thinking space"}
 {"text": "Start a new project: kitchen renovation", "type": "project", "when": null, "repeat": "none", "project": null, "count": 1}
 {"text": "Nuovo progetto viaggio in Giappone", "type": "project", "when": null, "repeat": "none", "project": null, "count": 1}
 {"text": "Team standup every weekday at 9:30", "type": "event", "when": "2026-11-10T09:30", "repeat": "weekdays", "project": null, "count": 1}
@@ -38,3 +38,10 @@
 {"text": "Pick up the studio keys tonight", "type": "task", "when": "2026-11-09T20:00", "repeat": "none", "project": null, "count": 1}
 {"text": "Potrei scrivere un post sul perché le app di task falliscono", "type": "idea", "when": null, "repeat": "none", "project": null, "count": 1}
 {"text": "Call Anna next week", "type": "task", "when": "2026-11-16", "repeat": "none", "project": null, "count": 1}
+{"text": "Ricordami di mandare il press kit a Luca venerdì", "type": "reminder", "when": "2026-11-13T09:00", "repeat": "none", "project": "Spring launch", "count": 1}
+{"text": "ask the electrician when he can come to the new studio", "type": "task", "when": null, "repeat": "none", "project": "Studio move", "count": 1}
+{"text": "idea: una modalità silenziosa per l'orb quando condivido lo schermo", "type": "idea", "when": null, "repeat": "none", "project": null, "board": "Thinking space", "count": 1}
+{"text": "per il viaggio in Giappone devo prenotare i treni tra Tokyo e Kyoto", "type": "task", "when": null, "repeat": "none", "project": null, "board": "Trips 2027", "count": 1}
+{"text": "comprare le batterie per il telecomando", "type": "task", "when": null, "repeat": "none", "project": null, "count": 1}
+{"text": "I keep thinking the launch event should open with a short story about why we started instead of a product demo, and maybe Marta could tell it since she was there from the beginning", "type": "idea", "when": null, "repeat": "none", "project": "Spring launch", "long": true, "count": 1}
+{"text": "Mi è venuto in mente che per la newsletter potremmo raccontare ogni mese un cliente diverso, magari con una breve intervista di tre domande e una foto, così diventa anche materiale per i social", "type": "idea", "when": null, "repeat": "none", "project": null, "long": true, "count": 1}
