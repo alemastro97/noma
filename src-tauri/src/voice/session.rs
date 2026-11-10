@@ -23,7 +23,7 @@ pub const VOICE_LEVEL: &str = "voice:level";
 pub const VOICE_PARTIAL: &str = "voice:partial";
 
 const TICK: Duration = Duration::from_millis(60);
-const PARTIAL_EVERY: Duration = Duration::from_millis(900);
+const PARTIAL_EVERY: Duration = Duration::from_millis(1200);
 const PARTIAL_WINDOW_S: usize = 15;
 /// The model stays resident (instant ⌥ Space); it is freed after a long idle.
 const UNLOAD_AFTER: Duration = Duration::from_secs(30 * 60);
@@ -87,6 +87,10 @@ impl VoiceService {
     }
 
     fn emit_state(&self, state: VoiceState) {
+        // Messages always get the panel, even in orb-only mode.
+        if matches!(state.phase.as_str(), "empty" | "unavailable" | "error") {
+            windows::show(&self.app, windows::OVERLAY);
+        }
         *self.last.lock().expect("voice state") = state.clone();
         let _ = self.app.emit(VOICE_STATE, state);
     }
@@ -108,6 +112,39 @@ impl VoiceService {
                     .and_then(|c| get_setting(&c, "voice.autoStop").ok().flatten())
             })
             .is_none_or(|v| v != "0")
+    }
+
+    /// `voice.display`: "orb" (default: only the floating orb pulses) or "overlay"
+    /// (the full glass panel with waveform and live transcript).
+    fn full_overlay(&self) -> bool {
+        self.app
+            .try_state::<AppState>()
+            .and_then(|s| {
+                s.db.lock()
+                    .ok()
+                    .and_then(|c| get_setting(&c, "voice.display").ok().flatten())
+            })
+            .is_some_and(|v| v == "overlay")
+    }
+
+    /// Puts the orb back the way it was before the capture: hidden when NOMA
+    /// is in front or the orb is switched off. Runs after the result flash.
+    fn restore_orb_later(self: &Arc<Self>) {
+        let me = Arc::clone(self);
+        tauri::async_runtime::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(1800)).await;
+            if me.is_active() {
+                return;
+            }
+            let main_focused = me
+                .app
+                .get_webview_window(windows::MAIN)
+                .and_then(|w| w.is_focused().ok())
+                .unwrap_or(false);
+            if main_focused || !crate::tray::orb_enabled(&me.app) {
+                windows::hide(&me.app, windows::ORB);
+            }
+        });
     }
 
     /// Language to transcribe: `voice.language` ("it" default, "en", or "auto").
@@ -185,7 +222,12 @@ impl VoiceService {
         if self.is_active() {
             return;
         }
-        windows::show(&self.app, windows::OVERLAY);
+        // The orb always pulses while listening; the big panel is opt-in.
+        windows::show(&self.app, windows::ORB);
+        let full = self.full_overlay();
+        if full {
+            windows::show(&self.app, windows::OVERLAY);
+        }
         if self.app.state::<Arc<AiService>>().speech_model().is_none() {
             self.emit_state(VoiceState {
                 message: Some("Download the speech model in Settings to use your voice.".into()),
@@ -217,14 +259,15 @@ impl VoiceService {
             }
         });
         let me = Arc::clone(self);
-        tauri::async_runtime::spawn(async move { me.monitor(id).await });
+        tauri::async_runtime::spawn(async move { me.monitor(id, full).await });
     }
 
-    async fn monitor(self: Arc<Self>, id: u64) {
+    async fn monitor(self: Arc<Self>, id: u64, full: bool) {
         let mut vad = Endpointer::default();
         let mut last_partial = Instant::now();
         let mut partial_len = 0usize;
         let language = self.language();
+        let mut ticks = 0u32;
         loop {
             tokio::time::sleep(TICK).await;
             let (level, len) = {
@@ -234,13 +277,21 @@ impl VoiceService {
                     _ => return,
                 }
             };
-            let _ = self.app.emit(VOICE_LEVEL, level);
+            // Waveform and live text only exist in the full panel; the orb
+            // needs neither, and skipping them keeps the GPU free for the UI.
+            if full {
+                ticks += 1;
+                if ticks.is_multiple_of(2) {
+                    let _ = self.app.emit(VOICE_LEVEL, level);
+                }
+            }
             if vad.push(level, TICK.as_millis() as u32) == VadEvent::Endpoint && self.auto_stop() {
                 self.finish(Finish::Save).await;
                 return;
             }
             let fresh = len.saturating_sub(partial_len);
-            if last_partial.elapsed() >= PARTIAL_EVERY
+            if full
+                && last_partial.elapsed() >= PARTIAL_EVERY
                 && fresh >= SAMPLE_RATE as usize / 2
                 && vad.heard_speech()
                 && !self.partial_running.swap(true, Ordering::SeqCst)
@@ -278,9 +329,16 @@ impl VoiceService {
         let active = self.active.lock().expect("voice active").take()?;
         let samples = active.recorder.stop();
         if mode == Finish::Cancel {
+            windows::hide(&self.app, windows::OVERLAY);
             self.emit_state(VoiceState::phase("idle"));
             self.schedule_unload();
+            self.restore_orb_later();
             return None;
+        }
+        // Done talking: the panel goes away at once; transcription and AI
+        // capture run in the background (editing is the one exception).
+        if mode == Finish::Save {
+            windows::hide(&self.app, windows::OVERLAY);
         }
         self.emit_state(VoiceState::phase("transcribing"));
         if let Err(e) = self.ensure_model().await {
@@ -288,6 +346,7 @@ impl VoiceService {
                 message: Some(e),
                 ..VoiceState::phase("error")
             });
+            self.restore_orb_later();
             return None;
         }
         let transcript = match self.transcribe(samples, self.language()).await {
@@ -297,10 +356,12 @@ impl VoiceService {
                     message: Some(e),
                     ..VoiceState::phase("error")
                 });
+                self.restore_orb_later();
                 return None;
             }
         };
         self.schedule_unload();
+        self.restore_orb_later();
         if transcript.text.is_empty() {
             self.emit_state(VoiceState::phase("empty"));
             return None;

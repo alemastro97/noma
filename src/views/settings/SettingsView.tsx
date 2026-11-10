@@ -209,6 +209,7 @@ function VoiceSection() {
   const state = useAiStore((s) => s.state);
   const [autoStop, setAutoStop] = useSetting("voice.autoStop", "1");
   const [language, setLanguage] = useSetting("voice.language", "it");
+  const [display, setDisplay] = useSetting("voice.display", "orb");
   if (!state) return null;
   return (
     <section className={styles.section} aria-labelledby="voice-title">
@@ -223,6 +224,21 @@ function VoiceSection() {
         {(state.speechModels ?? []).map((m) => (
           <SpeechCard key={m.id} model={m} />
         ))}
+      </div>
+      <div className={styles.row}>
+        <span className={styles.toggleText}>
+          <span className={styles.toggleLabel}>{t.display}</span>
+          <span className={styles.meta}>{t.displayHint}</span>
+        </span>
+        <Segmented
+          label={t.display}
+          value={display ?? "orb"}
+          options={[
+            { value: "orb", label: t.displays.orb },
+            { value: "overlay", label: t.displays.overlay },
+          ]}
+          onChange={setDisplay}
+        />
       </div>
       <div className={styles.row}>
         <span className={styles.toggleText}>

@@ -1,36 +1,44 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useRef, useState } from "react";
 import { onAiState } from "../../api/ai";
-import { onVoiceState, panelToggle } from "../../api/desktop";
+import { onVoiceState, panelToggle, voiceStop } from "../../api/desktop";
 import { NomaOrb, type OrbState } from "../../components/NomaOrb";
 import { copy } from "../../copy";
 import styles from "./orb.module.css";
 
 const DRAG_THRESHOLD = 4;
+const FLASH_MS = 1400;
 
-/** Small transparent always-on-top orb: click opens the panel, drag moves it. */
+/** Small transparent always-on-top orb: pulses while listening, click opens the panel, drag moves it. */
 export function OrbWindow() {
   const [state, setState] = useState<OrbState>("idle");
+  const listening = useRef(false);
+  const flash = useRef<number | undefined>(undefined);
   const down = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
+    const show = (next: OrbState, ms?: number) => {
+      window.clearTimeout(flash.current);
+      setState(next);
+      if (ms) flash.current = window.setTimeout(() => setState("idle"), ms);
+    };
     const subs = [
-      onVoiceState((s) =>
-        setState(
-          s.phase === "listening"
-            ? "listening"
-            : s.phase === "transcribing" || s.phase === "saved"
-              ? "processing"
-              : s.phase === "error"
-                ? "error"
-                : "idle",
-        ),
-      ),
-      onAiState((a) =>
-        setState((prev) => (prev === "listening" ? prev : a.pending > 0 ? "processing" : "idle")),
-      ),
+      onVoiceState((s) => {
+        listening.current = s.phase === "listening";
+        if (s.phase === "listening") show("listening");
+        // Transcribing and AI work stay invisible: back to rest at once.
+        else if (s.phase === "saved") show("success", FLASH_MS);
+        else if (s.phase === "error" || s.phase === "unavailable") show("error", 2400);
+        else show("idle");
+      }),
+      onAiState((a) => {
+        if (!listening.current && a.phase === "error") show("error", 2400);
+      }),
     ];
-    return () => subs.forEach((p) => void p.then((un) => un()));
+    return () => {
+      window.clearTimeout(flash.current);
+      subs.forEach((p) => void p.then((un) => un()));
+    };
   }, []);
 
   return (
@@ -51,7 +59,8 @@ export function OrbWindow() {
         }
       }}
       onMouseUp={() => {
-        if (down.current) void panelToggle("panel");
+        // While listening a click means "I'm done"; otherwise it opens the panel.
+        if (down.current) void (listening.current ? voiceStop() : panelToggle("panel"));
         down.current = null;
       }}
     >

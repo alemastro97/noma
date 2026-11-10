@@ -167,6 +167,10 @@ export const settingsCopy = {
     "Hold ⌥ Space anywhere to talk to NOMA. Speech is transcribed on this Mac by a Whisper model.",
   voiceReady: "Ready. Hold ⌥ Space anywhere.",
   voiceNotReady: "Download a speech model to talk to NOMA.",
+  display: "While I talk",
+  displayHint:
+    "Orb only keeps the screen calm: the orb pulses, and everything else happens in the background.",
+  displays: { orb: "Orb only", overlay: "Full panel" },
   language: "Spoken language",
   languageHint: "Pinning the language makes short phrases much more accurate than auto-detect.",
   languages: { it: "Italiano", en: "English", auto: "Auto-detect" },

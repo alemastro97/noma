@@ -28,7 +28,7 @@ fn store(app: &AppHandle, key: &str, value: &str) {
     }
 }
 
-pub fn orb_enabled(app: &AppHandle) -> bool {
+pub(crate) fn orb_enabled(app: &AppHandle) -> bool {
     setting(app, "orb.enabled").as_deref() != Some("0")
 }
 
