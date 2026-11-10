@@ -45,3 +45,4 @@
 {"text": "comprare le batterie per il telecomando", "type": "task", "when": null, "repeat": "none", "project": null, "count": 1}
 {"text": "I keep thinking the launch event should open with a short story about why we started instead of a product demo, and maybe Marta could tell it since she was there from the beginning", "type": "idea", "when": null, "repeat": "none", "project": "Spring launch", "long": true, "count": 1}
 {"text": "Mi è venuto in mente che per la newsletter potremmo raccontare ogni mese un cliente diverso, magari con una breve intervista di tre domande e una foto, così diventa anche materiale per i social", "type": "idea", "when": null, "repeat": "none", "project": null, "long": true, "count": 1}
+{"text": "Ricordami di chiedere ai traslocatori se portano anche la stampante", "type": "reminder", "when": "2026-11-10T09:00", "repeat": "none", "project": "Studio move", "count": 1}

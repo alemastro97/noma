@@ -197,6 +197,20 @@ pub fn show(app: &AppHandle, label: &'static str) {
     });
 }
 
+/// Whether a floating window exists and is on screen (blocks on the main thread).
+pub fn is_shown(app: &AppHandle, label: &'static str) -> bool {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        let shown = handle
+            .get_webview_window(label)
+            .is_some_and(|w| raw_is_visible(&w));
+        let _ = tx.send(shown);
+    });
+    rx.recv_timeout(std::time::Duration::from_secs(3))
+        .unwrap_or(false)
+}
+
 pub fn hide(app: &AppHandle, label: &'static str) {
     let handle = app.clone();
     let _ = app.run_on_main_thread(move || {

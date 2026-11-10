@@ -15,6 +15,10 @@ use crate::db::models::{CaptureHint, ItemType, Priority};
 use crate::db::tags::normalize_tags;
 
 pub const MAX_ITEMS: usize = 3;
+/// Notes longer than this get an AI summary above what the user said.
+pub const SUMMARY_MIN_WORDS: usize = 15;
+/// `place` value meaning "no project or board".
+pub const INBOX: &str = "Inbox";
 const LOW_CONFIDENCE: f64 = 0.6;
 const PROJECT_MATCH: f64 = 0.88;
 
@@ -69,6 +73,7 @@ struct RawItem {
     priority: Option<String>,
     project: Option<String>,
     board: Option<String>,
+    place: Option<String>,
     tags: Option<Vec<String>>,
     date_phrase: Option<String>,
     confidence: Option<f64>,
@@ -86,8 +91,7 @@ Fields:
 - remind: when to notify, local "YYYY-MM-DDTHH:MM". Reminders use remind, never due.
 - repeat: only when the note repeats: "daily", "weekdays", "weekly", "monthly" or "yearly".
 - priority: "urgent" for urgent/ASAP/subito/urgente, "high" for important/importante; otherwise omit.
-- project: the exact name from Projects, when the note is about that project. Judge by topic, people and the recent cards listed in brackets, not only by the name.
-- board: the exact name from Boards, only when no project fits and the note shares a specific topic with that board's name or its recent cards. A board is not a bucket for ideas or notes in general. Never use both project and board. When unsure, omit both: the note goes to the inbox.
+- place: the exact name of the project or board, from the Projects and Boards lists, that the note belongs to. Omit it unless you are confident: a wrong place is worse than none, and most notes belong nowhere. Judge by meaning, people and the recent cards in brackets, across languages: "Studio move" fits trasloco, traslocatori, scatoloni, movers; "Spring launch" fits lancio, shooting, fotografo. A project wins over a board. A board is not a bucket for ideas in general: use one only when the note shares a specific topic with it.
 - unsure: true only when you are unsure about the type or the date.
 
 Dates: use the Calendar line to turn weekday names into dates; never compute weekdays yourself. A day-and-month date ("3 March", "il 5") means its next occurrence after today. Resolve relative words against Now. today/oggi = Now's date; tomorrow/domani = +1 day; dopodomani/day after tomorrow = +2; a weekday name = its next occurrence after today; next week/la prossima settimana = next Monday; by the end of the week/entro la settimana = this Friday. Times when only a part of the day is said: morning/mattina 09:00, noon/mezzogiorno 12:00, afternoon/pomeriggio 15:00, evening/sera/stasera/tonight 20:00. A reminder with only a day (including a weekday name): 09:00, and no repeat unless the note says every/ogni. An event with only a day: 09:00.
@@ -108,15 +112,15 @@ Note: call Marta at 11 about the contract
 Note: dentist Thursday at 3pm
 {"items":[{"type":"event","title":"Dentist","due":"2026-11-12T15:00"}]}
 Note: book the photographer for the spring launch shoot
-{"items":[{"type":"task","title":"Book the photographer","project":"Spring launch"}]}
+{"items":[{"type":"task","title":"Book the photographer","place":"Spring launch"}]}
 Note: ricordami di chiedere ai traslocatori se portano anche la stampante
-{"items":[{"type":"reminder","title":"Stampante ai traslocatori","remind":"2026-11-10T09:00","project":"Studio move"}]}
+{"items":[{"type":"reminder","title":"Stampante ai traslocatori","remind":"2026-11-10T09:00","place":"Studio move"}]}
 Note: per il viaggio in Giappone devo prenotare l'hotel a Kyoto
-{"items":[{"type":"task","title":"Hotel a Kyoto","board":"Trips 2027"}]}
+{"items":[{"type":"task","title":"Hotel a Kyoto","place":"Trips 2027"}]}
 Note: comprare le batterie per il telecomando
 {"items":[{"type":"task","title":"Batterie per il telecomando"}]}
 Note: e se l'orb si attenuasse durante le riunioni?
-{"items":[{"type":"idea","title":"Orb che si attenua in riunione","board":"Thinking space"}]}
+{"items":[{"type":"idea","title":"Orb che si attenua in riunione","place":"Thinking space"}]}
 Note: I should really rethink how the onboarding explains the first capture, maybe a short video instead of three screens of text, and ask Luca what he thinks before we commit
 {"items":[{"type":"idea","title":"Rethink onboarding explanation","summary":"Consider a short video instead of three text screens for onboarding, and get Luca's opinion first."}]}
 Note: il codice del portone è 4821
@@ -152,8 +156,6 @@ pub fn schema() -> Value {
                         "repeat": { "type": "string", "enum": ["daily", "weekdays", "weekly", "monthly", "yearly"] },
                         "priority": { "type": "string", "enum": ["high", "urgent"] },
                         "summary": { "type": "string", "maxLength": 240 },
-                        "project": { "type": "string" },
-                        "board": { "type": "string" },
                         "unsure": { "type": "boolean" }
                     },
                     "required": ["type", "title"]
@@ -164,14 +166,26 @@ pub fn schema() -> Value {
     })
 }
 
-/// Like [`schema`], but a note longer than 15 words must come with a summary
-/// (the constrained decoder enforces it; a prompt rule alone is ignored by a
-/// small model). Short notes keep the lean schema.
-pub fn schema_for(text: &str) -> Value {
+/// Like [`schema`], constrained to this user's world: `place`, when given, must be
+/// the name of an existing project or personal board (never an invented one), and
+/// a note longer than [`SUMMARY_MIN_WORDS`] words must come with a `summary`.
+/// (Making `place` required was tried: a 4B model then files unrelated notes —
+/// project precision fell from 98 % to 79 % — so it stays optional.)
+pub fn schema_for(text: &str, ctx: &Context<'_>) -> Value {
     let mut s = schema();
-    if text.split_whitespace().count() > 15 {
-        s["properties"]["items"]["items"]["required"] = json!(["type", "title", "summary"]);
+    let places: Vec<&str> = ctx
+        .projects
+        .iter()
+        .chain(ctx.boards.iter())
+        .map(|(_, n)| n.as_str())
+        .collect();
+    let item = &mut s["properties"]["items"]["items"];
+    item["properties"]["place"] = json!({ "type": "string", "enum": places });
+    let mut required = vec!["type", "title"];
+    if text.split_whitespace().count() > SUMMARY_MIN_WORDS {
+        required.push("summary");
     }
+    item["required"] = json!(required);
     s
 }
 
@@ -327,9 +341,11 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
     }
 
     let anchor = due_at.or(remind_at);
+    // A small model sometimes invents a repeat: honor one only when the words ask for it.
     let recurrence = raw
         .repeat
         .as_deref()
+        .filter(|_| has_repeat_cue(raw_text))
         .and_then(|preset| anchor.and_then(|a| rule_for(preset, a, ctx.tz)));
     // "Every day at 8", said at 10:00: the first occurrence is tomorrow, not this morning.
     if let (Some(rule), Some(a)) = (&recurrence, anchor)
@@ -349,27 +365,28 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
         _ => Priority::Normal,
     };
 
-    let project_id = match raw.project.as_deref().map(str::trim) {
-        Some(name) if !name.is_empty() && !creates_project => {
-            match match_project(name, ctx.projects) {
-                Some(id) => Some(id),
-                None => {
-                    hint.suggested_project = Some(name.to_string());
-                    None
-                }
+    // `place` (or the older `project` / `board` fields): projects first, then boards.
+    let place = raw
+        .place
+        .as_deref()
+        .or(raw.project.as_deref())
+        .or(raw.board.as_deref())
+        .map(str::trim)
+        .filter(|n| !n.is_empty() && !n.eq_ignore_ascii_case(INBOX));
+    let project_id = match place {
+        Some(name) if !creates_project => match match_project(name, ctx.projects) {
+            Some(id) => Some(id),
+            None if match_project(name, ctx.boards).is_none() => {
+                hint.suggested_project = Some(name.to_string());
+                None
             }
-        }
+            None => None,
+        },
         _ => None,
     };
-
-    let board_id = if project_id.is_none() && !creates_project {
-        raw.board
-            .as_deref()
-            .map(str::trim)
-            .filter(|n| !n.is_empty())
-            .and_then(|name| match_project(name, ctx.boards))
-    } else {
-        None
+    let board_id = match place {
+        Some(name) if project_id.is_none() && !creates_project => match_project(name, ctx.boards),
+        _ => None,
     };
 
     if raw.unsure == Some(true) || raw.confidence.unwrap_or(1.0) < LOW_CONFIDENCE {
@@ -382,7 +399,12 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
         .take(3)
         .collect();
 
-    let body = compose_body(raw_text, raw.summary.as_deref(), &title);
+    // Summaries are for long notes only; the model sometimes adds one anyway.
+    let summary = raw
+        .summary
+        .as_deref()
+        .filter(|_| raw_text.split_whitespace().count() > SUMMARY_MIN_WORDS);
+    let body = compose_body(raw_text, summary, &title);
 
     Extracted {
         kind,
@@ -399,6 +421,36 @@ fn validate(raw: RawItem, raw_text: &str, ctx: &Context<'_>) -> Extracted {
         tags,
         hint: (!hint.is_empty()).then_some(hint),
     }
+}
+
+/// Words that actually ask for repetition ("every Monday", "ogni giorno", "weekly", ...).
+fn has_repeat_cue(text: &str) -> bool {
+    const CUES: &[&str] = &[
+        "every",
+        "each ",
+        "daily",
+        "weekly",
+        "monthly",
+        "yearly",
+        "annual",
+        "weekdays",
+        "ogni",
+        "tutti i",
+        "tutte le",
+        "quotidian",
+        "giornalier",
+        "settimanal",
+        "mensil",
+        "annual",
+        "feriali",
+        "lavorativ",
+        "ricorrent",
+        "recurring",
+        "repeat",
+        "ripet",
+    ];
+    let t = text.to_lowercase();
+    CUES.iter().any(|c| t.contains(c))
 }
 
 fn plain(s: &str) -> String {
@@ -587,7 +639,9 @@ mod tests {
     }
 
     fn one(json: &str, projects: &[(String, String)]) -> Extracted {
-        parse_output(json, "raw", &ctx(projects)).unwrap().remove(0)
+        parse_output(json, "raw (ogni volta)", &ctx(projects))
+            .unwrap()
+            .remove(0)
     }
 
     const BASE: &str = r#""body":null,"due":null,"end":null,"remind":null,"repeat":"none","priority":"normal","project":null,"tags":[],"date_phrase":null,"confidence":0.9"#;
@@ -603,12 +657,65 @@ mod tests {
     }
 
     #[test]
-    fn long_notes_require_a_summary() {
-        let short = schema_for("buy milk");
-        let long = schema_for(&"word ".repeat(20));
-        let req = |s: &Value| s["properties"]["items"]["items"]["required"].clone();
-        assert_eq!(req(&short), json!(["type", "title"]));
-        assert_eq!(req(&long), json!(["type", "title", "summary"]));
+    fn invented_repeat_is_dropped_unless_the_words_ask_for_it() {
+        let json = item(
+            r#""type":"reminder","title":"Stampante","remind":"2026-11-10T09:00","repeat":"daily""#,
+        );
+        let e = parse_output(&json, "ricordami di chiedere ai traslocatori", &ctx(&[]))
+            .unwrap()
+            .remove(0);
+        assert_eq!(e.recurrence, None);
+        let e = parse_output(&json, "ricordami ogni giorno di chiedere", &ctx(&[]))
+            .unwrap()
+            .remove(0);
+        assert_eq!(e.recurrence.as_deref(), Some("FREQ=DAILY"));
+    }
+
+    #[test]
+    fn short_notes_ignore_a_stray_summary() {
+        let json = item(r#""type":"task","title":"Latte","summary":"Buy some milk.""#);
+        let e = parse_output(&json, "compra il latte per favore", &ctx(&[]))
+            .unwrap()
+            .remove(0);
+        assert_eq!(e.body.as_deref(), Some("compra il latte per favore"));
+    }
+
+    #[test]
+    fn schema_limits_place_to_the_users_own_names_and_long_notes_need_a_summary() {
+        let projects = vec![("p1".to_string(), "Studio move".to_string())];
+        let boards = vec![("b1".to_string(), "Trips 2027".to_string())];
+        let c = Context {
+            boards: &boards,
+            ..ctx(&projects)
+        };
+        let item = |s: &Value| s["properties"]["items"]["items"].clone();
+        let short = item(&schema_for("buy milk", &c));
+        assert_eq!(short["required"], json!(["type", "title"]));
+        assert_eq!(
+            short["properties"]["place"]["enum"],
+            json!(["Studio move", "Trips 2027"])
+        );
+        let long = item(&schema_for(&"word ".repeat(20), &c));
+        assert_eq!(long["required"], json!(["type", "title", "summary"]));
+    }
+
+    #[test]
+    fn place_resolves_to_a_project_then_a_board_and_inbox_means_neither() {
+        let projects = vec![("p1".to_string(), "Studio move".to_string())];
+        let boards = vec![("b1".to_string(), "Trips 2027".to_string())];
+        let c = Context {
+            boards: &boards,
+            ..ctx(&projects)
+        };
+        let go = |place: &str| {
+            let j = item(&format!(r#""type":"task","title":"X","place":"{place}""#));
+            parse_output(&j, "raw", &c).unwrap().remove(0)
+        };
+        assert_eq!(go("Studio move").project_id.as_deref(), Some("p1"));
+        let t = go("Trips 2027");
+        assert_eq!((t.project_id, t.board_id.as_deref()), (None, Some("b1")));
+        let i = go("Inbox");
+        assert_eq!((i.project_id, i.board_id), (None, None));
     }
 
     #[test]

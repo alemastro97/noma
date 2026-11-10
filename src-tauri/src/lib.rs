@@ -2,6 +2,8 @@ pub mod ai;
 pub mod commands;
 pub mod db;
 pub mod reminders;
+#[cfg(debug_assertions)]
+mod selftest;
 pub mod shortcuts;
 pub mod state;
 mod tray;
@@ -55,6 +57,12 @@ pub fn run() {
                 .build(),
         )
         .setup(|app| {
+            // Debug self-test runs on a throwaway database.
+            #[cfg(debug_assertions)]
+            let db_path = std::env::var_os("NOMA_SELFTEST_DB")
+                .map(std::path::PathBuf::from)
+                .unwrap_or(app.path().app_data_dir()?.join("noma.db"));
+            #[cfg(not(debug_assertions))]
             let db_path = app.path().app_data_dir()?.join("noma.db");
             let conn = db::open(&db_path).map_err(|e| {
                 log::error!("could not open database at {}: {e}", db_path.display());
@@ -83,6 +91,10 @@ pub fn run() {
             shortcuts.register_all(app.handle());
             app.manage(shortcuts);
             windows::show_main(app.handle());
+            #[cfg(debug_assertions)]
+            if std::env::var_os("NOMA_SELFTEST_DB").is_some() {
+                tauri::async_runtime::spawn(selftest::run(app.handle().clone()));
+            }
             Ok(())
         })
         .on_window_event(|window, event| {

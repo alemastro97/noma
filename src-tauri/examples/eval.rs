@@ -167,7 +167,7 @@ async fn main() {
             &client,
             extract::SYSTEM_PROMPT,
             &extract::user_prompt("warm up", &ctx),
-            &extract::schema(),
+            &extract::schema_for("warm up", &ctx),
         )
         .await;
 
@@ -185,7 +185,7 @@ async fn main() {
                 &client,
                 extract::SYSTEM_PROMPT,
                 &extract::user_prompt(&case.text, &ctx),
-                &extract::schema_for(&case.text),
+                &extract::schema_for(&case.text, &ctx),
             )
             .await;
         let took = started.elapsed().as_millis() as u64;

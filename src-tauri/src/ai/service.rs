@@ -749,7 +749,7 @@ impl AiService {
                 &self.client,
                 extract::SYSTEM_PROMPT,
                 &user,
-                &extract::schema_for(&capture.raw_text),
+                &extract::schema_for(&capture.raw_text, &ctx),
             )
             .await?;
         let extracted = extract::parse_output(&output, &capture.raw_text, &ctx)?;

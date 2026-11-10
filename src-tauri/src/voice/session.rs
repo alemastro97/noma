@@ -338,6 +338,12 @@ impl VoiceService {
     pub async fn finish(self: &Arc<Self>, mode: Finish) -> Option<String> {
         let active = self.active.lock().expect("voice active").take()?;
         let samples = active.recorder.stop();
+        self.process(samples, mode).await
+    }
+
+    /// Everything after the microphone: transcribe and, for Save, capture.
+    /// (Split from `finish` so the debug self-test can feed synthesized audio.)
+    pub async fn process(self: &Arc<Self>, samples: Vec<f32>, mode: Finish) -> Option<String> {
         if mode == Finish::Cancel {
             windows::hide(&self.app, windows::OVERLAY);
             self.emit_state(VoiceState::phase("idle"));
