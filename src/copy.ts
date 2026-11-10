@@ -32,7 +32,7 @@ export const copy = {
   aiSuccess: "Captured",
   aiError: "Something went wrong",
   orbHere: "NOMA is here",
-  orbHint: "⌥ Space to talk",
+  orbHint: (voice: string) => `${voice} to talk`,
   profile: "Profile and settings",
   cards: (n: number) => `${n} ${n === 1 ? "card" : "cards"}`,
   empty: {
@@ -163,9 +163,9 @@ export const settingsCopy = {
   ready: "Ready. Captures are sorted as you make them.",
   notReady: "Download a model to let NOMA sort your captures.",
   voiceTitle: "Voice",
-  voiceLead:
-    "Hold ⌥ Space anywhere to talk to NOMA. Speech is transcribed on this Mac by a Whisper model.",
-  voiceReady: "Ready. Hold ⌥ Space anywhere.",
+  voiceLead: (voice: string) =>
+    `Hold ${voice} anywhere and talk; release to save. Tap it once to start and tap again to finish. Speech is transcribed on this Mac by a Whisper model.`,
+  voiceReady: (voice: string) => `Ready. Hold ${voice} anywhere.`,
   voiceNotReady: "Download a speech model to talk to NOMA.",
   display: "While I talk",
   displayHint:
@@ -175,7 +175,8 @@ export const settingsCopy = {
   languageHint: "Pinning the language makes short phrases much more accurate than auto-detect.",
   languages: { it: "Italiano", en: "English", auto: "Auto-detect" },
   autoStop: "Stop when I stop talking",
-  autoStopHint: "Otherwise NOMA keeps listening until you press ↵ or release ⌥ Space.",
+  autoStopHint:
+    "Off by default: you decide when you're done, by releasing the key or tapping it again.",
   desktopTitle: "On your desktop",
   orbToggle: "Floating orb",
   orbHint: "A small orb that stays on top of other apps when NOMA is in the background.",
@@ -184,6 +185,12 @@ export const settingsCopy = {
   nativeNotifications: "System notifications",
   nativeHint: "Also notify through macOS when NOMA isn't in front.",
   shortcuts: "Shortcuts",
+  shortcutHint: "Click Change, press the keys you want — you'll see them live — then Save.",
+  shortcutChange: "Change",
+  shortcutSave: "Save",
+  shortcutReset: "Reset",
+  shortcutPress: "Press the keys…",
+  shortcutNeedsModifier: "Hold ⌥, ⌘, ⌃ or ⇧ together with a key.",
   shortcutVoice: "Talk to NOMA",
   shortcutCapture: "Quick capture",
   appearance: "Appearance",
@@ -275,9 +282,9 @@ export const onboardingCopy = {
   later: "Do this later",
   next: "Continue",
   tryTitle: "Try it.",
-  tryBody:
-    "Hold ⌥ Space anywhere and say what's on your mind. Release to save. ⌘⇧N to type instead.",
-  tryNow: "Try ⌥ Space",
+  tryBody: (voice: string, capture: string) =>
+    `Hold ${voice} anywhere and say what's on your mind. Release to save. ${capture} to type instead.`,
+  tryNow: (voice: string) => `Try ${voice}`,
   finish: "Start using NOMA",
   step: (i: number, n: number) => `${i} of ${n}`,
 };

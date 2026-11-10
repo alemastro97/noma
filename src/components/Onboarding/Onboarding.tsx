@@ -3,6 +3,7 @@ import { useState } from "react";
 import { settingSet, voiceStart } from "../../api/desktop";
 import type { DownloadProgress } from "../../api/types";
 import { onboardingCopy as t } from "../../copy";
+import { useShortcutLabels } from "../../hooks/useShortcuts";
 import { useAiStore } from "../../stores/ai";
 import { NomaOrb } from "../NomaOrb";
 import styles from "./Onboarding.module.css";
@@ -61,10 +62,11 @@ function ModelRow({
   );
 }
 
-/** First-run welcome: what NOMA is, the two local models, and ⌥ Space. */
+/** First-run welcome: what NOMA is, the two local models, and the voice shortcut. */
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
   const state = useAiStore((s) => s.state);
+  const keys = useShortcutLabels();
 
   const llm = state?.models.find((m) => m.id === state.modelId) ?? state?.models[0];
   const speech =
@@ -119,7 +121,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             <h1 id="onb-title" className={styles.h1}>
               {t.tryTitle}
             </h1>
-            <p className={styles.body}>{t.tryBody}</p>
+            <p className={styles.body}>{t.tryBody(keys.voice, keys.capture)}</p>
           </>
         )}
 
@@ -133,7 +135,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             )}
             {step === 2 && state?.speechReady && (
               <button type="button" className={styles.secondary} onClick={() => void voiceStart()}>
-                {t.tryNow}
+                {t.tryNow(keys.voice)}
               </button>
             )}
             <button

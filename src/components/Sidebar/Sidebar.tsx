@@ -10,6 +10,7 @@ import {
   Sun,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useShortcutLabels } from "../../hooks/useShortcuts";
 import { copy, sidebarCopy } from "../../copy";
 import { nextProjectColor } from "../../lib/colors";
 import { useHotkey } from "../../hooks/useHotkey";
@@ -131,6 +132,7 @@ function InlineCreate({
 }
 
 export function Sidebar() {
+  const keys = useShortcutLabels();
   const counts = useItemsStore((s) => s.counts);
   const projects = useProjectsStore((s) => s.projects);
   const boards = personalBoards(useProjectsStore((s) => s.boards));
@@ -248,13 +250,13 @@ export function Sidebar() {
       <div className={styles.footer}>
         <div
           className={styles.orbCard}
-          title={collapsed ? `${copy.orbHere} · ${copy.orbHint}` : undefined}
+          title={collapsed ? `${copy.orbHere} · ${copy.orbHint(keys.voice)}` : undefined}
         >
           <NomaOrb size={22} label={copy.orbHere} />
           {!collapsed && (
             <div className={styles.orbText}>
               <span>{copy.orbHere}</span>
-              <span className={styles.mono}>{copy.orbHint}</span>
+              <span className={styles.mono}>{copy.orbHint(keys.voice)}</span>
             </div>
           )}
         </div>

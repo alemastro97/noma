@@ -3,11 +3,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { captureText } from "../../api/ai";
 import { panelHide } from "../../api/desktop";
 import { desktopCopy } from "../../copy";
+import { useShortcutLabels } from "../../hooks/useShortcuts";
 import glass from "../shared/glass.module.css";
 import styles from "./capture.module.css";
 
-/** ⌘⇧N quick capture: type a thought anywhere, NOMA files it (Auto mode). */
+/** Quick capture: type a thought anywhere, NOMA files it (Auto mode). */
 export function CaptureWindow() {
+  const keys = useShortcutLabels();
   const [value, setValue] = useState("");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +89,7 @@ export function CaptureWindow() {
         <span className={`${glass.chip} ${styles.small} ${styles.auto}`}>{desktopCopy.auto}</span>
         <span className={`${glass.chip} ${styles.small} ${styles.muted}`}>{desktopCopy.inbox}</span>
         {error && <span className={styles.error}>{error}</span>}
-        <span className={`${glass.kbd} ${styles.right}`}>⌘⇧N</span>
+        <span className={`${glass.kbd} ${styles.right}`}>{keys.capture}</span>
       </div>
     </section>
   );

@@ -320,6 +320,7 @@ const aiState = {
   ],
 };
 const settings = new Map<string, string>();
+const shortcutMap = { voice: "Alt+Space", capture: "Super+Shift+KeyN" };
 const capturing = new Set<string>();
 
 function publishAi() {
@@ -590,6 +591,24 @@ function handle(cmd: string, a: Args): unknown {
       return { captureId: item.id, item: withLinks(item) };
     }
     case "capture_retry":
+      return null;
+    case "shortcuts_get":
+      return { ...shortcutMap };
+    case "shortcuts_set": {
+      const other = a.action === "voice" ? "capture" : "voice";
+      if (shortcutMap[other as "voice" | "capture"] === a.accelerator)
+        throw `already used for ${other}`;
+      shortcutMap[a.action as "voice" | "capture"] = String(a.accelerator);
+      emit("shortcuts:changed", { ...shortcutMap });
+      return { ...shortcutMap };
+    }
+    case "shortcuts_reset":
+      shortcutMap[a.action as "voice" | "capture"] =
+        a.action === "voice" ? "Alt+Space" : "Super+Shift+KeyN";
+      emit("shortcuts:changed", { ...shortcutMap });
+      return { ...shortcutMap };
+    case "shortcuts_suspend":
+    case "shortcuts_resume":
       return null;
     case "settings_get":
       return settings.get(String(a.key)) ?? null;

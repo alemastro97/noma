@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import type { Action } from "../lib/shortcuts";
 import type { PanelName, ReminderToast, VoiceState } from "./types";
 
 // ── Voice ───────────────────────────────────────────────────────────────
@@ -49,3 +50,21 @@ export function onRemindersChanged(cb: (toasts: ReminderToast[]) => void): Promi
 export const settingGet = (key: string) => invoke<string | null>("settings_get", { key });
 export const settingSet = (key: string, value: string) =>
   invoke<void>("settings_set", { key, value });
+
+// ── Global shortcuts ────────────────────────────────────────────────────
+
+export type ShortcutMap = Record<Action, string>;
+
+export const shortcutsGet = () => invoke<ShortcutMap>("shortcuts_get");
+/** Rejects with a readable message if invalid, duplicated or owned by another app. */
+export const shortcutsSet = (action: Action, accelerator: string) =>
+  invoke<ShortcutMap>("shortcuts_set", { action, accelerator });
+export const shortcutsReset = (action: Action) =>
+  invoke<ShortcutMap>("shortcuts_reset", { action });
+/** Frees the shortcuts while the recorder listens, so pressing one doesn't fire it. */
+export const shortcutsSuspend = () => invoke<void>("shortcuts_suspend");
+export const shortcutsResume = () => invoke<void>("shortcuts_resume");
+
+export function onShortcutsChanged(cb: (map: ShortcutMap) => void): Promise<UnlistenFn> {
+  return listen<ShortcutMap>("shortcuts:changed", (e) => cb(e.payload));
+}

@@ -27,6 +27,8 @@ const PARTIAL_EVERY: Duration = Duration::from_millis(1200);
 const PARTIAL_WINDOW_S: usize = 15;
 /// The model stays resident (instant ⌥ Space); it is freed after a long idle.
 const UNLOAD_AFTER: Duration = Duration::from_secs(30 * 60);
+/// Trailing silence that ends a capture when auto-stop is on (opt-in).
+const AUTO_STOP_SILENCE_MS: u32 = 2200;
 /// Holding ⌥ Space longer than this makes it push-to-talk.
 const HOLD_TO_TALK: Duration = Duration::from_millis(600);
 
@@ -111,7 +113,7 @@ impl VoiceService {
                     .ok()
                     .and_then(|c| get_setting(&c, "voice.autoStop").ok().flatten())
             })
-            .is_none_or(|v| v != "0")
+            .is_some_and(|v| v == "1")
     }
 
     /// `voice.display`: "orb" (default: only the floating orb pulses) or "overlay"
@@ -264,6 +266,7 @@ impl VoiceService {
 
     async fn monitor(self: Arc<Self>, id: u64, full: bool) {
         let mut vad = Endpointer::default();
+        vad.silence_end_ms = AUTO_STOP_SILENCE_MS;
         let mut last_partial = Instant::now();
         let mut partial_len = 0usize;
         let language = self.language();

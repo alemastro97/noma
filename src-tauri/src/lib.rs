@@ -2,6 +2,7 @@ pub mod ai;
 pub mod commands;
 pub mod db;
 pub mod reminders;
+pub mod shortcuts;
 pub mod state;
 mod tray;
 pub mod voice;
@@ -10,22 +11,13 @@ mod windows;
 use std::sync::Arc;
 
 use tauri::{Manager, WindowEvent};
-use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+use tauri_plugin_global_shortcut::ShortcutState;
 
 use ai::service::AiService;
 use reminders::Reminders;
+use shortcuts::{Action, Shortcuts};
 use state::AppState;
 use voice::session::VoiceService;
-
-/// ⌥ Space: voice capture (tap to toggle, hold to talk).
-fn voice_shortcut() -> Shortcut {
-    Shortcut::new(Some(Modifiers::ALT), Code::Space)
-}
-
-/// ⌘⇧N: quick capture.
-fn capture_shortcut() -> Shortcut {
-    Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyN)
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -37,7 +29,13 @@ pub fn run() {
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
-                    if shortcut == &voice_shortcut() {
+                    let Some(action) = app
+                        .try_state::<Shortcuts>()
+                        .and_then(|s| s.action_for(shortcut))
+                    else {
+                        return;
+                    };
+                    if action == Action::Voice {
                         let Some(voice) = app.try_state::<Arc<VoiceService>>() else {
                             return;
                         };
@@ -50,9 +48,7 @@ pub fn run() {
                                 voice.on_release().await;
                             }
                         });
-                    } else if shortcut == &capture_shortcut()
-                        && event.state() == ShortcutState::Pressed
-                    {
+                    } else if event.state() == ShortcutState::Pressed {
                         windows::toggle(app, windows::CAPTURE);
                     }
                 })
@@ -84,11 +80,9 @@ pub fn run() {
                 log::warn!("tray icon: {e}");
             }
             // Another app may already own a shortcut: NOMA still starts without it.
-            for shortcut in [voice_shortcut(), capture_shortcut()] {
-                if let Err(err) = app.global_shortcut().register(shortcut) {
-                    log::warn!("could not register {shortcut:?}: {err}");
-                }
-            }
+            let shortcuts = Shortcuts::load(app.handle());
+            shortcuts.register_all(app.handle());
+            app.manage(shortcuts);
             windows::show_main(app.handle());
             Ok(())
         })
@@ -118,6 +112,11 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            commands::desktop::shortcuts_get,
+            commands::desktop::shortcuts_set,
+            commands::desktop::shortcuts_reset,
+            commands::desktop::shortcuts_suspend,
+            commands::desktop::shortcuts_resume,
             commands::items::items_list,
             commands::items::items_get,
             commands::items::items_create,

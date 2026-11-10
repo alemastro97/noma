@@ -33,8 +33,8 @@ pub(crate) fn orb_enabled(app: &AppHandle) -> bool {
 }
 
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
-    let voice = MenuItem::with_id(app, "voice", "Capture by voice", true, Some("Alt+Space"))?;
-    let capture = MenuItem::with_id(app, "capture", "Quick capture", true, Some("Cmd+Shift+N"))?;
+    let voice = MenuItem::with_id(app, "voice", "Capture by voice", true, None::<&str>)?;
+    let capture = MenuItem::with_id(app, "capture", "Quick capture", true, None::<&str>)?;
     let open = MenuItem::with_id(app, "open", "Open NOMA", true, None::<&str>)?;
     let orb = CheckMenuItem::with_id(
         app,

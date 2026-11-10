@@ -4,6 +4,7 @@ import { onAiState } from "../../api/ai";
 import { onVoiceState, panelToggle, voiceStop } from "../../api/desktop";
 import { NomaOrb, type OrbState } from "../../components/NomaOrb";
 import { copy } from "../../copy";
+import { useShortcutLabels } from "../../hooks/useShortcuts";
 import styles from "./orb.module.css";
 
 const DRAG_THRESHOLD = 4;
@@ -11,6 +12,7 @@ const FLASH_MS = 1400;
 
 /** Small transparent always-on-top orb: pulses while listening, click opens the panel, drag moves it. */
 export function OrbWindow() {
+  const keys = useShortcutLabels();
   const [state, setState] = useState<OrbState>("idle");
   const listening = useRef(false);
   const flash = useRef<number | undefined>(undefined);
@@ -46,7 +48,7 @@ export function OrbWindow() {
       type="button"
       className={styles.root}
       aria-label={copy.orbHere}
-      title={copy.orbHint}
+      title={copy.orbHint(keys.voice)}
       onMouseDown={(e) => {
         if (e.button === 0) down.current = { x: e.screenX, y: e.screenY };
       }}

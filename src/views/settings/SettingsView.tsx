@@ -1,7 +1,10 @@
 import { Check, Download, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import type { ModelInfo, SpeechInfo } from "../../api/types";
+import { ShortcutRecorder } from "../../components/ShortcutRecorder/ShortcutRecorder";
 import { useSetting } from "../../hooks/useSetting";
+import { useShortcuts } from "../../hooks/useShortcuts";
+import { formatAccelerator, type Action } from "../../lib/shortcuts";
 import { settingsCopy as t } from "../../copy";
 import { NomaOrb } from "../../components/NomaOrb";
 import { aiStatusLabel, useAiStore } from "../../stores/ai";
@@ -207,8 +210,10 @@ function SpeechCard({ model }: { model: SpeechInfo }) {
 
 function VoiceSection() {
   const state = useAiStore((s) => s.state);
-  const [autoStop, setAutoStop] = useSetting("voice.autoStop", "1");
+  const [autoStop, setAutoStop] = useSetting("voice.autoStop", "0");
   const [language, setLanguage] = useSetting("voice.language", "it");
+  const shortcuts = useShortcuts();
+  const voiceKeys = formatAccelerator(shortcuts.voice);
   const [display, setDisplay] = useSetting("voice.display", "orb");
   if (!state) return null;
   return (
@@ -216,9 +221,9 @@ function VoiceSection() {
       <h2 id="voice-title" className={styles.h2}>
         {t.voiceTitle}
       </h2>
-      <p className={styles.lead}>{t.voiceLead}</p>
+      <p className={styles.lead}>{t.voiceLead(voiceKeys)}</p>
       <p className={styles.status} data-ready={state.speechReady || undefined}>
-        {state.speechReady ? t.voiceReady : t.voiceNotReady}
+        {state.speechReady ? t.voiceReady(voiceKeys) : t.voiceNotReady}
       </p>
       <div className={styles.models}>
         {(state.speechModels ?? []).map((m) => (
@@ -266,6 +271,18 @@ function VoiceSection() {
   );
 }
 
+function ShortcutBinding({ action, label }: { action: Action; label: string }) {
+  const shortcuts = useShortcuts();
+  const [override, setOverride] = useState<string | null>(null);
+  const value = override ?? shortcuts[action];
+  return (
+    <div className={styles.shortcut}>
+      <span>{label}</span>
+      <ShortcutRecorder action={action} value={value} onChange={setOverride} />
+    </div>
+  );
+}
+
 function DesktopSection() {
   const [orb, setOrb] = useSetting("orb.enabled", "1");
   const [paused, setPaused] = useSetting("reminders.paused", "0");
@@ -296,14 +313,9 @@ function DesktopSection() {
       />
       <div className={styles.shortcuts}>
         <span className={styles.label}>{t.shortcuts}</span>
-        <span className={styles.shortcut}>
-          {t.shortcutVoice}
-          <kbd className={styles.kbd}>⌥ Space</kbd>
-        </span>
-        <span className={styles.shortcut}>
-          {t.shortcutCapture}
-          <kbd className={styles.kbd}>⌘⇧N</kbd>
-        </span>
+        <p className={styles.meta}>{t.shortcutHint}</p>
+        <ShortcutBinding action="voice" label={t.shortcutVoice} />
+        <ShortcutBinding action="capture" label={t.shortcutCapture} />
       </div>
     </section>
   );

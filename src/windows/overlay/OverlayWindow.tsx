@@ -14,6 +14,7 @@ import {
 import type { VoicePhase, VoiceState } from "../../api/types";
 import { NomaOrb, type OrbState } from "../../components/NomaOrb";
 import { desktopCopy } from "../../copy";
+import { useShortcutLabels } from "../../hooks/useShortcuts";
 import glass from "../shared/glass.module.css";
 import styles from "./overlay.module.css";
 import { bars } from "./summary";
@@ -36,6 +37,7 @@ const ORB_FOR: Record<View, OrbState> = {
 
 /** Voice overlay: ⌥Space anywhere → listen → transcript → captured card summary. */
 export function OverlayWindow() {
+  const keys = useShortcutLabels();
   const [view, setView] = useState<View>("idle");
   const [text, setText] = useState("");
   const [draft, setDraft] = useState("");
@@ -229,7 +231,7 @@ export function OverlayWindow() {
           </>
         )}
         <span className={`${glass.hint} ${styles.right}`}>
-          {desktopCopy.holdAnywhere} <span className={glass.kbd}>⌥ Space</span> anywhere
+          {desktopCopy.holdAnywhere} <span className={glass.kbd}>{keys.voice}</span> anywhere
         </span>
       </footer>
     </section>

@@ -13,6 +13,7 @@ use crate::db::{
     settings::{get_setting, set_setting},
 };
 use crate::reminders::{Reminders, Toast};
+use crate::shortcuts::{Action, ShortcutMap, Shortcuts};
 use crate::state::{AppState, local_tz, now};
 use crate::voice::session::{Finish, VoiceService, VoiceState};
 use crate::windows;
@@ -196,6 +197,46 @@ pub async fn settings_set(
         _ => {}
     }
     Ok(())
+}
+
+// ── Shortcuts ────────────────────────────────────────────────────────────
+
+#[tauri::command]
+pub fn shortcuts_get(shortcuts: State<'_, Shortcuts>) -> ShortcutMap {
+    shortcuts.map()
+}
+
+#[tauri::command]
+pub fn shortcuts_set(
+    app: AppHandle,
+    shortcuts: State<'_, Shortcuts>,
+    action: String,
+    accelerator: String,
+) -> Result<ShortcutMap, String> {
+    shortcuts.set(&app, Action::parse(&action)?, &accelerator)?;
+    Ok(shortcuts.map())
+}
+
+#[tauri::command]
+pub fn shortcuts_reset(
+    app: AppHandle,
+    shortcuts: State<'_, Shortcuts>,
+    action: String,
+) -> Result<ShortcutMap, String> {
+    shortcuts.reset(&app, Action::parse(&action)?)?;
+    Ok(shortcuts.map())
+}
+
+/// The recorder in Settings frees the shortcuts so pressing the current one
+/// doesn't trigger it; `shortcuts_resume` puts them back.
+#[tauri::command]
+pub fn shortcuts_suspend(app: AppHandle, shortcuts: State<'_, Shortcuts>) {
+    shortcuts.suspend(&app);
+}
+
+#[tauri::command]
+pub fn shortcuts_resume(app: AppHandle, shortcuts: State<'_, Shortcuts>) {
+    shortcuts.register_all(&app);
 }
 
 #[cfg(test)]
