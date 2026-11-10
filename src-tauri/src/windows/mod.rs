@@ -1,13 +1,17 @@
 //! Desktop presence: the floating orb, its panel, the voice overlay, quick
 //! capture and reminder toasts are small always-on-top panels declared in
-//! `tauri.conf.json` (hidden at start). All AppKit calls run on the main thread.
+//! `tauri.conf.json` (hidden at start) or, for the ones used rarely (overlay,
+//! panel, toasts), created on first use: every webview costs 30–45 MB at rest.
+//! All AppKit calls run on the main thread.
 
 pub mod visibility;
 
 #[cfg(target_os = "macos")]
 mod macos;
 
-use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
+use tauri::{
+    AppHandle, Manager, PhysicalPosition, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
+};
 
 pub const MAIN: &str = "main";
 pub const ORB: &str = "orb";
@@ -17,6 +21,64 @@ pub const PANEL: &str = "panel";
 pub const TOASTS: &str = "toasts";
 
 pub const FLOATING: [&str; 5] = [ORB, OVERLAY, CAPTURE, PANEL, TOASTS];
+
+/// (label, page, width, height, title) of the panels created on first use.
+const LAZY: [(&str, &str, f64, f64, &str); 3] = [
+    (
+        OVERLAY,
+        "src/windows/overlay/index.html",
+        680.0,
+        420.0,
+        "NOMA voice",
+    ),
+    (
+        PANEL,
+        "src/windows/panel/index.html",
+        340.0,
+        440.0,
+        "NOMA panel",
+    ),
+    (
+        TOASTS,
+        "src/windows/toasts/index.html",
+        420.0,
+        200.0,
+        "NOMA reminders",
+    ),
+];
+
+/// The window for `label`, created (hidden, as a panel) if it is lazy and not built yet.
+/// Must run on the main thread.
+fn ensure(app: &AppHandle, label: &str) -> Option<WebviewWindow> {
+    if let Some(w) = app.get_webview_window(label) {
+        return Some(w);
+    }
+    let (_, url, w, h, title) = LAZY.iter().find(|(l, ..)| *l == label)?;
+    let built = WebviewWindowBuilder::new(app, label, WebviewUrl::App((*url).into()))
+        .title(*title)
+        .inner_size(*w, *h)
+        .decorations(false)
+        .transparent(true)
+        .shadow(false)
+        .always_on_top(true)
+        .visible_on_all_workspaces(true)
+        .skip_taskbar(true)
+        .visible(false)
+        .focused(false)
+        .resizable(false)
+        .accept_first_mouse(true)
+        .build();
+    match built {
+        Ok(win) => {
+            configure(&win);
+            Some(win)
+        }
+        Err(e) => {
+            log::warn!("could not create the {label} window: {e}");
+            None
+        }
+    }
+}
 
 /// Panels that take keyboard input.
 fn is_key(label: &str) -> bool {
@@ -125,7 +187,7 @@ pub fn setup(app: &AppHandle) {
 pub fn show(app: &AppHandle, label: &'static str) {
     let handle = app.clone();
     let _ = app.run_on_main_thread(move || {
-        if let Some(w) = handle.get_webview_window(label) {
+        if let Some(w) = ensure(&handle, label) {
             configure(&w);
             if label != ORB {
                 place(&handle, &w);
@@ -147,7 +209,7 @@ pub fn hide(app: &AppHandle, label: &'static str) {
 pub fn toggle(app: &AppHandle, label: &'static str) {
     let handle = app.clone();
     let _ = app.run_on_main_thread(move || {
-        let Some(w) = handle.get_webview_window(label) else {
+        let Some(w) = ensure(&handle, label) else {
             return;
         };
         if visibility::toggle_visibility(raw_is_visible(&w)) {

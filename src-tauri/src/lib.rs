@@ -69,7 +69,6 @@ pub fn run() {
 
             let voice = VoiceService::new(app.handle().clone());
             app.manage(Arc::clone(&voice));
-            voice.preload();
 
             let reminders = Reminders::new(app.handle().clone());
             app.manage(Arc::clone(&reminders));

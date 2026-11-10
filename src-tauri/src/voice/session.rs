@@ -25,9 +25,9 @@ pub const VOICE_PARTIAL: &str = "voice:partial";
 const TICK: Duration = Duration::from_millis(60);
 const PARTIAL_EVERY: Duration = Duration::from_millis(1200);
 const PARTIAL_WINDOW_S: usize = 15;
-/// The speech model stays resident for a while (instant ⌥ Space) and is freed
-/// after this idle time; the next press reloads it in about a second.
-const UNLOAD_AFTER: Duration = Duration::from_secs(10 * 60);
+/// The speech model (~0.6 GB) is loaded when ⌥ Space is pressed — while the user is
+/// still speaking, so nothing waits — and freed after this idle time.
+const UNLOAD_AFTER: Duration = Duration::from_secs(3 * 60);
 /// Trailing silence that ends a capture when auto-stop is on (opt-in).
 const AUTO_STOP_SILENCE_MS: u32 = 2200;
 /// Holding ⌥ Space longer than this makes it push-to-talk.
@@ -173,7 +173,13 @@ impl VoiceService {
             }
             let t = Instant::now();
             match me.ensure_model().await {
-                Ok(()) => log::info!("speech model ready in {} ms", t.elapsed().as_millis()),
+                Ok(()) => {
+                    log::info!("speech model ready in {} ms", t.elapsed().as_millis());
+                    // Loaded for a reason (just downloaded or switched): don't hold it forever.
+                    if !me.is_active() {
+                        me.schedule_unload();
+                    }
+                }
                 Err(e) => log::warn!("speech preload: {e}"),
             }
         });
