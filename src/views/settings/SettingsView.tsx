@@ -19,6 +19,7 @@ import { NomaOrb } from "../../components/NomaOrb";
 import { aiStatusLabel, useAiStore } from "../../stores/ai";
 import { readTheme, setTheme, type Theme } from "../../theme/theme";
 import styles from "./Settings.module.css";
+import { TimeSettings } from "./TimeSettings";
 
 function Segmented<T extends string>({
   value,
@@ -489,6 +490,7 @@ export function SettingsView() {
 
         <VoiceSection />
         <DesktopSection />
+        <TimeSettings />
         <DataSection />
 
         <section className={styles.section} aria-labelledby="appearance-title">

@@ -14,6 +14,7 @@ import type {
   Progress,
   Project,
 } from "../api/types";
+import { NOT_HANDLED as TIME_NOT_HANDLED, handleTime } from "./mock/time";
 
 type Args = Record<string, unknown>;
 
@@ -685,9 +686,12 @@ function handle(cmd: string, a: Args): unknown {
       links = links.filter((l) => l.id !== a.id);
       changed();
       return null;
-    default:
+    default: {
+      const time = handleTime(cmd, a);
+      if (time !== TIME_NOT_HANDLED) return time;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
+    }
   }
 }
 

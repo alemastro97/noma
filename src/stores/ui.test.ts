@@ -20,12 +20,12 @@ test("setTarget switches the active target", () => {
 test("setViewMode accepts available modes", () => {
   useUiStore.getState().setViewMode("list");
   expect(useUiStore.getState().viewMode).toBe("list");
-  expect(AVAILABLE_VIEW_MODES).toEqual(["canvas", "kanban", "list"]);
+  expect(AVAILABLE_VIEW_MODES).toEqual(["canvas", "kanban", "list", "calendar", "timeline"]);
 });
 
-test("setViewMode('calendar') is ignored", () => {
+test("setViewMode('calendar') switches to the calendar", () => {
   useUiStore.getState().setViewMode("calendar");
-  expect(useUiStore.getState().viewMode).toBe("canvas");
+  expect(useUiStore.getState().viewMode).toBe("calendar");
 });
 
 test("toggleSidebar flips and persists to localStorage noma.ui", () => {

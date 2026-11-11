@@ -14,7 +14,7 @@ import { useAiStore } from "../stores/ai";
 import { useBoardStore } from "../stores/board";
 import { flushPendingDeletes, useItemsStore } from "../stores/items";
 import { useProjectsStore } from "../stores/projects";
-import { useUiStore, type NavTarget } from "../stores/ui";
+import { useUiStore, type NavTarget, type ViewMode } from "../stores/ui";
 import styles from "./App.module.css";
 import { useGlobalHotkeys } from "./useGlobalHotkeys";
 import { boardIdFor } from "./boardFor";
@@ -31,7 +31,16 @@ function titleFor(target: NavTarget, projects: Project[], boards: Board[]) {
   }
 }
 
-function filterFor(target: NavTarget): ItemFilter | null {
+function filterFor(target: NavTarget, viewMode: ViewMode): ItemFilter | null {
+  // Calendar and Timeline span weeks: outside a project or board they show every dated card.
+  const spansTime = viewMode === "calendar" || viewMode === "timeline";
+  if (
+    spansTime &&
+    target.kind !== "project" &&
+    target.kind !== "board" &&
+    target.kind !== "settings"
+  )
+    return { kind: "all" };
   switch (target.kind) {
     case "settings":
       return null;
@@ -112,7 +121,7 @@ export function App() {
     };
   }, []);
 
-  const filter = useMemo(() => filterFor(target), [target]);
+  const filter = useMemo(() => filterFor(target, viewMode), [target, viewMode]);
   const includeDone = viewMode !== "canvas";
 
   useEffect(() => {

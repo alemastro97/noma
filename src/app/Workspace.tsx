@@ -6,6 +6,9 @@ import { CanvasView } from "../views/canvas/CanvasView";
 import { KanbanView } from "../views/kanban/KanbanView";
 import { ListView } from "../views/list/ListView";
 import { SettingsView } from "../views/settings/SettingsView";
+import { CalendarView } from "../views/calendar/CalendarView";
+import { HabitsSection } from "../views/habits/HabitsSection";
+import { TimelineView } from "../views/timeline/TimelineView";
 import { boardIdFor } from "./boardFor";
 import styles from "./Workspace.module.css";
 
@@ -35,7 +38,14 @@ export function Workspace({ target }: { target: NavTarget }) {
 
   return (
     <section className={styles.views} aria-label="Workspace">
-      {viewMode === "kanban" ? (
+      {target.kind === "today" && (viewMode === "list" || viewMode === "kanban") && (
+        <HabitsSection />
+      )}
+      {viewMode === "calendar" ? (
+        <CalendarView key={key} />
+      ) : viewMode === "timeline" ? (
+        <TimelineView key={key} />
+      ) : viewMode === "kanban" ? (
         <KanbanView key={key} empty={empty} />
       ) : viewMode === "list" ? (
         <ListView key={key} mode={target.kind === "today" ? "today" : "timeline"} empty={empty} />

@@ -8,6 +8,7 @@ pub mod reminders;
 mod selftest;
 pub mod shortcuts;
 pub mod state;
+mod timekeeping;
 mod tray;
 pub mod voice;
 mod windows;
@@ -89,6 +90,9 @@ pub fn run() {
             app.manage(Arc::clone(&reminders));
             tauri::async_runtime::spawn(reminders.run());
             tauri::async_runtime::spawn(backup::run(app.handle().clone()));
+            let time = timekeeping::TimeService::new(app.handle().clone());
+            app.manage(Arc::clone(&time));
+            tauri::async_runtime::spawn(time.run());
 
             windows::setup(app.handle());
             if let Err(e) = tray::setup(app.handle()) {
@@ -199,6 +203,16 @@ pub fn run() {
             commands::desktop::reminder_done,
             commands::desktop::settings_get,
             commands::desktop::settings_set,
+            // time
+            timekeeping::reminder_snooze_until,
+            timekeeping::recap_open,
+            timekeeping::time_item_info,
+            timekeeping::reminder_offsets_set,
+            timekeeping::habit_set,
+            timekeeping::habits_list,
+            timekeeping::focus_current,
+            timekeeping::focus_start,
+            timekeeping::focus_stop,
         ])
         .build(tauri::generate_context!())
         .expect("error while building NOMA")

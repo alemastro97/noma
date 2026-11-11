@@ -1,0 +1,111 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--noma-border);
+  background: transparent;
+  color: var(--noma-text-2);
+  font-size: 12px;
+  transition:
+    color var(--noma-fast) ease,
+    border-color var(--noma-fast) ease,
+    background var(--noma-fast) ease;
+}
+.chip:hover:not(:disabled) {
+  color: var(--noma-text);
+}
+.chip[aria-pressed="true"] {
+  color: var(--noma-reminder);
+  border-color: var(--noma-reminder);
+  background: rgba(242, 189, 115, 0.08);
+}
+[data-theme="light"] .chip[aria-pressed="true"] {
+  color: var(--noma-reminder-text);
+}
+.chip:disabled {
+  opacity: 0.5;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.toggleText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.toggleLabel {
+  font-size: 13px;
+  color: var(--noma-text);
+}
+
+.switch {
+  appearance: none;
+  flex: none;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border-radius: 10px;
+  background: var(--noma-surface-elevated);
+  border: 1px solid var(--noma-border);
+  position: relative;
+  transition: background var(--noma-fast) ease;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--noma-text-2);
+  transition:
+    transform var(--noma-fast) var(--noma-ease),
+    background var(--noma-fast) ease;
+}
+.switch:checked {
+  background: var(--noma-lavender);
+  border-color: var(--noma-lavender);
+}
+.switch:checked::after {
+  transform: translateX(14px);
+  background: var(--noma-bg);
+}
+.switch:disabled {
+  opacity: 0.5;
+}
+
+.focusRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.focusing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-lavender);
+}
+
+.stats {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
