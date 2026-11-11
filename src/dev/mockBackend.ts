@@ -19,6 +19,7 @@ import { handleSemantic } from "./mock/semantic";
 import { handleCards, NOT_HANDLED as CARDS_NOT_HANDLED } from "./mock/cards";
 import { handleWorkspace } from "./mock/workspace";
 import { NOT_HANDLED as TIME_NOT_HANDLED, handleTime } from "./mock/time";
+import { handleVoice, NOT_HANDLED as NOT_HANDLED_VOICE } from "./mock/voice";
 
 type Args = Record<string, unknown>;
 
@@ -720,6 +721,8 @@ function handle(cmd: string, a: Args): unknown {
       if (ws !== undefined) return ws;
       const time = handleTime(cmd, a);
       if (time !== TIME_NOT_HANDLED) return time;
+      const voice = handleVoice(cmd, a);
+      if (voice !== NOT_HANDLED_VOICE) return voice;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
     }

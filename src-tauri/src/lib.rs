@@ -283,6 +283,10 @@ pub fn run() {
             timekeeping::focus_current,
             timekeeping::focus_start,
             timekeeping::focus_stop,
+            // voice
+            voice::commands::voice_recording_for_item,
+            voice::commands::voice_recording_audio,
+            voice::commands::voice_command_undo,
         ])
         .build(tauri::generate_context!())
         .expect("error while building NOMA")

@@ -16,6 +16,8 @@ import glass from "../shared/glass.module.css";
 import { FiledCard } from "./FiledCard";
 import { RECAP_TOAST, isBeforeToast, isFocusToast } from "../../api/time";
 import { BeforeToast, FocusDoneToast, RecapToast, SnoozeLater } from "./TimeToasts";
+import { voiceToastKind } from "../../api/voice";
+import { VoiceCommandCard } from "./VoiceCommandCard";
 import styles from "./toasts.module.css";
 import { whenLabel } from "./when";
 
@@ -64,6 +66,7 @@ export function ToastsWindow() {
           return <FocusDoneToast key={t.id} toast={t} item={first} />;
         if (isBeforeToast(t.id) && first)
           return <BeforeToast key={t.id} toast={t} item={first} now={now} onResize={remeasure} />;
+        if (voiceToastKind(t.id)) return <VoiceCommandCard key={t.id} toast={t} />;
         if (t.brief) return <BriefToast key={t.id} toast={t} />;
         if (t.missed) return <MissedToast key={t.id} toast={t} />;
         return first ? (

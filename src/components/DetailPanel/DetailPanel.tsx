@@ -22,6 +22,7 @@ import { NotesField } from "../Cards/NotesField";
 import { Subtasks } from "../Cards/Subtasks";
 import styles from "./DetailPanel.module.css";
 import { TimeSection } from "./TimeSection";
+import { VoiceRecordingField } from "./VoiceRecording";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -282,6 +283,8 @@ function Editor({ item }: { item: Item }) {
       <Field label={detailCopy.tags}>
         <TagsField tags={item.tags} onChange={(tags) => update({ tags })} />
       </Field>
+
+      <VoiceRecordingField itemId={item.id} />
 
       {created && (
         <p className={styles.footnote}>

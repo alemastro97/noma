@@ -33,6 +33,11 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 - **Focus timer.** Focus 25 minutes on a card from its details or the orb panel; the orb shows a progress ring and sessions are logged per card.
 - **Habits.** Mark a repeating card as a habit to see its streak and last 7 days, also in a Habits section in Today.
 - **Reminders before the due time.** 10 min, 1 hour, 1 day or 1 week before, set in the card's details.
+- **Voice commands.** Say "segna fatto chiamare Marta", "sposta il dentista a domani" or "cosa ho oggi?" and NOMA acts on the card instead of taking a note, with Undo in the toast. Anything unclear is still captured.
+- **Spoken answers.** "What's on today?" is read aloud in your voice language (Settings → Voice commands & sounds).
+- **Confirmation sound** when a voice capture is saved.
+- **Words to recognize.** Whisper now expects your project and board names plus your own list of names.
+- **Keep the recording** (off by default): the audio of a voice capture is saved next to the card and can be played from the card's details.
 
 - **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.

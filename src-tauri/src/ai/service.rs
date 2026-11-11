@@ -609,6 +609,17 @@ impl AiService {
         out
     }
 
+    /// One schema-constrained completion outside the capture queue (voice
+    /// commands). Same as [`Self::complete_json`].
+    pub async fn complete_once(
+        &self,
+        system: &str,
+        user: &str,
+        schema: &serde_json::Value,
+    ) -> Result<String, AiError> {
+        self.complete_json(system, user, schema).await
+    }
+
     /// Wakes the worker (new capture, model became available…).
     pub fn nudge(&self) {
         self.wake.notify_one();

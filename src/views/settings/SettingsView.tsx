@@ -21,6 +21,7 @@ import { readTheme, setTheme, type Theme } from "../../theme/theme";
 import styles from "./Settings.module.css";
 import { SemanticSection } from "./SemanticSection";
 import { TimeSettings } from "./TimeSettings";
+import { VoiceExtrasSection } from "./VoiceExtrasSection";
 
 function Segmented<T extends string>({
   value,
@@ -490,6 +491,7 @@ export function SettingsView() {
         </section>
 
         <VoiceSection />
+        <VoiceExtrasSection />
         <SemanticSection />
         <DesktopSection />
         <TimeSettings />

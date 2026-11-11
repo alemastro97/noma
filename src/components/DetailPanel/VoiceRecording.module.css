@@ -1,0 +1,23 @@
+.play {
+  align-self: flex-start;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  background: var(--noma-bg-2);
+  color: var(--noma-text);
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color var(--noma-fast) ease;
+}
+.play:hover {
+  border-color: var(--noma-violet);
+}
+.play:focus-visible {
+  outline: 2px solid var(--noma-violet);
+  outline-offset: 2px;
+}

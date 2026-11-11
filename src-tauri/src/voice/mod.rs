@@ -2,6 +2,9 @@
 //! See docs/specs/desktop-presence.md.
 
 pub mod audio;
+pub mod command;
+pub mod commands;
+pub mod extras;
 pub mod session;
 pub mod stt;
 pub mod vad;

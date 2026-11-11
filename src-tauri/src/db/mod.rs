@@ -24,6 +24,7 @@ pub mod subtasks;
 pub mod tags;
 pub mod workspace;
 pub mod timekeeping;
+pub mod voice;
 
 use std::path::Path;
 

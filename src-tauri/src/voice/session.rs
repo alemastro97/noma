@@ -12,6 +12,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use super::audio::{Recorder, SAMPLE_RATE};
 use super::stt::{Stt, Transcript};
 use super::vad::{Endpointer, VadEvent};
+use super::{command, extras};
 use crate::ai::service::AiService;
 use crate::commands::ai::{CaptureContext, create_capture};
 use crate::db::settings::get_setting;
@@ -213,13 +214,14 @@ impl VoiceService {
         &self,
         audio: Vec<f32>,
         language: Option<String>,
+        prompt: Option<String>,
     ) -> Result<Transcript, String> {
         let stt = Arc::clone(&self.stt);
         tauri::async_runtime::spawn_blocking(move || {
             let guard = stt.lock().map_err(|_| "speech model lock".to_string())?;
             let model = guard.as_ref().ok_or("speech model not loaded")?;
             model
-                .transcribe(&audio, language.as_deref())
+                .transcribe(&audio, language.as_deref(), prompt.as_deref())
                 .map_err(|e| e.to_string())
         })
         .await
@@ -277,6 +279,7 @@ impl VoiceService {
         let mut last_partial = Instant::now();
         let mut partial_len = 0usize;
         let language = self.language();
+        let prompt = extras::prompt_for(&self.app);
         let mut ticks = 0u32;
         loop {
             tokio::time::sleep(TICK).await;
@@ -318,7 +321,7 @@ impl VoiceService {
                 };
                 let me = Arc::clone(&self);
                 let lang = language.clone();
-                let result = me.transcribe(audio, lang).await;
+                let result = me.transcribe(audio, lang, prompt.clone()).await;
                 self.partial_running.store(false, Ordering::SeqCst);
                 if let Ok(t) = result {
                     let still = self
@@ -365,7 +368,11 @@ impl VoiceService {
             self.restore_orb_later();
             return None;
         }
-        let transcript = match self.transcribe(samples, self.language()).await {
+        // Kept only when the user asked for it (`voice.keepAudio`, off by default).
+        let keep = (mode == Finish::Save && extras::keep_audio(&self.app)).then(|| samples.clone());
+        let language = self.language();
+        let prompt = extras::prompt_for(&self.app);
+        let transcript = match self.transcribe(samples, language.clone(), prompt).await {
             Ok(t) => t,
             Err(e) => {
                 self.emit_state(VoiceState {
@@ -389,6 +396,19 @@ impl VoiceService {
             });
             return Some(transcript.text);
         }
+        // A command ("segna fatto…", "cosa ho oggi?") is acted on, not captured.
+        let spoken = match language.or(transcript.language.clone()).as_deref() {
+            Some("en") => "en",
+            _ => "it",
+        };
+        if let Some(done) = command::try_handle(&self.app, &transcript.text, spoken).await {
+            self.emit_state(VoiceState {
+                text: Some(transcript.text.clone()),
+                item_id: done.item_id,
+                ..VoiceState::phase("saved")
+            });
+            return Some(transcript.text);
+        }
         match create_capture(
             &self.app,
             "voice",
@@ -397,12 +417,18 @@ impl VoiceService {
         )
         .await
         {
-            Ok(r) => self.emit_state(VoiceState {
-                text: Some(transcript.text.clone()),
-                capture_id: Some(r.capture_id),
-                item_id: Some(r.item.id),
-                ..VoiceState::phase("saved")
-            }),
+            Ok(r) => {
+                extras::play_saved(&self.app);
+                if let Some(audio) = keep {
+                    extras::save_recording(&self.app, &r.capture_id, &audio);
+                }
+                self.emit_state(VoiceState {
+                    text: Some(transcript.text.clone()),
+                    capture_id: Some(r.capture_id),
+                    item_id: Some(r.item.id),
+                    ..VoiceState::phase("saved")
+                })
+            }
             Err(e) => self.emit_state(VoiceState {
                 message: Some(e),
                 ..VoiceState::phase("error")

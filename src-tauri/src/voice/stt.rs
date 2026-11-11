@@ -81,24 +81,31 @@ impl Stt {
             state: std::sync::Mutex::new(state),
             model_id: model_id.to_string(),
         };
-        let _ = stt.run(&vec![0.0; SAMPLE_RATE as usize * 2], Some("en"));
+        let _ = stt.run(&vec![0.0; SAMPLE_RATE as usize * 2], Some("en"), None);
         Ok(stt)
     }
 
     /// Transcribes 16 kHz mono audio. `language` pins the language (for
-    /// partials after the first detection); None auto-detects.
+    /// partials after the first detection); None auto-detects. `prompt` is the
+    /// personal vocabulary (project names, people) Whisper should expect.
     pub fn transcribe(
         &self,
         audio: &[f32],
         language: Option<&str>,
+        prompt: Option<&str>,
     ) -> Result<Transcript, VoiceError> {
         if audio.len() < SAMPLE_RATE as usize / 4 {
             return Ok(Transcript::default());
         }
-        self.run(audio, language)
+        self.run(audio, language, prompt)
     }
 
-    fn run(&self, audio: &[f32], language: Option<&str>) -> Result<Transcript, VoiceError> {
+    fn run(
+        &self,
+        audio: &[f32],
+        language: Option<&str>,
+        prompt: Option<&str>,
+    ) -> Result<Transcript, VoiceError> {
         use whisper_rs::{FullParams, SamplingStrategy};
         let mut state = self
             .state
@@ -115,6 +122,9 @@ impl Stt {
         params.set_temperature_inc(0.0);
         params.set_no_context(true);
         params.set_suppress_blank(true);
+        if let Some(p) = prompt.filter(|p| !p.is_empty()) {
+            params.set_initial_prompt(p);
+        }
         params.set_print_special(false);
         params.set_print_progress(false);
         params.set_print_realtime(false);
@@ -164,6 +174,7 @@ impl Stt {
         &self,
         _audio: &[f32],
         _language: Option<&str>,
+        _prompt: Option<&str>,
     ) -> Result<Transcript, VoiceError> {
         Err(VoiceError::Unavailable("voice capture unavailable".into()))
     }

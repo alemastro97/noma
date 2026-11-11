@@ -11,6 +11,10 @@ Living specifications. One file per feature; each is updated in the same PR as t
 | [Desktop presence](desktop-presence.md)      | Shipped  | 3     |
 | [Workspace power tools](workspace.md)        | Shipped  | 4     |
 | [Time](time.md)                              | Shipped  | 4     |
+| [Organize](organize.md)                      | Shipped  | 4     |
+| [Semantic search & Ask NOMA](semantic.md)    | Shipped  | 4     |
+| [Cards](cards.md)                            | Shipped  | 4     |
+| [Voice](voice.md)                            | Shipped  | 4     |
 
 Plans live in [`../plans/`](../plans/), decisions in [`../adr/`](../adr/).
 
