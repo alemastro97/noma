@@ -287,6 +287,8 @@ export const onboardingCopy = {
   tryTitle: "Try it.",
   tryBody: (voice: string, capture: string) =>
     `Hold ${voice} anywhere and say what's on your mind. Release to save. ${capture} to type instead.`,
+  loginNote:
+    "NOMA now starts quietly at login, so the shortcut always works. Turn it off in Settings → On your desktop.",
   tryNow: (voice: string) => `Try ${voice}`,
   finish: "Start using NOMA",
   step: (i: number, n: number) => `${i} of ${n}`,

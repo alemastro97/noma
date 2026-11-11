@@ -122,6 +122,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               {t.tryTitle}
             </h1>
             <p className={styles.body}>{t.tryBody(keys.voice, keys.capture)}</p>
+            <p className={styles.meta}>{t.loginNote}</p>
           </>
         )}
 

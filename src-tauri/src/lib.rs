@@ -95,6 +95,7 @@ pub fn run() {
             let shortcuts = Shortcuts::load(app.handle());
             shortcuts.register_all(app.handle());
             app.manage(shortcuts);
+            enable_login_item_once(app.handle());
             // Started at login: stay in the menu bar until the user opens NOMA.
             if std::env::args().any(|a| a == "--background") {
                 windows::hide_main(app.handle());
@@ -216,4 +217,28 @@ pub fn run() {
             tauri::RunEvent::Reopen { .. } => windows::show_main(app),
             _ => {}
         });
+}
+
+/// First run of an installed build: start NOMA at login so the voice shortcut
+/// works without opening the app. Runs once; the user's later choice in
+/// Settings is never overridden. Skipped in dev builds, which would register
+/// the throwaway dev binary.
+fn enable_login_item_once(app: &tauri::AppHandle) {
+    use tauri::Manager;
+    use tauri_plugin_autostart::ManagerExt;
+    const KEY: &str = "autostart.initialized";
+    if cfg!(debug_assertions) {
+        return;
+    }
+    let Some(state) = app.try_state::<state::AppState>() else {
+        return;
+    };
+    let Ok(conn) = state.db.lock() else { return };
+    if db::settings::get_setting(&conn, KEY).ok().flatten().is_some() {
+        return;
+    }
+    if let Err(e) = app.autolaunch().enable() {
+        log::warn!("open at login: {e}");
+    }
+    let _ = db::settings::set_setting(&conn, KEY, "1");
 }
