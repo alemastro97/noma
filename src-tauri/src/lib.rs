@@ -3,6 +3,7 @@ mod backup;
 pub mod commands;
 pub mod db;
 mod filed;
+pub mod organize;
 pub mod reminders;
 #[cfg(debug_assertions)]
 mod selftest;
@@ -199,6 +200,15 @@ pub fn run() {
             commands::desktop::reminder_done,
             commands::desktop::settings_get,
             commands::desktop::settings_set,
+            // organize
+            organize::commands::organize_resort_inbox,
+            organize::commands::organize_merge,
+            organize::commands::organize_break_down,
+            organize::commands::organize_brief_get,
+            organize::commands::organize_summarize_project,
+            organize::commands::organize_next_action,
+            organize::commands::organize_review,
+            organize::commands::organize_review_summary,
         ])
         .build(tauri::generate_context!())
         .expect("error while building NOMA")

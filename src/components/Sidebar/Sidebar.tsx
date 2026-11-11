@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useShortcutLabels } from "../../hooks/useShortcuts";
-import { copy, sidebarCopy } from "../../copy";
+import { CalendarCheck } from "lucide-react";
+import { copy, organizeCopy, sidebarCopy } from "../../copy";
 import { nextProjectColor } from "../../lib/colors";
 import { useHotkey } from "../../hooks/useHotkey";
 import { useItemsStore } from "../../stores/items";
@@ -178,6 +179,13 @@ export function Sidebar() {
             onSelect={() => setTarget(item.target)}
           />
         ))}
+        <NavItem
+          label={organizeCopy.review.nav}
+          icon={<CalendarCheck {...ICON} />}
+          active={isActive({ kind: "review" })}
+          collapsed={collapsed}
+          onSelect={() => setTarget({ kind: "review" })}
+        />
       </nav>
 
       {!collapsed || projects.length > 0 ? (

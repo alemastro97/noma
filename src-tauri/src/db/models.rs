@@ -90,11 +90,19 @@ pub struct CaptureHint {
     /// A project name that matched nothing existing ("new project?").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suggested_project: Option<String>,
+    /// An open card this capture closely matches ("Looks like …"): its id and title.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub similar_to: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub similar_title: Option<String>,
 }
 
 impl CaptureHint {
     pub fn is_empty(&self) -> bool {
-        self.date_phrase.is_none() && !self.low_confidence && self.suggested_project.is_none()
+        self.date_phrase.is_none()
+            && !self.low_confidence
+            && self.suggested_project.is_none()
+            && self.similar_to.is_none()
     }
 }
 

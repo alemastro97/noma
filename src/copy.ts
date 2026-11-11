@@ -316,3 +316,54 @@ export const onboardingCopy = {
   finish: "Start using NOMA",
   step: (i: number, n: number) => `${i} of ${n}`,
 };
+
+export const organizeCopy = {
+  aiFailed: "NOMA couldn't do that right now. Check that the AI model is set up in Settings.",
+  resort: {
+    button: "Re-sort Inbox",
+    working: "Re-sorting…",
+    title: "File Inbox cards again with your current projects and boards",
+    moved: (n: number) =>
+      n === 0 ? "Everything stays in the Inbox" : `Moved ${n} ${n === 1 ? "card" : "cards"}`,
+  },
+  duplicate: {
+    chip: (title: string) => `Looks like ${title}`,
+    lead: "This looks like a card you already have:",
+    merge: "Merge",
+    keepBoth: "Keep both",
+    merged: "Merged into the existing card",
+    failed: "Couldn't merge these cards",
+  },
+  breakDown: {
+    button: "Break down",
+    working: "Breaking down…",
+    title: "Ask NOMA for the next steps and add them as linked tasks",
+    done: (n: number) => `Added ${n} ${n === 1 ? "step" : "steps"}`,
+  },
+  brief: {
+    next: "Next",
+    suggest: "Suggest next action",
+    refreshNext: "Suggest again",
+    nothingOpen: "Nothing open in this project",
+    summarize: "Summarize",
+    resummarize: "Regenerate summary",
+    working: "Thinking…",
+    open: "Open card",
+  },
+  review: {
+    nav: "Review",
+    lead: "The last 7 days at a glance.",
+    summary: "This week",
+    summarize: "Write my summary",
+    resummarize: "Write it again",
+    working: "Writing…",
+    completed: "Completed",
+    overdue: "Overdue",
+    forgotten: "Forgotten",
+    forgottenHint: "Untouched for 30+ days",
+    emptyCompleted: "Nothing finished this week yet.",
+    emptyOverdue: "Nothing overdue. Nice.",
+    emptyForgotten: "Nothing gathering dust.",
+    loading: "Loading…",
+  },
+} as const;

@@ -4,6 +4,15 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- **Re-sort Inbox.** One button files captured Inbox cards again with your current projects, boards and corrections, and tells you how many moved.
+- **Duplicate hints.** A capture that repeats an open card shows "Looks like …", with Merge or Keep both in the card details.
+- **Break down.** Turn a task into 3–7 linked next-step tasks in the same place.
+- **Project summary.** Summarize a project into a short status paragraph at the top of its view, regenerable.
+- **Next action.** NOMA suggests the single next thing to do in a project, shown at the top of the project.
+- **Weekly review.** A new Review page: done this week, overdue, forgotten (30+ days untouched) and a three-sentence summary.
+- **Tags are reused.** Captures can pick up your existing tags; NOMA never invents new ones.
+- **Bigger model option.** Qwen3 8B for Macs with 16 GB or more, with its memory need shown in Settings.
+
 - **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.
 - **Morning brief.** Once a day, a small note with what is on today.

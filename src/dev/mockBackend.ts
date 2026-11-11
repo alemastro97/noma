@@ -14,6 +14,7 @@ import type {
   Progress,
   Project,
 } from "../api/types";
+import { handleOrganize, NOT_HANDLED } from "./mock/organize";
 
 type Args = Record<string, unknown>;
 
@@ -296,6 +297,16 @@ const aiState = {
       file: "Qwen3-1.7B-Q4_K_M.gguf",
       sizeBytes: 1107409472,
       ramGb: 2,
+      recommended: false,
+      installed: false,
+    },
+    {
+      id: "qwen3-8b-q4km",
+      name: "Qwen3 8B",
+      description: "Larger and more careful, slower. For Macs with 16 GB of memory or more.",
+      file: "Qwen3-8B-Q4_K_M.gguf",
+      sizeBytes: 5027784512,
+      ramGb: 6.5,
       recommended: false,
       installed: false,
     },
@@ -685,9 +696,12 @@ function handle(cmd: string, a: Args): unknown {
       links = links.filter((l) => l.id !== a.id);
       changed();
       return null;
-    default:
+    default: {
+      const organized = handleOrganize(cmd, a);
+      if (organized !== NOT_HANDLED) return organized;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
+    }
   }
 }
 

@@ -5,12 +5,15 @@ import { hintCopy } from "../../copy";
 import { nextProjectColor } from "../../lib/colors";
 import { useItemsStore } from "../../stores/items";
 import { useProjectsStore } from "../../stores/projects";
+import { SimilarChip } from "../../views/organize/SimilarChip";
 import styles from "./Card.module.css";
 
 function without(hint: CaptureHint, key: keyof CaptureHint): CaptureHint | null {
   const next = { ...hint };
   delete next[key];
-  return next.datePhrase || next.lowConfidence || next.suggestedProject ? next : null;
+  return next.datePhrase || next.lowConfidence || next.suggestedProject || next.similarTo
+    ? next
+    : null;
 }
 
 /** Review chips left by AI capture: check the date, confirm a new project, check the card. */
@@ -59,6 +62,7 @@ export function HintChips({ item }: { item: Item }) {
           </button>
         </span>
       )}
+      {hint.similarTo && hint.similarTitle && <SimilarChip item={item} hint={hint} />}
       {hint.lowConfidence && (
         <span className={styles.hint}>
           <AlertCircle size={12} strokeWidth={2} aria-hidden="true" />

@@ -13,6 +13,7 @@ import {
 import { useItemsStore } from "../../stores/items";
 import { useProjectsStore } from "../../stores/projects";
 import { useUiStore } from "../../stores/ui";
+import { OrganizeActions } from "../../views/organize/OrganizeActions";
 import { KIND_STYLE } from "../Card/kind";
 import styles from "./DetailPanel.module.css";
 
@@ -186,6 +187,8 @@ function Editor({ item }: { item: Item }) {
         onChange={(e) => body.setDraft(e.target.value)}
         onBlur={body.commit}
       />
+
+      <OrganizeActions item={item} />
 
       <div className={styles.grid}>
         <Field label={detailCopy.status}>
