@@ -15,8 +15,10 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { devSeed, searchItems } from "../../api/items";
+import { semanticSearch } from "../../api/semantic";
 import type { Item, ItemType } from "../../api/types";
-import { copy, kindLabel, paletteCopy, sidebarCopy } from "../../copy";
+import { copy, kindLabel, paletteCopy, semanticCopy, sidebarCopy } from "../../copy";
+import { useAskStore } from "../../stores/ask";
 import { useItemsStore } from "../../stores/items";
 import { useProjectsStore, personalBoards } from "../../stores/projects";
 import { useToastsStore } from "../../stores/toasts";
@@ -26,7 +28,31 @@ import { KIND_STYLE } from "../Card/kind";
 import styles from "../QuickAdd/Overlay.module.css";
 import { filterCommands, type Command } from "./commands";
 
-type Option = { type: "command"; cmd: Command; icon: ReactNode } | { type: "item"; item: Item };
+type Option =
+  | { type: "command"; cmd: Command; icon: ReactNode }
+  | { type: "item"; item: Item; related?: boolean };
+
+/**
+ * "Ask NOMA: …" is offered for questions only, so Enter on any other unmatched
+ * query still creates a task. "Ask NOMA" itself is always a command.
+ */
+function looksLikeQuestion(q: string): boolean {
+  return q.length >= 3 && q.endsWith("?");
+}
+
+/** Cards shown at most: full-text matches first, then semantic ("Related") ones. */
+const MAX_CARDS = 10;
+
+/** Full-text results followed by the semantic matches they don't already include. */
+function mergeResults(text: Item[], related: Item[]): Option[] {
+  const seen = new Set(text.map((i) => i.id));
+  return [
+    ...text.map((item) => ({ type: "item" as const, item })),
+    ...related
+      .filter((i) => !seen.has(i.id))
+      .map((item) => ({ type: "item" as const, item, related: true })),
+  ].slice(0, MAX_CARDS);
+}
 
 const NEW_KINDS: ItemType[] = ["task", "reminder", "note", "idea", "event"];
 
@@ -83,6 +109,14 @@ function useCommands(): (Command & { icon: ReactNode })[] {
           icon: <Icon size={15} strokeWidth={1.75} />,
         };
       }),
+      {
+        id: "ask:open",
+        label: semanticCopy.askCommand,
+        keywords: "question ai chat answer",
+        section: "actions",
+        run: () => useAskStore.getState().openAsk(),
+        icon: <Sparkles size={15} strokeWidth={1.75} />,
+      },
       {
         id: "new:project",
         label: sidebarCopy.newProject,
@@ -194,7 +228,12 @@ function PaletteDialog() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const q = query.trim();
+  const [related, setRelated] = useState<{ q: string; items: Item[] }>({ q: "", items: [] });
   const results = useMemo(() => (q.length >= 2 && search.q === q ? search.items : []), [q, search]);
+  const relatedResults = useMemo(
+    () => (q.length >= 3 && related.q === q ? related.items : []),
+    [q, related],
+  );
 
   useEffect(() => {
     requestAnimationFrame(() => inputRef.current?.focus());
@@ -215,14 +254,44 @@ function PaletteDialog() {
     };
   }, [q]);
 
+  // Semantic matches (empty when search by meaning is off or not set up).
+  useEffect(() => {
+    if (q.length < 3) return;
+    let alive = true;
+    const t = setTimeout(() => {
+      void semanticSearch(q, 6)
+        .then((hits) => {
+          if (alive) setRelated({ q, items: (hits ?? []).map((h) => h.item) });
+        })
+        .catch(() => undefined);
+    }, 250);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [q]);
+
   const options: Option[] = useMemo(() => {
     const cmds = filterCommands(commands, query) as (Command & { icon: ReactNode })[];
-    const shown = query.trim() ? cmds.slice(0, 8) : cmds;
+    const ask: Command & { icon: ReactNode } = {
+      id: "ask:query",
+      label: semanticCopy.askAbout(q),
+      section: "actions",
+      run: () => useAskStore.getState().openAsk(q),
+      icon: <Sparkles size={15} strokeWidth={1.75} />,
+    };
+    const question = looksLikeQuestion(q);
+    const shown = q
+      ? [...(question ? [ask] : []), ...cmds.filter((c) => !question || c.id !== "ask:open")].slice(
+          0,
+          8,
+        )
+      : cmds;
     return [
-      ...results.map((item) => ({ type: "item" as const, item })),
+      ...mergeResults(results, relatedResults),
       ...shown.map((cmd) => ({ type: "command" as const, cmd, icon: cmd.icon })),
     ];
-  }, [commands, query, results]);
+  }, [commands, query, q, results, relatedResults]);
 
   const activeIndex = Math.min(active, Math.max(options.length - 1, 0));
   useEffect(() => {
@@ -331,7 +400,9 @@ function PaletteDialog() {
                     <span className={styles.optionHint}>{opt.cmd.hint}</span>
                   )}
                   {opt.type === "item" && (
-                    <span className={styles.optionHint}>{kindLabel[opt.item.kind]}</span>
+                    <span className={styles.optionHint}>
+                      {opt.related ? semanticCopy.related : kindLabel[opt.item.kind]}
+                    </span>
                   )}
                 </button>
               </div>

@@ -5,6 +5,7 @@ pub mod boards;
 pub mod desktop;
 pub mod items;
 pub mod projects;
+pub mod semantic;
 
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
@@ -23,6 +24,10 @@ pub fn emit_items_changed(app: &AppHandle, ids: Vec<String>) {
     // Any change may move a reminder time.
     if let Some(r) = app.try_state::<std::sync::Arc<crate::reminders::Reminders>>() {
         r.nudge();
+    }
+    // Changed text is re-embedded for semantic search.
+    if let Some(s) = app.try_state::<std::sync::Arc<crate::semantic::SemanticService>>() {
+        s.nudge();
     }
     if let Err(err) = app.emit(ITEMS_CHANGED, ItemsChanged { ids }) {
         log::warn!("failed to emit {ITEMS_CHANGED}: {err}");

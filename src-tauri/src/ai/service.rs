@@ -589,6 +589,30 @@ impl AiService {
         }
     }
 
+    /// One schema-constrained completion with the configured chat model, for
+    /// features other than capture (Ask NOMA). Starts the server if needed.
+    pub async fn complete_json(
+        &self,
+        system: &str,
+        user: &str,
+        schema: &serde_json::Value,
+    ) -> Result<String, AiError> {
+        let provider = self.provider().await?;
+        {
+            let mut rt = self.runtime.lock().expect("runtime lock");
+            if rt.phase == Phase::Loading {
+                rt.phase = Phase::Idle;
+                rt.message = None;
+            }
+        }
+        self.publish().await;
+        let out = provider
+            .complete_json(&self.client, system, user, schema)
+            .await;
+        *self.last_used.lock().expect("last_used") = Instant::now();
+        out
+    }
+
     /// Wakes the worker (new capture, model became available…).
     pub fn nudge(&self) {
         self.wake.notify_one();

@@ -316,3 +316,39 @@ export const onboardingCopy = {
   finish: "Start using NOMA",
   step: (i: number, n: number) => `${i} of ${n}`,
 };
+
+export const semanticCopy = {
+  // Command palette
+  askCommand: "Ask NOMA",
+  askAbout: (q: string) => `Ask NOMA: “${q}”`,
+  related: "Related",
+  // Header
+  ask: "Ask",
+  askHint: "Ask NOMA about your cards",
+  // Ask NOMA panel
+  title: "Ask NOMA",
+  placeholder: "Ask about your cards…",
+  intro:
+    "Ask anything about your tasks, notes and ideas. NOMA answers from your own cards, right on this Mac.",
+  examples: ["What's due this week?", "What did I note about the launch?"],
+  thinking: "Thinking…",
+  noCards: "I couldn't find anything about that in your cards.",
+  failed: (msg: string) => `Couldn't answer: ${msg}`,
+  sources: "From your cards",
+  openCard: (title: string) => `Open “${title}”`,
+  newConversation: "New conversation",
+  send: "Ask",
+  close: "Close",
+  // Settings
+  settingsTitle: "Search by meaning",
+  settingsLead:
+    "A small extra model lets the search palette and Ask NOMA find cards by meaning, not only by exact words. It runs on this Mac.",
+  toggle: "Search by meaning",
+  toggleHint: "Keeps an index of your cards up to date in the background.",
+  notInstalled: "Download the search model to turn it on.",
+  off: "Off. Search uses exact words only.",
+  indexed: (n: number, total: number) => `Ready · ${n} of ${total} cards indexed`,
+  indexing: (n: number, total: number) => `Indexing your cards… ${n} of ${total}`,
+  downloading: (pct: number) => `Downloading… ${pct}%`,
+  rebuild: "Rebuild index",
+};
