@@ -2,16 +2,17 @@ import { timeCopy as t } from "../../copy";
 import { clock, useFocus } from "../../hooks/useFocus";
 import styles from "./focusRing.module.css";
 
-/** A little wider than the 52 px orb so the ring sits around it. */
-const SIZE = 74;
+/** How much wider than the orb the ring is, so it sits around it. */
+const GAP = 22;
 const STROKE = 3;
-const R = (SIZE - STROKE) / 2;
-const C = 2 * Math.PI * R;
 
 /** Progress ring around the orb while a focus session runs. */
-export function FocusRing() {
+export function FocusRing({ orbPx = 52 }: { orbPx?: number }) {
   const { focus, leftMs, progress } = useFocus();
   if (!focus) return null;
+  const SIZE = orbPx + GAP;
+  const R = (SIZE - STROKE) / 2;
+  const C = 2 * Math.PI * R;
   return (
     <span
       className={styles.wrap}

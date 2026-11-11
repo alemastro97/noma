@@ -1,0 +1,19 @@
+.times {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 6px;
+}
+
+.time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time input {
+  font-family: var(--noma-font-mono);
+  color-scheme: dark;
+}
+:global([data-theme="light"]) .time input {
+  color-scheme: light;
+}

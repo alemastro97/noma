@@ -1,10 +1,11 @@
 import { ArrowUpRight, Mic } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { mainShow, panelHide, voiceStart } from "../../api/desktop";
 import { onItemsChanged } from "../../api/events";
 import { completeItem, listItems, updateItem } from "../../api/items";
 import type { Item } from "../../api/types";
 import { desktopCopy } from "../../copy";
+import { PanelCapture, PanelSearch, SearchResults, usePanelSearch } from "./PanelFields";
 import { anchorDate, formatTime } from "../../lib/dates";
 import glass from "../shared/glass.module.css";
 import { todayRows } from "./today";
@@ -18,6 +19,12 @@ const MAX_ROWS = 7;
 export function PanelWindow() {
   const [items, setItems] = useState<Item[]>([]);
   const focus = useFocus();
+  const search = usePanelSearch();
+  const queryRef = useRef(search.query);
+  useEffect(() => {
+    queryRef.current = search.query;
+  }, [search.query]);
+  const clearSearch = search.clear;
 
   const load = useCallback(() => {
     void listItems({ kind: "today" }, true)
@@ -30,7 +37,10 @@ export function PanelWindow() {
     const un = onItemsChanged(load);
     window.addEventListener("focus", load);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") void panelHide("panel");
+      if (e.key !== "Escape") return;
+      // Esc first clears the search, then closes the panel.
+      if (queryRef.current) clearSearch();
+      else void panelHide("panel");
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -38,7 +48,7 @@ export function PanelWindow() {
       window.removeEventListener("focus", load);
       window.removeEventListener("keydown", onKey);
     };
-  }, [load]);
+  }, [load, clearSearch]);
 
   const toggle = (item: Item) => {
     const done = item.status === "done";
@@ -59,7 +69,11 @@ export function PanelWindow() {
         </header>
         <FocusBar clock={focus} />
 
-        {rows.length === 0 ? (
+        <PanelSearch search={search} />
+
+        {search.query.trim() ? (
+          <SearchResults items={search.items} />
+        ) : rows.length === 0 ? (
           <p className={styles.empty}>{desktopCopy.allClear}</p>
         ) : (
           <ul className={styles.list}>
@@ -88,6 +102,8 @@ export function PanelWindow() {
             })}
           </ul>
         )}
+
+        <PanelCapture />
 
         <footer className={styles.foot}>
           <button

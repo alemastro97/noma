@@ -22,6 +22,7 @@ import styles from "./Settings.module.css";
 import { SemanticSection } from "./SemanticSection";
 import { TimeSettings } from "./TimeSettings";
 import { VoiceExtrasSection } from "./VoiceExtrasSection";
+import { DesktopPresenceSettings } from "./DesktopPresenceSettings";
 
 function Segmented<T extends string>({
   value,
@@ -360,6 +361,7 @@ function DesktopSection() {
         <ShortcutBinding action="voice" label={t.shortcutVoice} />
         <ShortcutBinding action="capture" label={t.shortcutCapture} />
       </div>
+      <DesktopPresenceSettings />
     </section>
   );
 }

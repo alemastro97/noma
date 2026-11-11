@@ -35,7 +35,7 @@ const LAZY: [(&str, &str, f64, f64, &str); 3] = [
         PANEL,
         "src/windows/panel/index.html",
         340.0,
-        440.0,
+        540.0,
         "NOMA panel",
     ),
     (
@@ -82,7 +82,8 @@ fn ensure(app: &AppHandle, label: &str) -> Option<WebviewWindow> {
 
 /// Panels that take keyboard input.
 fn is_key(label: &str) -> bool {
-    matches!(label, OVERLAY | CAPTURE)
+    // The orb panel has a search and a capture field.
+    matches!(label, OVERLAY | CAPTURE | PANEL)
 }
 
 fn configure(window: &WebviewWindow) {
@@ -181,6 +182,9 @@ pub fn setup(app: &AppHandle) {
                 m.position().y + m.size().height as i32 - size.height as i32 - (60.0 * s) as i32;
             let _ = orb.set_position(PhysicalPosition::new(x, y));
         }
+        if let Some(orb) = handle.get_webview_window(ORB) {
+            crate::presence::restore_orb(&handle, &orb);
+        }
     });
 }
 
@@ -191,6 +195,8 @@ pub fn show(app: &AppHandle, label: &'static str) {
             configure(&w);
             if label != ORB {
                 place(&handle, &w);
+            } else if !raw_is_visible(&w) {
+                crate::presence::restore_orb(&handle, &w);
             }
             raw_show(&w);
         }
@@ -230,6 +236,8 @@ pub fn toggle(app: &AppHandle, label: &'static str) {
             configure(&w);
             if label != ORB {
                 place(&handle, &w);
+            } else {
+                crate::presence::restore_orb(&handle, &w);
             }
             raw_show(&w);
         } else {

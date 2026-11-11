@@ -121,6 +121,41 @@
   margin-left: auto;
 }
 
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--noma-text-2);
+}
+[data-theme="light"] .field {
+  border-color: rgba(36, 33, 45, 0.1);
+  background: rgba(36, 33, 45, 0.03);
+}
+.field:focus-within {
+  border-color: var(--noma-lavender);
+}
+.field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--noma-text);
+}
+.field input::placeholder {
+  color: var(--noma-text-2);
+}
+.ok {
+  color: var(--noma-done);
+}
+
 @keyframes enter {
   from {
     opacity: 0;

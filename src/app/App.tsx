@@ -20,6 +20,7 @@ import { useProjectsStore } from "../stores/projects";
 import { useUiStore, type NavTarget, type ViewMode } from "../stores/ui";
 import styles from "./App.module.css";
 import { useGlobalHotkeys } from "./useGlobalHotkeys";
+import { useDesktopEvents } from "./useDesktopEvents";
 import { boardIdFor } from "./boardFor";
 import { Workspace } from "./Workspace";
 import { BulkBar } from "../components/BulkBar/BulkBar";
@@ -80,6 +81,7 @@ export function App() {
   useGlobalHotkeys();
   useWorkspaceTools();
   useFiltersStore((s) => s.saved); // re-title when saved filters load
+  useDesktopEvents();
 
   const [onboarding, setOnboarding] = useState(false);
   useEffect(() => {

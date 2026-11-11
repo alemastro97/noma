@@ -25,4 +25,41 @@
 .orb {
   pointer-events: none;
   will-change: transform;
+  transition: opacity var(--noma-base) ease;
+}
+
+/* Calm style and quiet hours: the resting orb doesn't float or spin. */
+.still .orb:global(.s-idle) :global(.core),
+.still .orb:global(.s-idle) :global(.core)::before {
+  animation: none !important;
+}
+
+/* Faded style: see-through until pointed at. */
+.faded .orb {
+  opacity: 0.45;
+}
+.faded:hover .orb {
+  opacity: 1;
+}
+
+/* Something due within 15 minutes or overdue: a soft glow in the reminder color. */
+.attention .orb {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px var(--noma-reminder)) drop-shadow(0 0 16px rgba(242, 189, 115, 0.45));
+  animation: attention 2.4s ease-in-out infinite;
+}
+.still.attention .orb {
+  animation: none;
+}
+
+@keyframes attention {
+  50% {
+    filter: drop-shadow(0 0 9px var(--noma-reminder)) drop-shadow(0 0 24px rgba(242, 189, 115, 0.6));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attention .orb {
+    animation: none;
+  }
 }

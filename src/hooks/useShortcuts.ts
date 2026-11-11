@@ -8,9 +8,9 @@ export function useShortcuts(): ShortcutMap {
   useEffect(() => {
     let alive = true;
     shortcutsGet()
-      .then((m) => alive && m && setMap(m))
+      .then((m) => alive && m && setMap({ ...DEFAULT_SHORTCUTS, ...m }))
       .catch(() => undefined);
-    const un = onShortcutsChanged(setMap);
+    const un = onShortcutsChanged((m) => setMap({ ...DEFAULT_SHORTCUTS, ...m }));
     return () => {
       alive = false;
       void un.then((f) => f());
@@ -19,8 +19,10 @@ export function useShortcuts(): ShortcutMap {
   return map;
 }
 
-/** Printable labels, e.g. `{ voice: "⌥ Space", capture: "⌘⇧N" }`. */
+/** Printable labels, e.g. `{ voice: "⌥ Space", capture: "⌘⇧N" }` ("" when unset). */
 export function useShortcutLabels(): Record<keyof ShortcutMap, string> {
   const map = useShortcuts();
-  return { voice: formatAccelerator(map.voice), capture: formatAccelerator(map.capture) };
+  return Object.fromEntries(
+    Object.entries(map).map(([k, v]) => [k, v ? formatAccelerator(v) : ""]),
+  ) as Record<keyof ShortcutMap, string>;
 }

@@ -633,4 +633,35 @@ export const voiceCopy = {
   vocabularyHint:
     "Names and words NOMA should expect, separated by commas. Project and board names are added for you.",
   vocabularyPlaceholder: "Marta, Kyoto, Figma",
+/** Desktop presence extras: orb look, menu-bar count, quiet hours, panel search/capture, extra shortcuts. */
+export const desktopPresenceCopy = {
+  menubarCount: "Count in the menu bar",
+  menubarCountHint: "Shows how many things are left today next to the NOMA symbol.",
+  orbSize: "Orb size",
+  orbSizeHint: "How big the floating orb is.",
+  orbSizes: { s: "S", m: "M", l: "L" },
+  orbStyle: "Orb style",
+  orbStyleHint:
+    "Lively moves gently, Calm stays still, Faded is see-through until you point at it.",
+  orbStyles: { lively: "Lively", calm: "Calm", faded: "Faded" },
+  quiet: "Quiet hours",
+  quietHint:
+    'Every day in this window reminders wait and the orb stays still. Afterwards you\'ll see what came up as "While you were away".',
+  quietFrom: "From",
+  quietTo: "To",
+  moreShortcuts: "More shortcuts",
+  moreShortcutsHint: "Off until you set them, so they don't clash with your other apps.",
+  shortcutToday: "Open Today",
+  shortcutSearch: "Search",
+  shortcutLastCapture: "Open last capture",
+  shortcutNotSet: "Not set",
+  shortcutClear: "Clear",
+  orbAttention: "Something is due soon",
+  orbQuiet: "Quiet hours",
+  searchPlaceholder: "Search everything…",
+  searchLabel: "Search",
+  noResults: "Nothing found.",
+  captureLabel: "Capture",
+  capturePlaceholder: "Capture a thought…",
+  captureSaved: "Saved to NOMA",
 };
