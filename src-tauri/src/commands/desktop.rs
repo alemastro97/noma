@@ -194,6 +194,7 @@ pub async fn settings_set(
         let conn = state.db.lock().map_err(lock_message)?;
         set_setting(&conn, &key, &value).map_err(to_message)?;
     }
+    crate::presence::on_setting(&app, &key);
     match key.as_str() {
         "orb.enabled" if value == "0" => {
             windows::hide(&app, windows::ORB);

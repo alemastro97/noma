@@ -17,6 +17,7 @@ import { useProjectsStore } from "../stores/projects";
 import { useUiStore, type NavTarget } from "../stores/ui";
 import styles from "./App.module.css";
 import { useGlobalHotkeys } from "./useGlobalHotkeys";
+import { useDesktopEvents } from "./useDesktopEvents";
 import { boardIdFor } from "./boardFor";
 import { Workspace } from "./Workspace";
 
@@ -51,6 +52,7 @@ export function App() {
   const itemsById = useItemsStore((s) => s.items);
 
   useGlobalHotkeys();
+  useDesktopEvents();
 
   const [onboarding, setOnboarding] = useState(false);
   useEffect(() => {

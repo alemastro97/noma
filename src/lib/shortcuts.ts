@@ -1,10 +1,14 @@
 /** Global-shortcut helpers. Accelerators look like `Alt+Space` / `Super+Shift+KeyN`. */
 
-export type Action = "voice" | "capture";
+export type Action = "voice" | "capture" | "today" | "search" | "lastCapture";
 
 export const DEFAULT_SHORTCUTS: Record<Action, string> = {
   voice: "Alt+Space",
   capture: "Super+Shift+KeyN",
+  // Unset ("") by default: any obvious combination would clash with other apps.
+  today: "",
+  search: "",
+  lastCapture: "",
 };
 
 const MODIFIER_CODES = new Set([

@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { onAiState } from "../../api/ai";
 import { onVoiceState, panelToggle, voiceStop } from "../../api/desktop";
 import { NomaOrb, type OrbState } from "../../components/NomaOrb";
-import { copy } from "../../copy";
+import { copy, desktopPresenceCopy } from "../../copy";
+import { ORB_PX, usePresence } from "../../hooks/usePresence";
 import { useShortcutLabels } from "../../hooks/useShortcuts";
 import styles from "./orb.module.css";
 
@@ -13,6 +14,7 @@ const FLASH_MS = 1400;
 /** Small transparent always-on-top orb: pulses while listening, click opens the panel, drag moves it. */
 export function OrbWindow() {
   const keys = useShortcutLabels();
+  const presence = usePresence();
   const [state, setState] = useState<OrbState>("idle");
   const listening = useRef(false);
   const flash = useRef<number | undefined>(undefined);
@@ -43,12 +45,29 @@ export function OrbWindow() {
     };
   }, []);
 
+  // Quiet hours and the Calm style keep the resting orb still; voice feedback still shows.
+  const still = presence.quiet || presence.orbStyle === "calm";
+  const attention = presence.attention && state === "idle";
+  const classes = [
+    styles.root,
+    still ? styles.still : "",
+    presence.orbStyle === "faded" ? styles.faded : "",
+    attention ? styles.attention : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const hint = attention
+    ? desktopPresenceCopy.orbAttention
+    : presence.quiet
+      ? desktopPresenceCopy.orbQuiet
+      : copy.orbHint(keys.voice);
+
   return (
     <button
       type="button"
-      className={styles.root}
+      className={classes}
       aria-label={copy.orbHere}
-      title={copy.orbHint(keys.voice)}
+      title={hint}
       onMouseDown={(e) => {
         if (e.button === 0) down.current = { x: e.screenX, y: e.screenY };
       }}
@@ -66,7 +85,12 @@ export function OrbWindow() {
         down.current = null;
       }}
     >
-      <NomaOrb size={52} state={state} label={copy.orbHere} className={styles.orb} />
+      <NomaOrb
+        size={ORB_PX[presence.orbSize] ?? ORB_PX.m}
+        state={state}
+        label={copy.orbHere}
+        className={styles.orb}
+      />
     </button>
   );
 }

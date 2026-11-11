@@ -4,6 +4,14 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- **Count in the menu bar:** the NOMA symbol shows how many things are left today (can be turned off).
+- **The orb glows** in the reminder color when something is due within 15 minutes or overdue.
+- **The orb remembers where you put it** on each screen and always stays on-screen.
+- **Search and capture from the orb panel:** a full-text search field and a one-line capture field.
+- **Quiet hours:** a daily window in which reminders wait (shown as "While you were away" afterwards) and the orb stays still.
+- **Orb size (S/M/L) and style** (Lively, Calm, Faded) in Settings → On your desktop.
+- **More global shortcuts:** Open Today, Search and Open last capture, off until you set them.
+
 - **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.
 - **Morning brief.** Once a day, a small note with what is on today.

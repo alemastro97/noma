@@ -19,6 +19,7 @@ import { NomaOrb } from "../../components/NomaOrb";
 import { aiStatusLabel, useAiStore } from "../../stores/ai";
 import { readTheme, setTheme, type Theme } from "../../theme/theme";
 import styles from "./Settings.module.css";
+import { DesktopPresenceSettings } from "./DesktopPresenceSettings";
 
 function Segmented<T extends string>({
   value,
@@ -357,6 +358,7 @@ function DesktopSection() {
         <ShortcutBinding action="voice" label={t.shortcutVoice} />
         <ShortcutBinding action="capture" label={t.shortcutCapture} />
       </div>
+      <DesktopPresenceSettings />
     </section>
   );
 }

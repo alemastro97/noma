@@ -3,6 +3,7 @@ mod backup;
 pub mod commands;
 pub mod db;
 mod filed;
+mod presence;
 pub mod reminders;
 #[cfg(debug_assertions)]
 mod selftest;
@@ -58,7 +59,10 @@ pub fn run() {
                             }
                         });
                     } else if event.state() == ShortcutState::Pressed {
-                        windows::toggle(app, windows::CAPTURE);
+                        match action {
+                            Action::Capture => windows::toggle(app, windows::CAPTURE),
+                            other => presence::run_shortcut(app, other),
+                        }
                     }
                 })
                 .build(),
@@ -90,6 +94,7 @@ pub fn run() {
             tauri::async_runtime::spawn(reminders.run());
             tauri::async_runtime::spawn(backup::run(app.handle().clone()));
 
+            presence::setup(app.handle());
             windows::setup(app.handle());
             if let Err(e) = tray::setup(app.handle()) {
                 log::warn!("tray icon: {e}");
@@ -199,6 +204,9 @@ pub fn run() {
             commands::desktop::reminder_done,
             commands::desktop::settings_get,
             commands::desktop::settings_set,
+            // desktop
+            presence::presence_get,
+            presence::presence_open_item,
         ])
         .build(tauri::generate_context!())
         .expect("error while building NOMA")

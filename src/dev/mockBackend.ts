@@ -4,6 +4,8 @@
  * the mockups without the desktop shell. Never bundled into the app.
  */
 import { mockIPC } from "@tauri-apps/api/mocks";
+import { DEFAULT_SHORTCUTS, type Action } from "../lib/shortcuts";
+import { handleDesktop } from "./mock/desktop";
 import type {
   Board,
   Counts,
@@ -320,7 +322,7 @@ const aiState = {
   ],
 };
 const settings = new Map<string, string>();
-const shortcutMap = { voice: "Alt+Space", capture: "Super+Shift+KeyN" };
+const shortcutMap: Record<string, string> = { ...DEFAULT_SHORTCUTS };
 const capturing = new Set<string>();
 
 function publishAi() {
@@ -622,8 +624,7 @@ function handle(cmd: string, a: Args): unknown {
       return { ...shortcutMap };
     }
     case "shortcuts_reset":
-      shortcutMap[a.action as "voice" | "capture"] =
-        a.action === "voice" ? "Alt+Space" : "Super+Shift+KeyN";
+      shortcutMap[a.action as Action] = DEFAULT_SHORTCUTS[a.action as Action];
       emit("shortcuts:changed", { ...shortcutMap });
       return { ...shortcutMap };
     case "shortcuts_suspend":
@@ -685,9 +686,12 @@ function handle(cmd: string, a: Args): unknown {
       links = links.filter((l) => l.id !== a.id);
       changed();
       return null;
-    default:
+    default: {
+      const desktop = handleDesktop(cmd, a);
+      if (desktop !== undefined) return desktop;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
+    }
   }
 }
 

@@ -239,10 +239,13 @@ impl Reminders {
 
     pub async fn run(self: Arc<Self>) {
         loop {
-            if !self.paused() {
+            // Quiet hours hold reminders like a pause; when they end, what fired
+            // meanwhile is grouped into "While you were away".
+            let hold = self.paused() || crate::presence::quiet_now(&self.app);
+            if !hold {
                 self.brief();
             }
-            let next = if self.paused() { None } else { self.tick() };
+            let next = if hold { None } else { self.tick() };
             let sleep = next
                 .and_then(|n| (n - Utc::now()).to_std().ok())
                 .map(|d| d.min(MAX_SLEEP))

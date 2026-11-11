@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { shortcutsReset, shortcutsResume, shortcutsSet, shortcutsSuspend } from "../../api/desktop";
-import { settingsCopy as t } from "../../copy";
+import { desktopPresenceCopy, settingsCopy as t } from "../../copy";
 import {
   acceleratorFromEvent,
   acceleratorParts,
@@ -131,8 +131,10 @@ export function ShortcutRecorder({
               <span className={styles.prompt}>{t.shortcutPress}</span>
             )}
           </span>
-        ) : (
+        ) : value ? (
           <Keys parts={acceleratorParts(value)} />
+        ) : (
+          <span className={styles.prompt}>{desktopPresenceCopy.shortcutNotSet}</span>
         )}
 
         {recording ? (
@@ -156,7 +158,7 @@ export function ShortcutRecorder({
             </button>
             {value !== DEFAULT_SHORTCUTS[action] && (
               <button type="button" className={styles.ghost} onClick={() => void reset()}>
-                {t.shortcutReset}
+                {DEFAULT_SHORTCUTS[action] ? t.shortcutReset : desktopPresenceCopy.shortcutClear}
               </button>
             )}
           </span>
