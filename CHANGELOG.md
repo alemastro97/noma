@@ -4,6 +4,13 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- **Checklists in cards.** Add, check, rename and reorder subtasks in the detail panel; cards show progress (`2/5`).
+- **Attachments.** Attach files and images to a card (copied into NOMA's data folder), with image thumbnails, Open in Preview and Show in Finder.
+- **Markdown notes.** Card descriptions render bold, italic, lists, task items, quotes, code and links; click to edit as plain text.
+- **Archive and Trash.** Archive cards to hide them, delete to the Trash (restore or delete forever, Empty Trash); the Trash empties itself after 30 days.
+- **Pinned cards.** Pin a card to keep it first in every view, with a small pin mark.
+- **Manage projects and boards.** Right-click in the sidebar to rename, recolor, archive or delete (cards go to the Trash).
+
 - **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.
 - **Morning brief.** Once a day, a small note with what is on today.

@@ -15,6 +15,8 @@ import type {
   Project,
 } from "../api/types";
 
+import { handleCards, NOT_HANDLED } from "./mock/cards";
+
 type Args = Record<string, unknown>;
 
 const items = new Map<string, Item>();
@@ -101,7 +103,7 @@ function dayBounds(): [number, number] {
 }
 
 function list(filter: { kind: string; id?: string; days?: number }, includeDone: boolean): Item[] {
-  const all = [...items.values()].map(withLinks);
+  const all = [...items.values()].filter((i) => !i.archivedAt && !i.deletedAt).map(withLinks);
   const open = (i: Item) => includeDone || i.status !== "done";
   const t = (s: string | null) => (s ? new Date(s).getTime() : NaN);
   const [start, end] = dayBounds();
@@ -145,6 +147,7 @@ function list(filter: { kind: string; id?: string; days?: number }, includeDone:
       out = all.filter(open);
   }
   return out.sort((a, b) => {
+    if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
     const da = t(a.dueAt ?? a.remindAt);
     const db = t(b.dueAt ?? b.remindAt);
     return (Number.isNaN(da) ? Infinity : da) - (Number.isNaN(db) ? Infinity : db);
@@ -685,11 +688,17 @@ function handle(cmd: string, a: Args): unknown {
       links = links.filter((l) => l.id !== a.id);
       changed();
       return null;
-    default:
+    default: {
+      const out = handleCards(cmd, a);
+      if (out !== NOT_HANDLED) return out;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
+    }
   }
 }
+
+/** Shared with the per-area mock handlers in `./mock/`. */
+export const mockState = { items, projects, boards, placements, changed, id, iso, withLinks };
 
 export function installMockBackend(): void {
   seed();

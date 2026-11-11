@@ -1,7 +1,7 @@
-import { Bell, Flag, Repeat } from "lucide-react";
+import { Bell, Flag, Pin, Repeat } from "lucide-react";
 import { memo, type KeyboardEvent, type ReactNode } from "react";
 import type { Item, Project } from "../../api/types";
-import { priorityLabel } from "../../copy";
+import { cardsCopy, priorityLabel } from "../../copy";
 import { Checkbox } from "../../components/Card/Checkbox";
 import { KIND_STYLE } from "../../components/Card/kind";
 import { anchorDate, formatDue, formatTime, timeRange, toDate } from "../../lib/dates";
@@ -78,6 +78,11 @@ const Row = memo(function Row({ item, project, mode, now, selected, fresh, handl
         </button>
       )}
       <span className={styles.title}>{item.title}</span>
+      {item.pinned && (
+        <span className={styles.repeat} title={cardsCopy.pinned}>
+          <Pin size={13} strokeWidth={1.75} aria-label={cardsCopy.pinned} />
+        </span>
+      )}
       {item.capturing && <span className={styles.reading}>Reading…</span>}
       {item.hint && !item.capturing && (
         <span className={styles.hintDot} title="Needs a quick check" />

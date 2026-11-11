@@ -5,7 +5,7 @@ use super::boards::insert_board;
 use super::error::{DbError, DbResult};
 use super::models::{BoardKind, Project, new_id};
 
-fn row_to_project(row: &Row<'_>) -> rusqlite::Result<Project> {
+pub(crate) fn row_to_project(row: &Row<'_>) -> rusqlite::Result<Project> {
     Ok(Project {
         id: row.get("id")?,
         name: row.get("name")?,
@@ -50,7 +50,8 @@ pub fn create_project(
 }
 
 pub fn list_projects(conn: &Connection) -> DbResult<Vec<Project>> {
-    let mut stmt = conn.prepare("SELECT * FROM projects ORDER BY created_at ASC")?;
+    let mut stmt =
+        conn.prepare("SELECT * FROM projects WHERE archived_at IS NULL ORDER BY created_at ASC")?;
     let rows = stmt.query_map([], row_to_project)?;
     Ok(rows.collect::<Result<_, _>>()?)
 }

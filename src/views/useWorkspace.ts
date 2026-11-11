@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Item, Progress, Project } from "../api/types";
+import { setPinned } from "../stores/cards";
 import { useItemsStore } from "../stores/items";
 import { useProjectsStore } from "../stores/projects";
 import { useUiStore } from "../stores/ui";
@@ -20,6 +21,7 @@ export interface CardHandlers {
   onSelect: (id: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
+  onPin: (id: string) => void;
 }
 
 /** Stable handlers shared by every view (stable identity keeps memoized cards from re-rendering). */
@@ -31,6 +33,7 @@ export function useCardHandlers(): CardHandlers {
       onSelect: (id) => useUiStore.getState().select(id),
       onDuplicate: (id) => void useItemsStore.getState().duplicate(id),
       onDelete: (id) => useItemsStore.getState().remove(id),
+      onPin: (id) => void setPinned(id, !useItemsStore.getState().items[id]?.pinned),
     }),
     [],
   );

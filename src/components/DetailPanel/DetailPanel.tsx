@@ -14,6 +14,11 @@ import { useItemsStore } from "../../stores/items";
 import { useProjectsStore } from "../../stores/projects";
 import { useUiStore } from "../../stores/ui";
 import { KIND_STYLE } from "../Card/kind";
+import { Attachments } from "../Cards/Attachments";
+import { CardHeaderActions, CardStateBanner } from "../Cards/DetailExtras";
+import { cardVersion } from "../../stores/cards";
+import { NotesField } from "../Cards/NotesField";
+import { Subtasks } from "../Cards/Subtasks";
 import styles from "./DetailPanel.module.css";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -117,7 +122,6 @@ function Editor({ item }: { item: Item }) {
   const projects = useProjectsStore((s) => s.projects);
   const update = (patch: ItemPatch) => void useItemsStore.getState().update(item.id, patch);
   const title = useDraft(item.title, (t) => t.trim() && update({ title: t.trim() }));
-  const body = useDraft(item.body ?? "", (b) => update({ body: b.trim() ? b : null }));
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const anchor = anchorDate(item);
   const created = toDate(item.createdAt);
@@ -144,6 +148,7 @@ function Editor({ item }: { item: Item }) {
 
   return (
     <div className={styles.body}>
+      <CardStateBanner item={item} />
       <div className={styles.kinds} role="radiogroup" aria-label={detailCopy.type}>
         {ITEM_TYPES.map((k) => {
           const { Icon, color } = KIND_STYLE[k];
@@ -178,14 +183,16 @@ function Editor({ item }: { item: Item }) {
         data-idea={item.kind === "idea" || undefined}
       />
 
-      <textarea
+      <NotesField
+        value={item.body ?? ""}
         className={styles.notes}
-        aria-label={detailCopy.notes}
+        label={detailCopy.notes}
         placeholder={detailCopy.notesPlaceholder}
-        value={body.draft}
-        onChange={(e) => body.setDraft(e.target.value)}
-        onBlur={body.commit}
+        onSave={(b) => update({ body: b.trim() ? b : null })}
       />
+
+      <Subtasks itemId={item.id} version={cardVersion(item)} />
+      <Attachments itemId={item.id} version={cardVersion(item)} />
 
       <div className={styles.grid}>
         <Field label={detailCopy.status}>
@@ -315,6 +322,7 @@ export function DetailPanel() {
           {kindLabel[item.kind]}
         </span>
         <div className={styles.headerActions}>
+          <CardHeaderActions item={item} onClose={close} />
           <button
             type="button"
             className={styles.iconBtn}

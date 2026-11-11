@@ -1,7 +1,9 @@
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { create } from "zustand";
 import { onItemsChanged } from "../api/events";
+import { trashItem } from "../api/cards";
 import * as api from "../api/items";
+import { cardsCopy } from "../copy";
 import {
   EMPTY_COUNTS,
   type Counts,
@@ -190,7 +192,7 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
     const commit = async () => {
       pendingDeletes.delete(id);
       try {
-        await api.deleteItem(id);
+        await trashItem(id);
       } catch (err) {
         toastError(message(err));
         void get().reload();
@@ -200,7 +202,7 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
     pendingDeletes.set(id, { item, index, timer });
 
     useToastsStore.getState().push({
-      message: `Deleted “${item.title}”`,
+      message: cardsCopy.trashed(item.title),
       action: {
         label: "Undo",
         run: () => {
@@ -249,6 +251,6 @@ export function flushPendingDeletes(): void {
   for (const [id, p] of pendingDeletes) {
     clearTimeout(p.timer);
     pendingDeletes.delete(id);
-    void api.deleteItem(id);
+    void trashItem(id);
   }
 }

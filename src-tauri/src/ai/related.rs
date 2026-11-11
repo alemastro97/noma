@@ -138,6 +138,7 @@ pub fn link_related(conn: &Connection, ids: &[String], now: DateTime<Utc>) -> Db
     let mut stmt = conn.prepare(
         "SELECT i.id, i.title, i.project_id FROM items i
          WHERE i.status != 'done' AND i.kind != 'project_ref'
+           AND i.archived_at IS NULL AND i.deleted_at IS NULL
            AND NOT EXISTS (SELECT 1 FROM captures k WHERE k.item_id = i.id AND k.status IN ('pending', 'processing'))",
     )?;
     let rows: Vec<Row> = stmt

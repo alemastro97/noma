@@ -14,10 +14,13 @@ use super::recurrence::{next_after, validate_rrule};
 use super::tags::{attach_tags, set_item_tags};
 
 /// Columns selected for every item query, aliased so `row_to_item` can read by name.
-const SELECT_ITEM: &str = "SELECT i.id, i.kind, i.title, i.body, i.status, i.priority, i.due_at, \
+pub(crate) const SELECT_ITEM: &str = "SELECT i.id, i.kind, i.title, i.body, i.status, i.priority, i.due_at, \
     i.ends_at, i.remind_at, i.snoozed_until, i.recurrence, i.project_id, i.created_at, \
     i.updated_at, i.completed_at, \
-    i.hint, \
+    i.hint, i.pinned, i.archived_at, i.deleted_at, \
+    (SELECT COUNT(*) FROM subtasks st WHERE st.item_id = i.id) AS subtasks_total, \
+    (SELECT COUNT(*) FROM subtasks st WHERE st.item_id = i.id AND st.done = 1) AS subtasks_done, \
+    (SELECT COUNT(*) FROM attachments att WHERE att.item_id = i.id) AS attachment_count, \
     (SELECT COUNT(*) FROM connections c WHERE c.from_item = i.id OR c.to_item = i.id) AS link_count, \
     EXISTS (SELECT 1 FROM captures k WHERE k.item_id = i.id AND k.status IN ('pending', 'processing')) AS capturing \
     FROM items i";
@@ -51,8 +54,18 @@ fn row_to_item(row: &Row<'_>) -> rusqlite::Result<Item> {
             .get::<_, Option<String>>("hint")?
             .and_then(|h| serde_json::from_str(&h).ok()),
         capturing: row.get("capturing")?,
+        pinned: row.get("pinned")?,
+        archived_at: row.get("archived_at")?,
+        deleted_at: row.get("deleted_at")?,
+        subtasks_done: row.get("subtasks_done")?,
+        subtasks_total: row.get("subtasks_total")?,
+        attachment_count: row.get("attachment_count")?,
     })
 }
+
+/// Items every view shows: not archived, not in the Trash, not in an archived project.
+pub(crate) const VISIBLE: &str = "i.archived_at IS NULL AND i.deleted_at IS NULL \
+    AND NOT EXISTS (SELECT 1 FROM projects ap WHERE ap.id = i.project_id AND ap.archived_at IS NOT NULL)";
 
 fn hint_json(hint: &Option<CaptureHint>) -> Option<String> {
     hint.as_ref()
@@ -60,7 +73,11 @@ fn hint_json(hint: &Option<CaptureHint>) -> Option<String> {
         .and_then(|h| serde_json::to_string(h).ok())
 }
 
-fn query_items(conn: &Connection, sql: &str, params: &[&dyn ToSql]) -> DbResult<Vec<Item>> {
+pub(crate) fn query_items(
+    conn: &Connection,
+    sql: &str,
+    params: &[&dyn ToSql],
+) -> DbResult<Vec<Item>> {
     let mut stmt = conn.prepare_cached(sql)?;
     let rows = stmt.query_map(params, row_to_item)?;
     let mut items: Vec<Item> = rows.collect::<Result<_, _>>()?;
@@ -278,8 +295,8 @@ pub fn list_items(
 ) -> DbResult<Vec<Item>> {
     let (where_sql, params) = filter_sql(filter, include_done);
     let sql = format!(
-        "{SELECT_ITEM} WHERE {where_sql} \
-         ORDER BY (i.status = 'done'), (COALESCE(i.due_at, i.remind_at) IS NULL), \
+        "{SELECT_ITEM} WHERE {VISIBLE} AND ({where_sql}) \
+         ORDER BY i.pinned DESC, (i.status = 'done'), (COALESCE(i.due_at, i.remind_at) IS NULL), \
          COALESCE(i.due_at, i.remind_at) ASC, i.created_at DESC"
     );
     let refs: Vec<&dyn ToSql> = params.iter().map(|p| p.as_ref()).collect();
@@ -288,7 +305,7 @@ pub fn list_items(
 
 fn count_items(conn: &Connection, filter: &ItemFilter) -> DbResult<u32> {
     let (where_sql, params) = filter_sql(filter, false);
-    let sql = format!("SELECT COUNT(*) FROM items i WHERE {where_sql}");
+    let sql = format!("SELECT COUNT(*) FROM items i WHERE {VISIBLE} AND ({where_sql})");
     let refs: Vec<&dyn ToSql> = params.iter().map(|p| p.as_ref()).collect();
     Ok(conn.query_row(&sql, refs.as_slice(), |r| r.get(0))?)
 }
@@ -307,6 +324,7 @@ pub fn counts(conn: &Connection, now: DateTime<Utc>, tz: Tz) -> DbResult<Counts>
     let mut stmt = conn.prepare(
         "SELECT project_id, COUNT(*) FROM items \
          WHERE status != 'done' AND project_id IS NOT NULL AND kind != 'project_ref' \
+         AND archived_at IS NULL AND deleted_at IS NULL \
          GROUP BY project_id",
     )?;
     for row in stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, u32>(1)?)))? {
@@ -327,7 +345,8 @@ pub fn counts(conn: &Connection, now: DateTime<Utc>, tz: Tz) -> DbResult<Counts>
 pub fn project_progress(conn: &Connection) -> DbResult<HashMap<String, Progress>> {
     let mut stmt = conn.prepare(
         "SELECT project_id, SUM(status = 'done'), COUNT(*) FROM items \
-         WHERE project_id IS NOT NULL AND kind != 'project_ref' GROUP BY project_id",
+         WHERE project_id IS NOT NULL AND kind != 'project_ref' \
+         AND archived_at IS NULL AND deleted_at IS NULL GROUP BY project_id",
     )?;
     let rows = stmt.query_map([], |r| {
         Ok((
@@ -585,10 +604,11 @@ pub fn recent_titles(
 ) -> DbResult<Vec<String>> {
     let sql = if board {
         "SELECT i.title FROM items i JOIN placements p ON p.item_id = i.id \
-         WHERE p.board_id = ?1 AND i.kind != 'project_ref' ORDER BY i.updated_at DESC LIMIT ?2"
+         WHERE p.board_id = ?1 AND i.kind != 'project_ref' AND i.deleted_at IS NULL \
+         ORDER BY i.updated_at DESC LIMIT ?2"
     } else {
         "SELECT title FROM items WHERE project_id = ?1 AND kind != 'project_ref' \
-         ORDER BY updated_at DESC LIMIT ?2"
+         AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT ?2"
     };
     let mut stmt = conn.prepare_cached(sql)?;
     let rows = stmt.query_map(params![id, limit], |r| r.get::<_, String>(0))?;
@@ -606,7 +626,8 @@ pub fn search_items(conn: &Connection, query: &str, limit: u32) -> DbResult<Vec<
     let match_expr = terms.join(" ");
     let sql = format!(
         "{SELECT_ITEM} JOIN items_fts f ON f.id = i.id \
-         WHERE items_fts MATCH ?1 ORDER BY (i.status = 'done'), bm25(items_fts) LIMIT ?2"
+         WHERE items_fts MATCH ?1 AND {VISIBLE} \
+         ORDER BY (i.status = 'done'), bm25(items_fts) LIMIT ?2"
     );
     query_items(conn, &sql, &[&match_expr, &limit])
 }

@@ -1,4 +1,5 @@
 import {
+  Archive,
   CalendarDays,
   FileText,
   Inbox,
@@ -8,10 +9,11 @@ import {
   Plus,
   SlidersHorizontal,
   Sun,
+  Trash2,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useShortcutLabels } from "../../hooks/useShortcuts";
-import { copy, sidebarCopy } from "../../copy";
+import { cardsCopy, copy, sidebarCopy } from "../../copy";
 import { nextProjectColor } from "../../lib/colors";
 import { useHotkey } from "../../hooks/useHotkey";
 import { useItemsStore } from "../../stores/items";
@@ -21,6 +23,8 @@ import { NomaOrb } from "../NomaOrb";
 import { NSymbol } from "../Logo/NSymbol";
 import { Wordmark } from "../Logo/Wordmark";
 import { NavItem } from "./NavItem";
+import { PlaceMenu, RenameInput, type PlaceRef } from "../Cards/PlaceMenu";
+import { renamePlace } from "../../stores/cards";
 import styles from "./Sidebar.module.css";
 
 const ICON = { size: 17, strokeWidth: 1.75 } as const;
@@ -146,6 +150,9 @@ export function Sidebar() {
   const createBoard = useProjectsStore((s) => s.createBoard);
 
   useHotkey("mod+\\", toggleSidebar);
+  const [menu, setMenu] = useState<{ ref: PlaceRef; x: number; y: number } | null>(null);
+  const [renaming, setRenaming] = useState<PlaceRef | null>(null);
+  const closeMenu = useCallback(() => setMenu(null), []);
 
   const isActive = (t: NavTarget) => sameTarget(t, target);
 
@@ -189,17 +196,32 @@ export function Sidebar() {
               onAdd={() => setCreating("project")}
             />
           )}
-          {projects.map((p) => (
-            <NavItem
-              key={p.id}
-              label={p.name}
-              dot={p.color}
-              count={counts.byProject[p.id]}
-              active={isActive({ kind: "project", id: p.id })}
-              collapsed={collapsed}
-              onSelect={() => setTarget({ kind: "project", id: p.id })}
-            />
-          ))}
+          {projects.map((p) =>
+            renaming?.place.id === p.id && !collapsed ? (
+              <RenameInput
+                key={p.id}
+                initial={p.name}
+                lead={
+                  <span className={styles.dot} style={{ background: p.color }} aria-hidden="true" />
+                }
+                onSubmit={(name) => void renamePlace("project", p, name)}
+                onDone={() => setRenaming(null)}
+              />
+            ) : (
+              <NavItem
+                key={p.id}
+                label={p.name}
+                dot={p.color}
+                count={counts.byProject[p.id]}
+                active={isActive({ kind: "project", id: p.id })}
+                collapsed={collapsed}
+                onSelect={() => setTarget({ kind: "project", id: p.id })}
+                onContextMenu={(e) =>
+                  setMenu({ ref: { kind: "project", place: p }, x: e.clientX, y: e.clientY })
+                }
+              />
+            ),
+          )}
           {creating === "project" && !collapsed && (
             <InlineCreate
               placeholder={sidebarCopy.projectPlaceholder}
@@ -223,16 +245,33 @@ export function Sidebar() {
               onAdd={() => setCreating("board")}
             />
           )}
-          {boards.map((b) => (
-            <NavItem
-              key={b.id}
-              label={b.name}
-              icon={<LayoutGrid {...ICON} />}
-              active={isActive({ kind: "board", id: b.id })}
-              collapsed={collapsed}
-              onSelect={() => setTarget({ kind: "board", id: b.id })}
-            />
-          ))}
+          {boards.map((b) =>
+            renaming?.place.id === b.id && !collapsed ? (
+              <RenameInput
+                key={b.id}
+                initial={b.name}
+                lead={
+                  <span className={styles.icon} aria-hidden="true">
+                    <LayoutGrid {...ICON} />
+                  </span>
+                }
+                onSubmit={(name) => void renamePlace("board", b, name)}
+                onDone={() => setRenaming(null)}
+              />
+            ) : (
+              <NavItem
+                key={b.id}
+                label={b.name}
+                icon={<LayoutGrid {...ICON} />}
+                active={isActive({ kind: "board", id: b.id })}
+                collapsed={collapsed}
+                onSelect={() => setTarget({ kind: "board", id: b.id })}
+                onContextMenu={(e) =>
+                  setMenu({ ref: { kind: "board", place: b }, x: e.clientX, y: e.clientY })
+                }
+              />
+            ),
+          )}
           {creating === "board" && !collapsed && (
             <InlineCreate
               placeholder={sidebarCopy.boardPlaceholder}
@@ -261,6 +300,20 @@ export function Sidebar() {
           )}
         </div>
         <NavItem
+          label={cardsCopy.nav.archive}
+          icon={<Archive {...ICON} />}
+          active={isActive({ kind: "archive" })}
+          collapsed={collapsed}
+          onSelect={() => setTarget({ kind: "archive" })}
+        />
+        <NavItem
+          label={cardsCopy.nav.trash}
+          icon={<Trash2 {...ICON} />}
+          active={isActive({ kind: "trash" })}
+          collapsed={collapsed}
+          onSelect={() => setTarget({ kind: "trash" })}
+        />
+        <NavItem
           label={copy.nav.settings}
           icon={<SlidersHorizontal {...ICON} />}
           active={isActive({ kind: "settings" })}
@@ -268,6 +321,15 @@ export function Sidebar() {
           onSelect={() => setTarget({ kind: "settings" })}
         />
       </div>
+      {menu && (
+        <PlaceMenu
+          target={menu.ref}
+          x={menu.x}
+          y={menu.y}
+          onRename={() => setRenaming(menu.ref)}
+          onClose={closeMenu}
+        />
+      )}
     </aside>
   );
 }

@@ -15,6 +15,7 @@ const EFFECTIVE: &str = "COALESCE(snoozed_until, remind_at)";
 pub fn due_reminders(conn: &Connection, now: DateTime<Utc>) -> DbResult<Vec<Item>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT id FROM items WHERE status != 'done' AND {EFFECTIVE} IS NOT NULL \
+         AND archived_at IS NULL AND deleted_at IS NULL \
          AND {EFFECTIVE} <= ?1 AND (reminded_at IS NULL OR reminded_at < {EFFECTIVE}) \
          ORDER BY {EFFECTIVE}"
     ))?;
@@ -45,6 +46,7 @@ pub fn next_reminder_at(conn: &Connection, now: DateTime<Utc>) -> DbResult<Optio
         .query_row(
             &format!(
                 "SELECT MIN({EFFECTIVE}) FROM items WHERE status != 'done' \
+                 AND archived_at IS NULL AND deleted_at IS NULL \
                  AND {EFFECTIVE} > ?1 AND (reminded_at IS NULL OR reminded_at < {EFFECTIVE})"
             ),
             [now],

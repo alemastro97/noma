@@ -11,6 +11,9 @@ export interface ListGroup {
 export type GroupMode = "today" | "timeline";
 
 function byAnchor(a: Item, b: Item): number {
+  // Pinned cards first within each group.
+  const pin = Number(Boolean(b.pinned)) - Number(Boolean(a.pinned));
+  if (pin !== 0) return pin;
   const da = anchorDate(a)?.getTime() ?? Infinity;
   const db = anchorDate(b)?.getTime() ?? Infinity;
   return da - db;

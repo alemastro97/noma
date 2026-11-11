@@ -1,4 +1,4 @@
-import { copy, type EmptyKind } from "../copy";
+import { cardsCopy, copy, type EmptyKind } from "../copy";
 import { EmptyState } from "../components/EmptyState/EmptyState";
 import { useProjectsStore } from "../stores/projects";
 import { targetKey, useUiStore, type NavTarget } from "../stores/ui";
@@ -6,10 +6,22 @@ import { CanvasView } from "../views/canvas/CanvasView";
 import { KanbanView } from "../views/kanban/KanbanView";
 import { ListView } from "../views/list/ListView";
 import { SettingsView } from "../views/settings/SettingsView";
+import { BinView } from "../views/archive/BinView";
 import { boardIdFor } from "./boardFor";
 import styles from "./Workspace.module.css";
 
 export function Workspace({ target }: { target: NavTarget }) {
+  if (target.kind === "archive" || target.kind === "trash") {
+    return (
+      <section className={styles.views} aria-label={cardsCopy.nav[target.kind]}>
+        <BinView key={target.kind} mode={target.kind} />
+      </section>
+    );
+  }
+  return <PlaceWorkspace target={target} />;
+}
+
+function PlaceWorkspace({ target }: { target: Exclude<NavTarget, { kind: "archive" | "trash" }> }) {
   const viewMode = useUiStore((s) => s.viewMode);
   const projects = useProjectsStore((s) => s.projects);
   const kind: EmptyKind = target.kind;

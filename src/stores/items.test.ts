@@ -125,7 +125,7 @@ describe("undoable delete", () => {
     useToastsStore.getState().toasts.at(-1)?.action?.run();
     expect(useItemsStore.getState().order).toEqual(["a", "b"]);
     vi.advanceTimersByTime(6000);
-    expect(mocked).not.toHaveBeenCalledWith("items_delete", { id: "a" });
+    expect(mocked).not.toHaveBeenCalledWith("items_trash", { id: "a" });
   });
 
   test("after the window the delete is sent exactly once", () => {
@@ -134,8 +134,8 @@ describe("undoable delete", () => {
     useItemsStore.getState().remove("a");
     useItemsStore.getState().remove("a");
     vi.advanceTimersByTime(5000);
-    const deletes = mocked.mock.calls.filter((c) => c[0] === "items_delete");
-    expect(deletes).toEqual([["items_delete", { id: "a" }]]);
+    const deletes = mocked.mock.calls.filter((c) => c[0] === "items_trash");
+    expect(deletes).toEqual([["items_trash", { id: "a" }]]);
   });
 });
 
