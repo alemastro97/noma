@@ -1195,6 +1195,7 @@ mod tests {
                     date_phrase: Some("the first".into()),
                     low_confidence: false,
                     suggested_project: Some("Kitchen".into()),
+                    ..Default::default()
                 }),
                 ..task("Pay rent")
             },

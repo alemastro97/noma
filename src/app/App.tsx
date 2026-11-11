@@ -3,7 +3,7 @@ import { onOpenItem, onOpenToday, settingGet } from "../api/desktop";
 import { getItem } from "../api/items";
 import { Onboarding } from "../components/Onboarding/Onboarding";
 import type { Board, ItemFilter, Project } from "../api/types";
-import { copy } from "../copy";
+import { copy, organizeCopy } from "../copy";
 import { CommandPalette } from "../components/CommandPalette/CommandPalette";
 import { DetailPanel } from "../components/DetailPanel/DetailPanel";
 import { Header } from "../components/Header/Header";
@@ -26,6 +26,8 @@ function titleFor(target: NavTarget, projects: Project[], boards: Board[]) {
       return projects.find((p) => p.id === target.id)?.name ?? copy.nav.projects;
     case "board":
       return boards.find((b) => b.id === target.id)?.name ?? copy.nav.boards;
+    case "review":
+      return organizeCopy.review.nav;
     default:
       return copy.nav[target.kind];
   }
@@ -34,6 +36,7 @@ function titleFor(target: NavTarget, projects: Project[], boards: Board[]) {
 function filterFor(target: NavTarget): ItemFilter | null {
   switch (target.kind) {
     case "settings":
+    case "review":
       return null;
     case "upcoming":
       return { kind: "upcoming", days: 7 };
@@ -140,7 +143,7 @@ export function App() {
           title={titleFor(target, projects, boards)}
           count={openCount}
           color={color}
-          plain={target.kind === "settings"}
+          plain={target.kind === "settings" || target.kind === "review"}
           onCapture={() => useUiStore.getState().openQuickAdd()}
           onSearch={() => useUiStore.getState().setPaletteOpen(true)}
         />

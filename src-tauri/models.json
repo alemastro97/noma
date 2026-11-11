@@ -42,6 +42,19 @@
       "contextSize": 4096,
       "thinking": true,
       "recommended": false
+    },
+    {
+      "id": "qwen3-8b-q4km",
+      "name": "Qwen3 8B",
+      "description": "Larger and more careful, slower. For Macs with 16 GB of memory or more.",
+      "file": "Qwen3-8B-Q4_K_M.gguf",
+      "url": "https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf",
+      "sha256": "120307ba529eb2439d6c430d94104dabd578497bc7bfe7e322b5d9933b449bd4",
+      "sizeBytes": 5027784512,
+      "ramGb": 6.5,
+      "contextSize": 4096,
+      "thinking": true,
+      "recommended": false
     }
   ],
   "speech": [

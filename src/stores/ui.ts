@@ -9,6 +9,7 @@ export type NavTarget =
   | { kind: "ideas" }
   | { kind: "notes" }
   | { kind: "settings" }
+  | { kind: "review" }
   | { kind: "project"; id: string }
   | { kind: "board"; id: string };
 

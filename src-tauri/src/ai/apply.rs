@@ -125,6 +125,9 @@ pub fn apply(
     if let Err(e) = super::related::link_related(conn, &ids, now) {
         log::warn!("linking related cards failed: {e}");
     }
+    if let Err(e) = crate::organize::duplicates::mark(conn, &ids) {
+        log::warn!("duplicate check failed: {e}");
+    }
     Ok(ids)
 }
 

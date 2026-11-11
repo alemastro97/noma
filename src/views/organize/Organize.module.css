@@ -1,0 +1,287 @@
+/* Organize features: the strip above a view (Inbox re-sort, project brief),
+   the weekly review page and the organize block in the detail panel. Reuses the
+   handoff tokens; buttons match Settings' ghost / primary controls. */
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 24px 0;
+  background: var(--noma-bg);
+}
+
+.stripRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.ghost,
+.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    color var(--noma-fast) ease,
+    border-color var(--noma-fast) ease;
+}
+.ghost {
+  border: 1px solid var(--noma-border);
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.ghost:hover:not(:disabled) {
+  color: var(--noma-text);
+  border-color: var(--noma-border-hover);
+}
+.primary {
+  border: 0;
+  background: var(--noma-lavender);
+  color: #16112a;
+}
+[data-theme="light"] .primary {
+  color: #ffffff;
+}
+.ghost:disabled,
+.primary:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Project brief ─────────────────────────────────────────────────────── */
+
+.brief {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--noma-radius-card);
+  background: var(--noma-glass-bg);
+  border: 1px solid var(--noma-glass-border);
+  backdrop-filter: var(--noma-glass-blur);
+}
+[data-theme="light"] .brief {
+  background: var(--noma-surface);
+  border-color: var(--noma-border-card);
+}
+
+.next {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.nextLabel {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: var(--noma-font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--noma-lavender);
+  border: 1px solid var(--noma-border);
+}
+
+.nextText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--noma-text);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+}
+.nextText:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.muted {
+  font-size: 13px;
+  color: var(--noma-text-2);
+}
+
+.summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--noma-text-2);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.iconBtn:hover:not(:disabled) {
+  background: var(--noma-surface-elevated);
+  color: var(--noma-text);
+}
+
+/* ── Weekly review ─────────────────────────────────────────────────────── */
+
+.review {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--noma-bg);
+}
+
+.reviewInner {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 24px 40px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.lead {
+  margin: 0;
+  font-size: 13px;
+  color: var(--noma-text-2);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--noma-text-2);
+}
+.sectionHead[data-key="overdue"] {
+  color: var(--noma-urgent);
+}
+[data-theme="light"] .sectionHead[data-key="overdue"] {
+  color: var(--noma-urgent-text);
+}
+.sectionHead[data-key="completed"] {
+  color: var(--noma-done);
+}
+
+.count {
+  font-family: var(--noma-font-mono);
+  font-size: 11px;
+  color: var(--noma-text-muted);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--noma-text);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+}
+.row:hover {
+  background: var(--noma-surface);
+}
+.row[data-done] .rowTitle {
+  color: var(--noma-text-2);
+  text-decoration: line-through;
+}
+
+.rowDot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.rowTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowMeta {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+
+.empty {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--noma-text-muted);
+}
+
+/* ── Detail panel block ────────────────────────────────────────────────── */
+
+.duplicate {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--noma-radius-control);
+  border: 1px solid var(--noma-border-project);
+  background: var(--noma-surface-elevated);
+}
+
+.duplicateText {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--noma-text-2);
+}
+.duplicateText strong {
+  color: var(--noma-text);
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

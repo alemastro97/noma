@@ -589,6 +589,26 @@ impl AiService {
         }
     }
 
+    /// One schema-constrained completion outside the capture queue (organize
+    /// features: re-sort, break down, summaries). Starts the model if needed.
+    pub async fn complete_json(
+        &self,
+        system: &str,
+        user: &str,
+        schema: &serde_json::Value,
+    ) -> Result<String, AiError> {
+        let provider = self.provider().await?;
+        if self.runtime.lock().expect("runtime lock").phase == Phase::Loading {
+            self.set_phase(Phase::Idle, None);
+            self.publish().await;
+        }
+        let out = provider
+            .complete_json(&self.client, system, user, schema)
+            .await;
+        *self.last_used.lock().expect("last_used") = Instant::now();
+        out
+    }
+
     /// Wakes the worker (new capture, model became available…).
     pub fn nudge(&self) {
         self.wake.notify_one();
@@ -747,16 +767,29 @@ impl AiService {
             recent: &recent,
             examples: &examples,
         };
-        let user = extract::user_prompt(&capture.raw_text, &ctx);
+        // The user's own tags: the model may reuse them, never invent new ones.
+        let tags = self
+            .with_db(|c| crate::organize::tags::known(c).unwrap_or_default())
+            .unwrap_or_default();
+        let user = crate::organize::tags::with_prompt(
+            extract::user_prompt(&capture.raw_text, &ctx),
+            &tags,
+        );
         let output = provider
             .complete_json(
                 &self.client,
                 extract::SYSTEM_PROMPT,
                 &user,
-                &extract::schema_for(&capture.raw_text, &ctx),
+                &crate::organize::tags::with_schema(
+                    extract::schema_for(&capture.raw_text, &ctx),
+                    &tags,
+                ),
             )
             .await?;
-        let extracted = extract::parse_output(&output, &capture.raw_text, &ctx)?;
+        let mut extracted = extract::parse_output(&output, &capture.raw_text, &ctx)?;
+        for e in &mut extracted {
+            e.tags = crate::organize::tags::snap(&e.tags, &tags);
+        }
         let ids = self
             .with_db(|c| super::apply::apply(c, capture.item_id.as_deref(), &extracted, now, tz))
             .ok_or_else(|| AiError::NotReady("database unavailable".into()))??;

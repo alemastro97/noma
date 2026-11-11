@@ -17,6 +17,9 @@ export interface CaptureHint {
   datePhrase?: string;
   lowConfidence?: boolean;
   suggestedProject?: string;
+  /** An open card this capture closely matches ("Looks like …"). */
+  similarTo?: string;
+  similarTitle?: string;
 }
 
 export interface Item {

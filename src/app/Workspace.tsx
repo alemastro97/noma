@@ -1,4 +1,7 @@
-import { copy, type EmptyKind } from "../copy";
+import { copy, organizeCopy, type EmptyKind } from "../copy";
+import { InboxResort } from "../views/organize/InboxResort";
+import { ProjectBrief } from "../views/organize/ProjectBrief";
+import { ReviewView } from "../views/organize/ReviewView";
 import { EmptyState } from "../components/EmptyState/EmptyState";
 import { useProjectsStore } from "../stores/projects";
 import { targetKey, useUiStore, type NavTarget } from "../stores/ui";
@@ -12,6 +15,13 @@ import styles from "./Workspace.module.css";
 export function Workspace({ target }: { target: NavTarget }) {
   const viewMode = useUiStore((s) => s.viewMode);
   const projects = useProjectsStore((s) => s.projects);
+  if (target.kind === "review") {
+    return (
+      <section className={styles.views} aria-label={organizeCopy.review.nav}>
+        <ReviewView />
+      </section>
+    );
+  }
   const kind: EmptyKind = target.kind;
   const text = copy.empty[kind];
   const empty = (
@@ -35,6 +45,8 @@ export function Workspace({ target }: { target: NavTarget }) {
 
   return (
     <section className={styles.views} aria-label="Workspace">
+      {target.kind === "inbox" && <InboxResort />}
+      {target.kind === "project" && <ProjectBrief key={target.id} projectId={target.id} />}
       {viewMode === "kanban" ? (
         <KanbanView key={key} empty={empty} />
       ) : viewMode === "list" ? (
