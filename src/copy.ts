@@ -316,3 +316,113 @@ export const onboardingCopy = {
   finish: "Start using NOMA",
   step: (i: number, n: number) => `${i} of ${n}`,
 };
+
+export const dataCopy = {
+  restoreTitle: "Restore a backup",
+  restoreLead:
+    "Go back to an earlier state of all your cards. NOMA backs up the current state first, so a restore can be undone too.",
+  noSnapshots: "No backups yet.",
+  snapshotSize: (bytes: number) =>
+    bytes >= 1e6 ? `${(bytes / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1e3))} KB`,
+  restore: "Restore",
+  restoreConfirm: "Replace all your cards with this backup?",
+  restoreYes: "Yes, restore",
+  cancel: "Cancel",
+  restoring: "Restoring…",
+  restoreFailed: (msg: string) => `Couldn't restore: ${msg}`,
+
+  importTitle: "Import",
+  importLead:
+    "Bring cards in from other apps. They land as they are, without AI sorting. Apple Notes and Reminders are only read, never changed.",
+  importFrom: "From",
+  importTo: "Into",
+  inbox: "Inbox",
+  sources: {
+    markdown: "Markdown or text file",
+    todoist: "Todoist CSV export",
+    notes: "Apple Notes folder",
+    reminders: "Apple Reminders list",
+  },
+  sourceHints: {
+    markdown: "One card per list item or paragraph. Checkbox items become tasks.",
+    todoist: "In Todoist: project menu → Export as CSV. One card per task.",
+    notes: "One card per note in the folder you pick.",
+    reminders: "One card per open reminder in the list you pick.",
+  },
+  chooseFile: "Choose file…",
+  loadSources: (source: "notes" | "reminders") =>
+    source === "notes" ? "Show folders" : "Show lists",
+  pickSource: (source: "notes" | "reminders") =>
+    source === "notes" ? "Choose a folder" : "Choose a list",
+  importNow: "Import",
+  importing: "Importing…",
+  imported: (n: number, skipped: number) =>
+    n === 0
+      ? "Nothing to import."
+      : `Imported ${n} card${n === 1 ? "" : "s"}.` +
+        (skipped > 0 ? ` ${skipped} more were left out (limit reached).` : ""),
+  importFailed: (msg: string) => `Import failed: ${msg}`,
+  automationDenied:
+    "NOMA isn't allowed to read this app. Allow it in System Settings → Privacy & Security → Automation, then try again.",
+
+  autoExport: "Mirror to a folder",
+  autoExportHint:
+    "Keeps a readable noma.md with all your cards in a folder you choose, rewritten a few seconds after each change. Point it at an Obsidian vault or a synced folder.",
+  noFolder: "No folder chosen",
+  chooseFolder: "Choose folder…",
+  folderPrompt: "Where should NOMA keep noma.md?",
+  exportedTo: (path: string) => `Written to ${path}`,
+
+  statsTitle: "Your rhythm",
+  statsLead: "The last 8 weeks, counted on this Mac.",
+  capturesLegend: "Captures",
+  completedLegend: "Completed",
+  avgLatency: (ms: number | null) =>
+    ms === null ? "Average AI time: —" : `Average AI time: ${(ms / 1000).toFixed(1)} s`,
+  totals: (captures: number, completed: number) => `${captures} captures · ${completed} completed`,
+  weekOf: (date: string, captures: number, completed: number) =>
+    `Week of ${date}: ${captures} captures, ${completed} completed`,
+  chartLabel: "Captures and completed cards per week",
+
+  historyTitle: "Capture history",
+  historyLead: "What you said or typed, and what NOMA made of it.",
+  noCaptures: "No captures yet.",
+  status: {
+    pending: "Waiting",
+    processing: "Reading…",
+    done: "Done",
+    failed: "Failed",
+  },
+  source: { voice: "Voice", text: "Typed" },
+  latency: (ms: number) => `${(ms / 1000).toFixed(1)} s`,
+  becameCard: (title: string) => `→ ${title}`,
+  cardGone: "→ card removed",
+  retry: "Retry",
+  showMore: "Show more",
+
+  connectTitle: "Connect other apps",
+  connectLead: "Capture into NOMA from scripts, the terminal, or other AI assistants on this Mac.",
+  urlTitle: "Links",
+  urlHint: "Open these from Shortcuts, Raycast, Alfred or a browser.",
+  urlExamples: [
+    { url: "noma://capture?text=Buy%20milk%20tomorrow", label: "Capture text" },
+    { url: "noma://open?item=<card id>", label: "Show a card" },
+    { url: "noma://today", label: "Show Today" },
+  ],
+  cliTitle: "Terminal command",
+  cliHint: (path: string) =>
+    `Installs a small "noma" script at ${path}. Make sure ~/.local/bin is on your PATH.`,
+  cliUsage: 'noma buy milk tomorrow  ·  noma today  ·  echo "…" | noma',
+  cliInstall: "Install command",
+  cliReinstall: "Reinstall",
+  cliInstalled: "Installed.",
+  showScript: "Show script",
+  copy: "Copy",
+  copied: "Copied",
+  mcpTitle: "MCP server",
+  mcpHint:
+    "Lets assistants such as Claude Desktop search your cards, read Today and add captures. Add this to the assistant's MCP settings:",
+  mcpMissing:
+    "The noma-mcp program isn't next to NOMA yet. In a development build, run: cargo build --bin noma-mcp",
+  mcpCaptureNote: "Captures from assistants are picked up within about 30 seconds while NOMA runs.",
+} as const;

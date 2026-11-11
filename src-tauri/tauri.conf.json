@@ -66,6 +66,13 @@
       "csp": null
     }
   },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["noma"]
+      }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": [

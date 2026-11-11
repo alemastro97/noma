@@ -1,6 +1,7 @@
 pub mod ai;
 mod backup;
 pub mod commands;
+pub mod data;
 pub mod db;
 mod filed;
 pub mod reminders;
@@ -30,6 +31,7 @@ pub fn run() {
     let builder = builder.plugin(tauri_nspanel::init());
     builder
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_deep_link::init())
         // Optional "open at login": starts hidden in the menu bar (`--background`).
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -89,6 +91,8 @@ pub fn run() {
             app.manage(Arc::clone(&reminders));
             tauri::async_runtime::spawn(reminders.run());
             tauri::async_runtime::spawn(backup::run(app.handle().clone()));
+            data::autoexport::start(app.handle());
+            data::deeplink::setup(app.handle());
 
             windows::setup(app.handle());
             if let Err(e) = tray::setup(app.handle()) {
@@ -148,6 +152,21 @@ pub fn run() {
             backup::backup_now,
             backup::backup_reveal,
             backup::data_export,
+            // data
+            data::restore::backup_list,
+            data::restore::backup_restore,
+            data::import::import_text,
+            data::import::import_apple_sources,
+            data::import::import_apple,
+            data::autoexport::pick_folder,
+            data::autoexport::mirror_get,
+            data::autoexport::mirror_set,
+            data::cli::cli_info,
+            data::cli::cli_install,
+            data::history::captures_recent,
+            data::history::captures_retry,
+            data::history::stats_get,
+            data::mcp_info,
             commands::desktop::autostart_get,
             commands::desktop::autostart_set,
             commands::desktop::shortcuts_get,

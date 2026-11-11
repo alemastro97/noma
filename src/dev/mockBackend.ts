@@ -14,6 +14,7 @@ import type {
   Progress,
   Project,
 } from "../api/types";
+import { handleData, NOT_HANDLED } from "./mock/data";
 
 type Args = Record<string, unknown>;
 
@@ -685,9 +686,12 @@ function handle(cmd: string, a: Args): unknown {
       links = links.filter((l) => l.id !== a.id);
       changed();
       return null;
-    default:
+    default: {
+      const data = handleData(cmd, a);
+      if (data !== NOT_HANDLED) return data;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
+    }
   }
 }
 

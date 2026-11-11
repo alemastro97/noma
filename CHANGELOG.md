@@ -8,6 +8,14 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.
 - **Morning brief.** Once a day, a small note with what is on today.
 - **Backups and export.** A daily local backup (last 10 kept) and an export of everything as Markdown + JSON, in Settings → Your data.
+- **Restore from backup.** Pick a snapshot in Settings → Your data; NOMA backs up the current state first, so a restore can be undone.
+- **Import.** Markdown or text files, a Todoist CSV export, an Apple Notes folder or an Apple Reminders list, straight into the Inbox or a project.
+- **Mirror to a folder.** Optionally keep a `noma.md` of all your cards in a folder you choose (an Obsidian vault, a synced folder), updated after each change.
+- **`noma://` links.** `noma://capture?text=…`, `noma://open?item=…` and `noma://today` work from Shortcuts, Raycast, Alfred or a browser.
+- **`noma` terminal command.** Install it from Settings: `noma buy milk tomorrow`, `noma today`, or pipe text into it.
+- **MCP server.** `noma-mcp` lets AI assistants on your Mac search your cards, read Today and add captures; setup snippet in Settings.
+- **Capture history.** Recent captures with their status, AI time and resulting card, and Retry for failed ones.
+- **Your rhythm.** Captures and completed cards per week over the last 8 weeks, and the average AI time.
 
 - NOMA stays alive when you press ⌘Q (only the window closes; Quit NOMA in the menu bar exits), and an optional **Open at login** starts it quietly in the menu bar, so ⌥ Space always opens the orb. Installed builds turn it **on by default at first launch** (once; Settings stays in charge).
 
