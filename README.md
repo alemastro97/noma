@@ -45,4 +45,4 @@ Windows and Linux builds are produced by the same workflow but are not yet suppo
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[PolyForm Noncommercial 1.0.0](LICENSE): the source is open to read, run, learn from and modify for personal and other noncommercial use. Selling it, or using it in a commercial product or service, needs the author's permission.

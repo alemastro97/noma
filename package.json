@@ -48,5 +48,6 @@
     "typescript-eslint": "^8",
     "vite": "^8.0.16",
     "vitest": "^4"
-  }
+  },
+  "license": "SEE LICENSE IN LICENSE"
 }
