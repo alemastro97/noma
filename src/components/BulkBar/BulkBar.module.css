@@ -1,0 +1,170 @@
+/* In-app floating bar: same surface as toasts (glass is reserved for desktop panels). */
+.bar {
+  position: fixed;
+  left: 50%;
+  bottom: 80px;
+  z-index: 55;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 6px 0 14px;
+  border-radius: 12px;
+  background: var(--noma-surface-elevated);
+  border: 1px solid var(--noma-border);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  color: var(--noma-text);
+  animation: rise 220ms var(--noma-ease) both;
+}
+[data-theme="light"] .bar {
+  background: var(--noma-surface);
+  box-shadow: 0 14px 40px rgba(36, 33, 45, 0.14);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}
+
+.count {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+  white-space: nowrap;
+  padding-right: 4px;
+}
+
+.sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--noma-border);
+}
+
+.anchor {
+  position: relative;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text);
+  font-size: 13px;
+  white-space: nowrap;
+  transition: background var(--noma-fast) ease;
+}
+.btn:hover,
+.btn[aria-expanded="true"] {
+  background: var(--noma-surface);
+}
+[data-theme="light"] .btn:hover,
+[data-theme="light"] .btn[aria-expanded="true"] {
+  background: var(--noma-bg-2);
+}
+.btn[data-tone="danger"]:hover {
+  color: var(--noma-urgent);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.close:hover {
+  color: var(--noma-text);
+}
+
+.menu {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  min-width: 200px;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--noma-surface-elevated);
+  border: 1px solid var(--noma-border);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+[data-theme="light"] .menu {
+  background: var(--noma-surface);
+  box-shadow: 0 14px 40px rgba(36, 33, 45, 0.14);
+}
+
+.menuLabel {
+  padding: 4px 8px 6px;
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text);
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item:hover {
+  background: var(--noma-surface);
+}
+[data-theme="light"] .item:hover {
+  background: var(--noma-bg-2);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  margin: 0 3px;
+}
+
+.dateInput {
+  min-height: 30px;
+  margin: 0 4px 4px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--noma-border);
+  background: var(--noma-bg-2);
+  color: var(--noma-text);
+  font-size: 13px;
+  color-scheme: dark;
+}
+[data-theme="light"] .dateInput {
+  color-scheme: light;
+}

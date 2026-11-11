@@ -4,6 +4,13 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- **Multi-select and bulk actions.** ⌘/⇧-click (or ⌘A) to select many cards in any view; a bar lets you complete, move, date or delete them all at once.
+- **Undo and redo everywhere.** ⌘Z / ⇧⌘Z undo card edits, completes, deletes, moves and canvas changes in the main window.
+- **Filters and saved searches.** ⌘F filters any view by text, type, status, project, tag and date range; save a filter as a sidebar entry.
+- **Drag to the sidebar.** Drop cards on the Inbox, a project or a personal board to move them there.
+- **Canvas groups.** Draw a labelled frame on a board; cards inside move with it.
+- **Links graph.** A new Graph view (⌘4) maps cards and their links.
+
 - **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.
 - **Morning brief.** Once a day, a small note with what is on today.

@@ -21,6 +21,7 @@ import { NomaOrb } from "../NomaOrb";
 import { NSymbol } from "../Logo/NSymbol";
 import { Wordmark } from "../Logo/Wordmark";
 import { NavItem } from "./NavItem";
+import { SavedFilters } from "./SavedFilters";
 import styles from "./Sidebar.module.css";
 
 const ICON = { size: 17, strokeWidth: 1.75 } as const;
@@ -175,6 +176,9 @@ export function Sidebar() {
             count={counts[item.count]}
             active={isActive(item.target)}
             collapsed={collapsed}
+            drop={
+              item.count === "inbox" ? { place: { kind: "inbox" }, name: item.label } : undefined
+            }
             onSelect={() => setTarget(item.target)}
           />
         ))}
@@ -197,6 +201,7 @@ export function Sidebar() {
               count={counts.byProject[p.id]}
               active={isActive({ kind: "project", id: p.id })}
               collapsed={collapsed}
+              drop={{ place: { kind: "project", id: p.id }, name: p.name }}
               onSelect={() => setTarget({ kind: "project", id: p.id })}
             />
           ))}
@@ -230,6 +235,7 @@ export function Sidebar() {
               icon={<LayoutGrid {...ICON} />}
               active={isActive({ kind: "board", id: b.id })}
               collapsed={collapsed}
+              drop={{ place: { kind: "board", id: b.id }, name: b.name }}
               onSelect={() => setTarget({ kind: "board", id: b.id })}
             />
           ))}
@@ -246,6 +252,8 @@ export function Sidebar() {
           )}
         </nav>
       ) : null}
+
+      <SavedFilters collapsed={collapsed} />
 
       <div className={styles.footer}>
         <div

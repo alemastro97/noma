@@ -1,0 +1,35 @@
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.remove {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+  opacity: 0;
+  transition:
+    opacity var(--noma-fast) ease,
+    background var(--noma-fast) ease;
+}
+
+.row:hover .remove,
+.remove:focus-visible {
+  opacity: 1;
+}
+
+.remove:hover {
+  background: var(--noma-surface-elevated);
+  color: var(--noma-text);
+}

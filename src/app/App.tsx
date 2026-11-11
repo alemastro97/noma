@@ -19,6 +19,9 @@ import styles from "./App.module.css";
 import { useGlobalHotkeys } from "./useGlobalHotkeys";
 import { boardIdFor } from "./boardFor";
 import { Workspace } from "./Workspace";
+import { BulkBar } from "../components/BulkBar/BulkBar";
+import { savedFilterName, useFiltersStore } from "../stores/filters";
+import { useWorkspaceTools } from "./useWorkspaceTools";
 
 function titleFor(target: NavTarget, projects: Project[], boards: Board[]) {
   switch (target.kind) {
@@ -26,6 +29,8 @@ function titleFor(target: NavTarget, projects: Project[], boards: Board[]) {
       return projects.find((p) => p.id === target.id)?.name ?? copy.nav.projects;
     case "board":
       return boards.find((b) => b.id === target.id)?.name ?? copy.nav.boards;
+    case "filter":
+      return savedFilterName(target.id);
     default:
       return copy.nav[target.kind];
   }
@@ -37,6 +42,8 @@ function filterFor(target: NavTarget): ItemFilter | null {
       return null;
     case "upcoming":
       return { kind: "upcoming", days: 7 };
+    case "filter":
+      return { kind: "all" };
     default:
       return target;
   }
@@ -51,6 +58,8 @@ export function App() {
   const itemsById = useItemsStore((s) => s.items);
 
   useGlobalHotkeys();
+  useWorkspaceTools();
+  useFiltersStore((s) => s.saved); // re-title when saved filters load
 
   const [onboarding, setOnboarding] = useState(false);
   useEffect(() => {
@@ -151,6 +160,7 @@ export function App() {
       </main>
       <QuickAdd />
       <CommandPalette />
+      <BulkBar />
       <Toasts />
       {onboarding && <Onboarding onDone={() => setOnboarding(false)} />}
     </div>

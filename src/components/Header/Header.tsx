@@ -3,6 +3,7 @@ import { copy } from "../../copy";
 import { AiStatusChip } from "./AiStatusChip";
 import styles from "./Header.module.css";
 import { ViewSwitcher } from "./ViewSwitcher";
+import { FilterToggle } from "../FilterBar/FilterBar";
 
 interface HeaderProps {
   title: string;
@@ -29,6 +30,7 @@ export function Header({ title, count, color, plain = false, onCapture, onSearch
       {!plain && <ViewSwitcher />}
 
       <div className={styles.actions}>
+        {!plain && <FilterToggle />}
         <label className={styles.search}>
           <Search size={15} strokeWidth={1.75} aria-hidden="true" />
           <input

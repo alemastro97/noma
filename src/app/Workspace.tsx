@@ -1,4 +1,6 @@
-import { copy, type EmptyKind } from "../copy";
+import { copy, workspaceCopy } from "../copy";
+import { FilterBar } from "../components/FilterBar/FilterBar";
+import { GraphView } from "../views/graph/GraphView";
 import { EmptyState } from "../components/EmptyState/EmptyState";
 import { useProjectsStore } from "../stores/projects";
 import { targetKey, useUiStore, type NavTarget } from "../stores/ui";
@@ -12,8 +14,8 @@ import styles from "./Workspace.module.css";
 export function Workspace({ target }: { target: NavTarget }) {
   const viewMode = useUiStore((s) => s.viewMode);
   const projects = useProjectsStore((s) => s.projects);
-  const kind: EmptyKind = target.kind;
-  const text = copy.empty[kind];
+  const kind = target.kind;
+  const text = kind === "filter" ? workspaceCopy.filterEmpty : copy.empty[kind];
   const empty = (
     <EmptyState
       title={text.title}
@@ -35,7 +37,10 @@ export function Workspace({ target }: { target: NavTarget }) {
 
   return (
     <section className={styles.views} aria-label="Workspace">
-      {viewMode === "kanban" ? (
+      <FilterBar />
+      {viewMode === "graph" ? (
+        <GraphView key={key} empty={empty} />
+      ) : viewMode === "kanban" ? (
         <KanbanView key={key} empty={empty} />
       ) : viewMode === "list" ? (
         <ListView key={key} mode={target.kind === "today" ? "today" : "timeline"} empty={empty} />

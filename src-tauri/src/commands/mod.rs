@@ -5,6 +5,7 @@ pub mod boards;
 pub mod desktop;
 pub mod items;
 pub mod projects;
+pub mod workspace;
 
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};

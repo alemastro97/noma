@@ -15,6 +15,8 @@ import type {
   Project,
 } from "../api/types";
 
+import { handleWorkspace } from "./mock/workspace";
+
 type Args = Record<string, unknown>;
 
 const items = new Map<string, Item>();
@@ -685,9 +687,20 @@ function handle(cmd: string, a: Args): unknown {
       links = links.filter((l) => l.id !== a.id);
       changed();
       return null;
-    default:
+    default: {
+      const ws = handleWorkspace(cmd, a, {
+        items,
+        projects,
+        placements,
+        getLinks: () => links,
+        setLinks: (l) => (links = l),
+        newId: id,
+        changed,
+      });
+      if (ws !== undefined) return ws;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
+    }
   }
 }
 
