@@ -29,7 +29,7 @@ Commands (`src-tauri/src/commands/workspace.rs` over `db::workspace`):
 | `links_all()`                                                                                                           | Every link, for the graph                                                                                                                                                                                                                 |
 | `items_move(ids, place)` → prior places                                                                                 | Bulk move to a project / personal board / Inbox in one transaction; returns where each card was, including its canvas spot                                                                                                                |
 | `items_unmove(prior)`                                                                                                   | Undo of `items_move`                                                                                                                                                                                                                      |
-| `items_snapshot(ids)` / `items_restore(snapshots)`                                                                      | Undo of a delete after its 5 s window: the card's rows (item, tags, placement, links) are captured when the delete starts and re-inserted with the same id; links to cards that are gone, tags or boards that no longer exist are skipped |
+| `items_snapshot(ids)` / `items_restore_rows(snapshots)`                                                                      | Undo of a delete after its 5 s window: the card's rows (item, tags, placement, links) are captured when the delete starts and re-inserted with the same id; links to cards that are gone, tags or boards that no longer exist are skipped |
 
 Frontend: `stores/history.ts` (stack), `stores/selection.ts`, `stores/bulk.ts`, `stores/filters.ts`, `stores/groups.ts`, `lib/filterSpec.ts`, `lib/force.ts`, `views/graph/GraphView.tsx`, `views/canvas/FrameNode.tsx`, `components/BulkBar`, `components/FilterBar`, `components/Sidebar/SavedFilters.tsx` and `dropTarget.ts`. Browser dev mode: `src/dev/mock/workspace.ts`.
 
@@ -49,3 +49,4 @@ None.
 ## Changelog
 
 - 2026-11-11 — created and shipped: multi-select with bulk bar, global undo/redo, filter bar and saved filters, drag to sidebar, canvas groups, links graph.
+- 2026-11-11 — integration: the row-restore command is `items_restore_rows` (`items_restore` belongs to Cards and untrashes a card). Undo of a single card delete after its window now restores the card from the Trash, since Delete moves cards to the Trash.

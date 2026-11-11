@@ -75,11 +75,12 @@ impl OffsetRow {
 }
 
 fn offset_rows(conn: &Connection) -> DbResult<Vec<OffsetRow>> {
-    let mut stmt = conn.prepare(
+    let mut stmt = conn.prepare(&format!(
         "SELECT o.item_id, o.minutes, o.fired_for, i.due_at FROM reminder_offsets o \
          JOIN items i ON i.id = o.item_id \
-         WHERE i.status != 'done' AND i.due_at IS NOT NULL",
-    )?;
+         WHERE i.status != 'done' AND i.due_at IS NOT NULL AND {}",
+        super::items::VISIBLE
+    ))?;
     let rows = stmt.query_map([], |r| {
         Ok(OffsetRow {
             item_id: r.get(0)?,
@@ -233,11 +234,12 @@ pub fn habit_stats(
 
 /// Open habits with their stats, ordered by next date.
 pub fn list_habits(conn: &Connection, now: DateTime<Utc>, tz: Tz) -> DbResult<Vec<Habit>> {
-    let mut stmt = conn.prepare(
+    let mut stmt = conn.prepare(&format!(
         "SELECT h.item_id FROM habits h JOIN items i ON i.id = h.item_id \
-         WHERE i.status != 'done' AND i.recurrence IS NOT NULL \
+         WHERE i.status != 'done' AND i.recurrence IS NOT NULL AND {} \
          ORDER BY COALESCE(i.due_at, i.remind_at), i.created_at",
-    )?;
+        super::items::VISIBLE
+    ))?;
     let ids: Vec<String> = stmt
         .query_map([], |r| r.get(0))?
         .collect::<Result<_, _>>()?;

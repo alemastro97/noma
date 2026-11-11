@@ -24,10 +24,7 @@ export function usePanelSearch(): PanelSearchState {
   const [items, setItems] = useState<Item[]>([]);
   useEffect(() => {
     const q = query.trim();
-    if (!q) {
-      setItems([]);
-      return;
-    }
+    if (!q) return;
     let alive = true;
     const timer = window.setTimeout(() => {
       void searchItems(q, SEARCH_LIMIT)
@@ -40,7 +37,8 @@ export function usePanelSearch(): PanelSearchState {
     };
   }, [query]);
   const clear = useCallback(() => setQuery(""), []);
-  return { query, setQuery, clear, items };
+  // An empty query shows no results (the effect leaves stale ones in state).
+  return { query, setQuery, clear, items: query.trim() ? items : [] };
 }
 
 export function PanelSearch({ search }: { search: PanelSearchState }) {

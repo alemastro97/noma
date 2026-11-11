@@ -4,9 +4,9 @@
 pub mod attachments;
 pub mod boards;
 pub mod captures;
-pub mod embeddings;
 pub mod cards;
 pub mod desktop;
+pub mod embeddings;
 pub mod error;
 pub mod filing;
 pub mod items;
@@ -23,9 +23,9 @@ pub mod seed;
 pub mod settings;
 pub mod subtasks;
 pub mod tags;
-pub mod workspace;
 pub mod timekeeping;
 pub mod voice;
+pub mod workspace;
 
 use std::path::Path;
 

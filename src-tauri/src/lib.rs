@@ -296,7 +296,7 @@ pub fn run() {
             commands::workspace::items_move,
             commands::workspace::items_unmove,
             commands::workspace::items_snapshot,
-            commands::workspace::items_restore,
+            commands::workspace::items_restore_rows,
             // time
             timekeeping::reminder_snooze_until,
             timekeeping::recap_open,

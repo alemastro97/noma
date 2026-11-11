@@ -124,7 +124,7 @@ pub async fn items_snapshot(
 
 /// Brings back deleted cards from snapshots taken before the delete.
 #[tauri::command]
-pub async fn items_restore(
+pub async fn items_restore_rows(
     app: AppHandle,
     state: State<'_, AppState>,
     snapshots: Vec<Snapshot>,

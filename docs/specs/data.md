@@ -20,7 +20,7 @@ Extends Settings → _Your data_ (backups and export, see desktop-presence.md §
 
 ## Data
 
-Migration `0013_data`: indexes `captures(created_at)` and `items(completed_at)`. Settings keys: `export.auto` (`"1"`/`"0"`), `export.folder` — written by `mirror_set`, not the UI whitelist. Commands: `backup_list`, `backup_restore`, `import_text`, `import_apple_sources`, `import_apple`, `pick_folder`, `mirror_get`, `mirror_set`, `cli_info`, `cli_install`, `mcp_info`, `captures_recent`, `captures_retry`, `stats_get`. Events: `data:restored`.
+Migration `0012_data`: indexes `captures(created_at)` and `items(completed_at)`. Settings keys: `export.auto` (`"1"`/`"0"`), `export.folder` — written by `mirror_set`, not the UI whitelist. Commands: `backup_list`, `backup_restore`, `import_text`, `import_apple_sources`, `import_apple`, `pick_folder`, `mirror_get`, `mirror_set`, `cli_info`, `cli_install`, `mcp_info`, `captures_recent`, `captures_retry`, `stats_get`. Events: `data:restored`.
 
 ## Decisions
 

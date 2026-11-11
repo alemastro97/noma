@@ -526,6 +526,12 @@ mod tests {
             link_count: 0,
             hint: None,
             capturing: false,
+            pinned: false,
+            archived_at: None,
+            deleted_at: None,
+            subtasks_done: 0,
+            subtasks_total: 0,
+            attachment_count: 0,
         };
         let p = retime(&item, "2026-11-10", now, tz).unwrap();
         assert_eq!(p.due_at, Some(Some(rome(2026, 11, 10, 15, 0))));
@@ -570,6 +576,12 @@ mod tests {
             link_count: 0,
             hint: None,
             capturing: false,
+            pinned: false,
+            archived_at: None,
+            deleted_at: None,
+            subtasks_done: 0,
+            subtasks_total: 0,
+            attachment_count: 0,
         };
         assert_eq!(today_answer(&[], "en"), "Nothing on today.");
         assert_eq!(

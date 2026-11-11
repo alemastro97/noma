@@ -41,21 +41,31 @@ pub fn build(conn: &Connection, now: DateTime<Utc>) -> DbResult<Review> {
     let mut r = Review {
         completed: ids(
             conn,
-            "SELECT id FROM items WHERE status = 'done' AND kind != 'project_ref' \
-             AND completed_at >= ?1 ORDER BY completed_at DESC LIMIT ?2",
+            &format!(
+                "SELECT i.id FROM items i WHERE status = 'done' AND kind != 'project_ref' \
+                 AND completed_at >= ?1 AND {} ORDER BY completed_at DESC LIMIT ?2",
+                db::items::VISIBLE
+            ),
             now - Duration::days(WEEK_DAYS),
         )?,
         // Events are over, not overdue.
         overdue: ids(
             conn,
-            "SELECT id FROM items WHERE status != 'done' AND kind IN ('task', 'reminder') \
-             AND COALESCE(due_at, remind_at) < ?1 ORDER BY COALESCE(due_at, remind_at) ASC LIMIT ?2",
+            &format!(
+                "SELECT i.id FROM items i WHERE status != 'done' AND kind IN ('task', 'reminder') \
+                 AND COALESCE(due_at, remind_at) < ?1 AND {} \
+                 ORDER BY COALESCE(due_at, remind_at) ASC LIMIT ?2",
+                db::items::VISIBLE
+            ),
             now,
         )?,
         forgotten: ids(
             conn,
-            "SELECT id FROM items WHERE status != 'done' AND kind != 'project_ref' \
-             AND updated_at < ?1 ORDER BY updated_at ASC LIMIT ?2",
+            &format!(
+                "SELECT i.id FROM items i WHERE status != 'done' AND kind != 'project_ref' \
+                 AND updated_at < ?1 AND {} ORDER BY updated_at ASC LIMIT ?2",
+                db::items::VISIBLE
+            ),
             now - Duration::days(FORGOTTEN_DAYS),
         )?,
     };

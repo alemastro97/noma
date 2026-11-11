@@ -54,11 +54,12 @@ fn best_match<'a>(item: &Item, candidates: &'a [(String, String)]) -> Option<&'a
 /// are never compared with each other. Returns how many were marked.
 pub fn mark(conn: &Connection, ids: &[String]) -> DbResult<usize> {
     let skip: HashSet<&str> = ids.iter().map(String::as_str).collect();
-    let mut stmt = conn.prepare(
+    let mut stmt = conn.prepare(&format!(
         "SELECT i.id, i.title FROM items i
-         WHERE i.status != 'done' AND i.kind != 'project_ref'
+         WHERE i.status != 'done' AND i.kind != 'project_ref' AND {}
            AND NOT EXISTS (SELECT 1 FROM captures k WHERE k.item_id = i.id AND k.status IN ('pending', 'processing'))",
-    )?;
+        db::items::VISIBLE
+    ))?;
     let candidates: Vec<(String, String)> = stmt
         .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?
         .collect::<Result<Vec<_>, _>>()?

@@ -15,7 +15,7 @@ const MIGRATIONS: &[&str] = &[
     include_str!("migrations/0009_workspace.sql"),
     include_str!("migrations/0010_time.sql"),
     include_str!("migrations/0011_voice.sql"),
-    include_str!("migrations/0013_data.sql"),
+    include_str!("migrations/0012_data.sql"),
 ];
 
 /// Applies any pending migrations and returns the schema version afterwards.
@@ -50,12 +50,12 @@ mod tests {
     #[test]
     fn migrate_is_idempotent() {
         let mut conn = db::open_in_memory().unwrap();
-        assert_eq!(db::migrate(&mut conn).unwrap(), 5);
-        assert_eq!(db::migrate(&mut conn).unwrap(), 5);
+        assert_eq!(db::migrate(&mut conn).unwrap(), 12);
+        assert_eq!(db::migrate(&mut conn).unwrap(), 12);
         let rows: u32 = conn
             .query_row("SELECT COUNT(*) FROM schema_version", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(rows, 5);
+        assert_eq!(rows, 12);
     }
 
     #[test]

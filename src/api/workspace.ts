@@ -95,5 +95,5 @@ export function snapshotItems(ids: string[]): Promise<ItemSnapshot[]> {
 }
 
 export function restoreItems(snapshots: ItemSnapshot[]): Promise<string[]> {
-  return invoke<string[]>("items_restore", { snapshots });
+  return invoke<string[]>("items_restore_rows", { snapshots });
 }

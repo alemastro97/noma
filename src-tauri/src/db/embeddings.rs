@@ -63,8 +63,12 @@ pub fn upsert(
 
 /// All vectors embedded with `model_id`.
 pub fn vectors(conn: &Connection, model_id: &str) -> DbResult<Vec<(String, Vec<f32>)>> {
-    let mut stmt =
-        conn.prepare_cached("SELECT item_id, vector FROM embeddings WHERE model_id = ?1")?;
+    // Archived and trashed cards stay indexed but are left out of results.
+    let mut stmt = conn.prepare_cached(&format!(
+        "SELECT e.item_id, e.vector FROM embeddings e JOIN items i ON i.id = e.item_id \
+         WHERE e.model_id = ?1 AND {}",
+        super::items::VISIBLE
+    ))?;
     let rows = stmt.query_map([model_id], |r| {
         let blob: Vec<u8> = r.get(1)?;
         Ok((r.get::<_, String>(0)?, decode(&blob)))
@@ -108,9 +112,11 @@ pub fn keyword_ids(conn: &Connection, text: &str, limit: u32) -> DbResult<Vec<St
     if terms.is_empty() {
         return Ok(vec![]);
     }
-    let mut stmt = conn.prepare_cached(
-        "SELECT id FROM items_fts WHERE items_fts MATCH ?1 ORDER BY bm25(items_fts) LIMIT ?2",
-    )?;
+    let mut stmt = conn.prepare_cached(&format!(
+        "SELECT f.id FROM items_fts f JOIN items i ON i.id = f.id \
+         WHERE items_fts MATCH ?1 AND {} ORDER BY bm25(items_fts) LIMIT ?2",
+        super::items::VISIBLE
+    ))?;
     let rows = stmt.query_map(params![terms.join(" OR "), limit], |r| r.get(0))?;
     Ok(rows.collect::<Result<_, _>>()?)
 }

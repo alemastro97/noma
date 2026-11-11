@@ -134,7 +134,7 @@ export function handleWorkspace(cmd: string, a: Args, ctx: WorkspaceMockContext)
           placement: ctx.placements.get(id) ?? null,
           links: ctx.getLinks().filter((l) => l.fromItem === id || l.toItem === id),
         }));
-    case "items_restore": {
+    case "items_restore_rows": {
       const snaps = a.snapshots as MockSnapshot[];
       const restored: string[] = [];
       for (const s of snaps) {

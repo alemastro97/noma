@@ -22,10 +22,13 @@ pub fn today_left(conn: &Connection, now: DateTime<Utc>, tz: Tz) -> DbResult<u32
 /// Open items whose reminder time (snooze first) is overdue or due soon.
 pub fn attention_count(conn: &Connection, now: DateTime<Utc>) -> DbResult<u32> {
     Ok(conn.query_row(
-        "SELECT COUNT(*) FROM items WHERE status != 'done' \
-         AND COALESCE(snoozed_until, remind_at) IS NOT NULL \
-         AND COALESCE(snoozed_until, remind_at) <= ?1 \
-         AND COALESCE(snoozed_until, remind_at) >= ?2",
+        &format!(
+            "SELECT COUNT(*) FROM items i WHERE status != 'done' AND {} \
+             AND COALESCE(snoozed_until, remind_at) IS NOT NULL \
+             AND COALESCE(snoozed_until, remind_at) <= ?1 \
+             AND COALESCE(snoozed_until, remind_at) >= ?2",
+            super::items::VISIBLE
+        ),
         rusqlite::params![now + ATTENTION_AHEAD, now - ATTENTION_BEHIND],
         |r| r.get(0),
     )?)

@@ -723,7 +723,7 @@ function handle(cmd: string, a: Args): unknown {
       if (ws !== undefined) return ws;
       const time = handleTime(cmd, a);
       if (time !== TIME_NOT_HANDLED) return time;
-      const voice = handleVoice(cmd, a);
+      const voice = handleVoice(cmd);
       if (voice !== NOT_HANDLED_VOICE) return voice;
       const desktop = handleDesktop(cmd, a);
       if (desktop !== undefined) return desktop;

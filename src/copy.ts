@@ -474,6 +474,8 @@ export const cardsCopy = {
   placeArchived: (name: string) => `Archived “${name}”`,
   placeDeleted: (name: string, n: number) =>
     n > 0 ? `Deleted “${name}” · ${n} ${n === 1 ? "card" : "cards"} in Trash` : `Deleted “${name}”`,
+} as const;
+
 export const workspaceCopy = {
   // Multi-select
   selected: (n: number) => `${n} selected`,
@@ -605,6 +607,8 @@ export const timeCopy = {
   settingsTitle: "Time",
   recap: "Evening recap",
   recapHint: "After 19:00, a toast with what you finished today and what is still open.",
+};
+
 export const voiceCopy = {
   // Toast confirming a voice command
   markedDone: "Marked done",
@@ -633,6 +637,8 @@ export const voiceCopy = {
   vocabularyHint:
     "Names and words NOMA should expect, separated by commas. Project and board names are added for you.",
   vocabularyPlaceholder: "Marta, Kyoto, Figma",
+};
+
 /** Desktop presence extras: orb look, menu-bar count, quiet hours, panel search/capture, extra shortcuts. */
 export const desktopPresenceCopy = {
   menubarCount: "Count in the menu bar",
