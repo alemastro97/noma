@@ -18,6 +18,8 @@ import { handleOrganize, NOT_HANDLED } from "./mock/organize";
 import { handleSemantic } from "./mock/semantic";
 import { handleCards, NOT_HANDLED as CARDS_NOT_HANDLED } from "./mock/cards";
 
+import { handleWorkspace } from "./mock/workspace";
+
 type Args = Record<string, unknown>;
 
 const items = new Map<string, Item>();
@@ -706,6 +708,16 @@ function handle(cmd: string, a: Args): unknown {
       if (semantic !== undefined) return semantic;
       const out = handleCards(cmd, a);
       if (out !== CARDS_NOT_HANDLED) return out;
+      const ws = handleWorkspace(cmd, a, {
+        items,
+        projects,
+        placements,
+        getLinks: () => links,
+        setLinks: (l) => (links = l),
+        newId: id,
+        changed,
+      });
+      if (ws !== undefined) return ws;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
     }

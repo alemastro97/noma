@@ -1,0 +1,225 @@
+.toggle {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--noma-radius-control);
+  border: 1px solid var(--noma-surface-elevated);
+  background: transparent;
+  color: var(--noma-text-2);
+  transition:
+    color var(--noma-fast) ease,
+    border-color var(--noma-fast) ease;
+}
+[data-theme="light"] .toggle {
+  border-color: var(--noma-border);
+}
+.toggle:hover,
+.toggle[aria-pressed="true"] {
+  color: var(--noma-text);
+  border-color: var(--noma-border-hover);
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--noma-lavender);
+  color: #16112a;
+  font-family: var(--noma-font-mono);
+  font-size: 10px;
+  line-height: 16px;
+}
+[data-theme="light"] .badge {
+  color: #ffffff;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--noma-surface);
+  background: var(--noma-bg);
+  animation: drop var(--noma-base) var(--noma-ease) both;
+}
+[data-theme="light"] .bar {
+  border-bottom-color: var(--noma-border);
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--noma-bg-2);
+  border: 1px solid var(--noma-surface-elevated);
+  color: var(--noma-text-2);
+  width: 220px;
+}
+.search:focus-within {
+  border-color: var(--noma-border-hover);
+}
+[data-theme="light"] .search {
+  background: var(--noma-surface);
+  border-color: var(--noma-border);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--noma-text);
+  font-size: 13px;
+}
+.search input::placeholder {
+  color: var(--noma-text-2);
+}
+
+.chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 8px;
+  border: 1px solid var(--noma-surface-elevated);
+  background: transparent;
+  color: var(--noma-text-2);
+  font-size: 12px;
+  transition:
+    background var(--noma-fast) ease,
+    color var(--noma-fast) ease,
+    border-color var(--noma-fast) ease;
+}
+[data-theme="light"] .chip {
+  border-color: var(--noma-border);
+}
+.chip:hover {
+  color: var(--noma-text);
+}
+.chip[aria-pressed="true"] {
+  background: var(--noma-surface-elevated);
+  border-color: var(--noma-border-hover);
+  color: var(--noma-text);
+}
+[data-theme="light"] .chip[aria-pressed="true"] {
+  background: var(--noma-surface);
+  border-color: var(--noma-lavender);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.select,
+.date input {
+  min-height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--noma-surface-elevated);
+  background: var(--noma-bg-2);
+  color: var(--noma-text);
+  font-size: 12px;
+  color-scheme: dark;
+}
+[data-theme="light"] .select,
+[data-theme="light"] .date input {
+  background: var(--noma-surface);
+  border-color: var(--noma-border);
+  color-scheme: light;
+}
+
+.date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+
+.end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  color: var(--noma-text-2);
+  white-space: nowrap;
+}
+
+.action {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-pale);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+[data-theme="light"] .action {
+  color: var(--noma-lavender);
+}
+.action:hover {
+  background: var(--noma-surface);
+}
+
+.nameInput {
+  min-height: 28px;
+  width: 150px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--noma-border-hover);
+  outline: 0;
+  background: var(--noma-surface);
+  color: var(--noma-text);
+  font-size: 12px;
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.close:hover {
+  color: var(--noma-text);
+  background: var(--noma-surface);
+}

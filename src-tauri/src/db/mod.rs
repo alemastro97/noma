@@ -22,6 +22,7 @@ pub mod seed;
 pub mod settings;
 pub mod subtasks;
 pub mod tags;
+pub mod workspace;
 
 use std::path::Path;
 

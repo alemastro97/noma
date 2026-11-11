@@ -9,6 +9,7 @@ import { describeRule } from "../../lib/recurrence";
 import { useCardHandlers, useNow, useWorkspaceData, type CardHandlers } from "../useWorkspace";
 import { groupItems, type GroupMode } from "./group";
 import styles from "./List.module.css";
+import { startCardDrag } from "../../components/Sidebar/dropTarget";
 
 interface RowProps {
   item: Item;
@@ -52,6 +53,9 @@ const Row = memo(function Row({ item, project, mode, now, selected, fresh, handl
       data-fresh={fresh || undefined}
       data-capturing={item.capturing || undefined}
       aria-label={item.title}
+      data-item-id={item.id}
+      draggable
+      onDragStart={(e) => startCardDrag(e, item.id)}
       onClick={() => handlers.onSelect(item.id)}
       onDoubleClick={() => handlers.onOpen(item.id)}
       onKeyDown={onKeyDown}
@@ -121,7 +125,7 @@ interface ListViewProps {
 }
 
 export function ListView({ mode, empty }: ListViewProps) {
-  const { items, projectsById, selectedId, freshId } = useWorkspaceData();
+  const { items, projectsById, selection, freshId } = useWorkspaceData();
   const handlers = useCardHandlers();
   const now = useNow();
   const groups = groupItems(items, mode, now);
@@ -143,7 +147,7 @@ export function ListView({ mode, empty }: ListViewProps) {
                 project={item.projectId ? projectsById[item.projectId] : undefined}
                 mode={mode}
                 now={now}
-                selected={item.id === selectedId}
+                selected={selection.has(item.id)}
                 fresh={item.id === freshId}
                 handlers={handlers}
               />

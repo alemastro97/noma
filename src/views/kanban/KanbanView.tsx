@@ -8,11 +8,13 @@ import { useUiStore } from "../../stores/ui";
 import { progressFor, useCardHandlers, useNow, useWorkspaceData } from "../useWorkspace";
 import { groupByStatus } from "./group";
 import styles from "./Kanban.module.css";
+import { draggedIds, startCardDrag } from "../../components/Sidebar/dropTarget";
+import { batchHistory } from "../../stores/history";
 
 const DRAG_TYPE = "application/x-noma-item";
 
 export function KanbanView({ empty }: { empty?: ReactNode }) {
-  const { items, projectsById, progress, selectedId, freshId } = useWorkspaceData();
+  const { items, projectsById, progress, selection, freshId } = useWorkspaceData();
   const handlers = useCardHandlers();
   const now = useNow();
   const [over, setOver] = useState<Status | null>(null);
@@ -22,9 +24,13 @@ export function KanbanView({ empty }: { empty?: ReactNode }) {
   const onDrop = (status: Status) => (e: DragEvent) => {
     e.preventDefault();
     setOver(null);
-    const id = e.dataTransfer.getData(DRAG_TYPE);
-    const item = id ? useItemsStore.getState().items[id] : undefined;
-    if (item && item.status !== status) void useItemsStore.getState().setStatus(id, status);
+    const store = useItemsStore.getState();
+    batchHistory("bulk", () => {
+      for (const id of draggedIds(e)) {
+        const item = store.items[id];
+        if (item && item.status !== status) void store.setStatus(id, status);
+      }
+    });
   };
 
   return (
@@ -58,10 +64,10 @@ export function KanbanView({ empty }: { empty?: ReactNode }) {
                 key={item.id}
                 className={styles.draggable}
                 data-dragging={dragging === item.id || undefined}
+                data-item-id={item.id}
                 draggable
                 onDragStart={(e) => {
-                  e.dataTransfer.setData(DRAG_TYPE, item.id);
-                  e.dataTransfer.effectAllowed = "move";
+                  startCardDrag(e, item.id);
                   setDragging(item.id);
                 }}
                 onDragEnd={() => {
@@ -75,7 +81,7 @@ export function KanbanView({ empty }: { empty?: ReactNode }) {
                   progress={progressFor(item, progress)}
                   now={now}
                   variant="board"
-                  selected={item.id === selectedId}
+                  selected={selection.has(item.id)}
                   fresh={item.id === freshId}
                   {...handlers}
                 />

@@ -256,6 +256,19 @@ pub fn run() {
             commands::cards::boards_archive,
             commands::cards::boards_delete,
             commands::cards::boards_archived,
+            // workspace
+            commands::workspace::filters_list,
+            commands::workspace::filters_create,
+            commands::workspace::filters_delete,
+            commands::workspace::groups_list,
+            commands::workspace::groups_create,
+            commands::workspace::groups_update,
+            commands::workspace::groups_delete,
+            commands::workspace::links_all,
+            commands::workspace::items_move,
+            commands::workspace::items_unmove,
+            commands::workspace::items_snapshot,
+            commands::workspace::items_restore,
         ])
         .build(tauri::generate_context!())
         .expect("error while building NOMA")

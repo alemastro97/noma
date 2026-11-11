@@ -1,4 +1,6 @@
-import type { MouseEvent, ReactNode } from "react";
+import { useState, type MouseEvent, type ReactNode } from "react";
+import { moveCards } from "../../stores/bulk";
+import { dropAttrs, draggedIds, isCardDrag, type DropPlace } from "./dropTarget";
 import styles from "./Sidebar.module.css";
 
 interface NavItemProps {
@@ -9,6 +11,8 @@ interface NavItemProps {
   count?: number;
   active?: boolean;
   collapsed?: boolean;
+  /** Cards dropped here move to this place. */
+  drop?: DropPlace;
   onSelect: () => void;
   /** Right-click menu (projects and boards). */
   onContextMenu?: (e: MouseEvent) => void;
@@ -21,9 +25,11 @@ export function NavItem({
   count,
   active,
   collapsed,
+  drop,
   onSelect,
   onContextMenu,
 }: NavItemProps) {
+  const [over, setOver] = useState(false);
   return (
     <a
       href="#"
@@ -31,6 +37,28 @@ export function NavItem({
       aria-current={active ? "page" : undefined}
       aria-label={collapsed ? label : undefined}
       title={collapsed ? label : undefined}
+      data-drop-over={over || undefined}
+      {...(drop ? dropAttrs(drop) : {})}
+      onDragOver={
+        drop
+          ? (e) => {
+              if (!isCardDrag(e)) return;
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+              setOver(true);
+            }
+          : undefined
+      }
+      onDragLeave={drop ? () => setOver(false) : undefined}
+      onDrop={
+        drop
+          ? (e) => {
+              e.preventDefault();
+              setOver(false);
+              void moveCards(draggedIds(e), drop.place, drop.name);
+            }
+          : undefined
+      }
       onClick={(e) => {
         e.preventDefault();
         onSelect();

@@ -1,7 +1,7 @@
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { create } from "zustand";
 import { onItemsChanged } from "../api/events";
-import { trashItem } from "../api/cards";
+import { restoreItem, trashItem } from "../api/cards";
 import * as api from "../api/items";
 import { cardsCopy } from "../copy";
 import {
@@ -13,7 +13,9 @@ import {
   type NewItem,
   type Status,
 } from "../api/types";
+import { inversePatch } from "../lib/inversePatch";
 import { useBoardStore } from "./board";
+import { record } from "./history";
 import { useProjectsStore } from "./projects";
 import { TOAST_MS, toastError, useToastsStore } from "./toasts";
 
@@ -46,8 +48,8 @@ export interface ItemsState {
   toggleComplete: (id: string) => Promise<void>;
   setStatus: (id: string, status: Status) => Promise<void>;
   duplicate: (id: string) => Promise<Item | null>;
-  /** Removes now, deletes on the server after the undo window. */
-  remove: (id: string) => void;
+  /** Removes now, deletes on the server after the undo window. `quiet` skips the toast. */
+  remove: (id: string, opts?: { quiet?: boolean }) => void;
   refreshCounts: () => Promise<void>;
   subscribe: () => Promise<UnlistenFn>;
 }
@@ -118,6 +120,12 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
   async update(id, patch) {
     const before = get().items[id];
     if (before) {
+      const inverse = inversePatch(before, patch);
+      record({
+        action: "edit",
+        undo: () => get().update(id, inverse),
+        redo: () => get().update(id, patch),
+      });
       const { tags, ...fields } = patch;
       const optimistic: Item = { ...before, ...fields, tags: tags ?? before.tags };
       set((s) => replaceOne(s, optimistic));
@@ -133,6 +141,16 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
 
   async complete(id) {
     const before = get().items[id];
+    if (before) {
+      const back: ItemPatch = { status: before.status };
+      if (before.recurrence)
+        Object.assign(back, { dueAt: before.dueAt, remindAt: before.remindAt });
+      record({
+        action: "complete",
+        undo: () => get().update(id, back),
+        redo: () => get().complete(id),
+      });
+    }
     // Recurring items advance on the server instead of finishing: no optimistic "done".
     if (before && !before.recurrence) {
       set((s) =>
@@ -179,10 +197,15 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
     }
   },
 
-  remove(id) {
+  remove(id, opts = {}) {
     const item = get().items[id];
     if (!item || pendingDeletes.has(id)) return;
     const index = get().order.indexOf(id);
+    record({
+      action: "delete",
+      undo: () => restoreDeleted(id),
+      redo: () => get().remove(id, { quiet: true }),
+    });
     set((s) => {
       const items = { ...s.items };
       delete items[id];
@@ -201,22 +224,10 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
     const timer = setTimeout(() => void commit(), TOAST_MS);
     pendingDeletes.set(id, { item, index, timer });
 
+    if (opts.quiet) return;
     useToastsStore.getState().push({
       message: cardsCopy.trashed(item.title),
-      action: {
-        label: "Undo",
-        run: () => {
-          const pending = pendingDeletes.get(id);
-          if (!pending) return;
-          clearTimeout(pending.timer);
-          pendingDeletes.delete(id);
-          set((s) => {
-            const order = s.order.filter((x) => x !== id);
-            order.splice(Math.min(pending.index, order.length), 0, id);
-            return { items: { ...s.items, [id]: pending.item }, order };
-          });
-        },
-      },
+      action: { label: "Undo", run: () => void cancelPendingDelete(id) },
     });
   },
 
@@ -245,6 +256,31 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
     });
   },
 }));
+
+/** Puts back a card whose delete is still in its undo window. False when already gone. */
+export function cancelPendingDelete(id: string): boolean {
+  const pending = pendingDeletes.get(id);
+  if (!pending) return false;
+  clearTimeout(pending.timer);
+  pendingDeletes.delete(id);
+  useItemsStore.setState((s) => {
+    const order = s.order.filter((x) => x !== id);
+    order.splice(Math.min(pending.index, order.length), 0, id);
+    return { items: { ...s.items, [id]: pending.item }, order };
+  });
+  return true;
+}
+
+/** Undo of a delete: cancel it if still pending, else bring the card back from the Trash. */
+async function restoreDeleted(id: string): Promise<void> {
+  if (cancelPendingDelete(id)) return;
+  try {
+    await restoreItem(id);
+    await useItemsStore.getState().reload();
+  } catch (err) {
+    toastError(message(err));
+  }
+}
 
 /** Flushes pending deletes immediately (used on window unload). */
 export function flushPendingDeletes(): void {

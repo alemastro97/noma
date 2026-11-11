@@ -1,7 +1,9 @@
 import { InboxResort } from "../views/organize/InboxResort";
 import { ProjectBrief } from "../views/organize/ProjectBrief";
 import { ReviewView } from "../views/organize/ReviewView";
-import { cardsCopy, copy, organizeCopy, type EmptyKind } from "../copy";
+import { cardsCopy, copy, organizeCopy, workspaceCopy } from "../copy";
+import { FilterBar } from "../components/FilterBar/FilterBar";
+import { GraphView } from "../views/graph/GraphView";
 import { EmptyState } from "../components/EmptyState/EmptyState";
 import { useProjectsStore } from "../stores/projects";
 import { targetKey, useUiStore, type NavTarget } from "../stores/ui";
@@ -34,8 +36,8 @@ function PlaceWorkspace({ target }: { target: Exclude<NavTarget, { kind: "archiv
       </section>
     );
   }
-  const kind: EmptyKind = target.kind;
-  const text = copy.empty[kind];
+  const kind = target.kind;
+  const text = kind === "filter" ? workspaceCopy.filterEmpty : copy.empty[kind];
   const empty = (
     <EmptyState
       title={text.title}
@@ -59,7 +61,10 @@ function PlaceWorkspace({ target }: { target: Exclude<NavTarget, { kind: "archiv
     <section className={styles.views} aria-label="Workspace">
       {target.kind === "inbox" && <InboxResort />}
       {target.kind === "project" && <ProjectBrief key={target.id} projectId={target.id} />}
-      {viewMode === "kanban" ? (
+      <FilterBar />
+      {viewMode === "graph" ? (
+        <GraphView key={key} empty={empty} />
+      ) : viewMode === "kanban" ? (
         <KanbanView key={key} empty={empty} />
       ) : viewMode === "list" ? (
         <ListView key={key} mode={target.kind === "today" ? "today" : "timeline"} empty={empty} />

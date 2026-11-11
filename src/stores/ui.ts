@@ -13,13 +13,22 @@ export type NavTarget =
   | { kind: "archive" }
   | { kind: "trash" }
   | { kind: "project"; id: string }
-  | { kind: "board"; id: string };
+  | { kind: "board"; id: string }
+  /** A saved filter (workspace): every card, refined by the filter's conditions. */
+  | { kind: "filter"; id: string };
 
-export type ViewMode = "canvas" | "kanban" | "list" | "calendar" | "timeline";
+export type ViewMode = "canvas" | "kanban" | "list" | "calendar" | "timeline" | "graph";
 
-export const ALL_VIEW_MODES: ViewMode[] = ["canvas", "kanban", "list", "calendar", "timeline"];
+export const ALL_VIEW_MODES: ViewMode[] = [
+  "canvas",
+  "kanban",
+  "list",
+  "graph",
+  "calendar",
+  "timeline",
+];
 /** Calendar and Timeline are shown disabled ("Soon") until they are designed. */
-export const AVAILABLE_VIEW_MODES: ViewMode[] = ["canvas", "kanban", "list"];
+export const AVAILABLE_VIEW_MODES: ViewMode[] = ["canvas", "kanban", "list", "graph"];
 
 export const UI_STORAGE_KEY = "noma.ui";
 

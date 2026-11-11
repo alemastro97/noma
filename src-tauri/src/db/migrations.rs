@@ -12,6 +12,7 @@ const MIGRATIONS: &[&str] = &[
     include_str!("migrations/0006_organize.sql"),
     include_str!("migrations/0007_semantic.sql"),
     include_str!("migrations/0008_cards.sql"),
+    include_str!("migrations/0009_workspace.sql"),
 ];
 
 /// Applies any pending migrations and returns the schema version afterwards.

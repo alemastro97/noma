@@ -1,0 +1,111 @@
+.graph {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--noma-bg);
+  background-image: radial-gradient(
+    700px 500px at 60% 40%,
+    rgba(109, 74, 255, 0.08),
+    transparent 70%
+  );
+}
+[data-theme="light"] .graph {
+  background-image: radial-gradient(
+    700px 500px at 60% 40%,
+    rgba(128, 101, 220, 0.06),
+    transparent 70%
+  );
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.svg:active {
+  cursor: grabbing;
+}
+
+.edge {
+  stroke: var(--noma-border-hover);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+.edge[data-hot] {
+  stroke: var(--noma-lavender);
+  stroke-opacity: 0.9;
+}
+
+.node {
+  cursor: pointer;
+}
+.node circle:not(.ring) {
+  stroke: var(--noma-bg);
+  stroke-width: 2;
+  transition: opacity var(--noma-fast) ease;
+}
+.node[data-done] circle:not(.ring) {
+  opacity: 0.45;
+}
+
+.ring {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 2;
+}
+.node:hover .ring {
+  stroke: var(--noma-border-hover);
+}
+.node[data-selected] .ring {
+  stroke: var(--noma-lavender);
+}
+
+.label {
+  fill: var(--noma-text-2);
+  font-size: 11px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.node[data-selected] .label,
+.node:hover .label {
+  fill: var(--noma-text);
+}
+
+.tools {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  gap: 6px;
+}
+
+.chip {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  background: var(--noma-surface);
+  color: var(--noma-text-2);
+  font-size: 12px;
+  transition:
+    color var(--noma-fast) ease,
+    border-color var(--noma-fast) ease;
+}
+.chip:hover,
+.chip[aria-pressed="true"] {
+  color: var(--noma-text);
+  border-color: var(--noma-border-hover);
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}

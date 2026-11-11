@@ -21,7 +21,7 @@ export type CardNodeType = Node<CardNodeData, "card">;
 export const CardNode = memo(function CardNode({ data }: NodeProps<CardNodeType>) {
   const { item, project, progress, now, fresh, isSelected, connectable, handlers } = data;
   return (
-    <div className={styles.node}>
+    <div className={styles.node} data-item-id={item.id}>
       {connectable && <Handle type="target" position={Position.Left} className={styles.handle} />}
       <Card
         item={item}
