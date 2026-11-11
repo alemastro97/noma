@@ -12,6 +12,9 @@ import { KanbanView } from "../views/kanban/KanbanView";
 import { ListView } from "../views/list/ListView";
 import { SettingsView } from "../views/settings/SettingsView";
 import { BinView } from "../views/archive/BinView";
+import { CalendarView } from "../views/calendar/CalendarView";
+import { HabitsSection } from "../views/habits/HabitsSection";
+import { TimelineView } from "../views/timeline/TimelineView";
 import { boardIdFor } from "./boardFor";
 import styles from "./Workspace.module.css";
 
@@ -62,8 +65,15 @@ function PlaceWorkspace({ target }: { target: Exclude<NavTarget, { kind: "archiv
       {target.kind === "inbox" && <InboxResort />}
       {target.kind === "project" && <ProjectBrief key={target.id} projectId={target.id} />}
       <FilterBar />
+      {target.kind === "today" && (viewMode === "list" || viewMode === "kanban") && (
+        <HabitsSection />
+      )}
       {viewMode === "graph" ? (
         <GraphView key={key} empty={empty} />
+      ) : viewMode === "calendar" ? (
+        <CalendarView key={key} />
+      ) : viewMode === "timeline" ? (
+        <TimelineView key={key} />
       ) : viewMode === "kanban" ? (
         <KanbanView key={key} empty={empty} />
       ) : viewMode === "list" ? (

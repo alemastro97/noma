@@ -26,6 +26,13 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 - **Drag to the sidebar.** Drop cards on the Inbox, a project or a personal board to move them there.
 - **Canvas groups.** Draw a labelled frame on a board; cards inside move with it.
 - **Links graph.** A new Graph view (⌘4) maps cards and their links.
+- **Calendar view.** Month and week grids with cards on their date: drag a card to another day to reschedule it, click an empty day to add one.
+- **Timeline view.** Two weeks side by side, with events stretching from start to end.
+- **Custom snooze.** Reminder toasts offer _This evening_, _Next Monday_ and a small day/time picker.
+- **Evening recap.** After 19:00, once a day, a toast with what you finished and what is still open (Settings → Time).
+- **Focus timer.** Focus 25 minutes on a card from its details or the orb panel; the orb shows a progress ring and sessions are logged per card.
+- **Habits.** Mark a repeating card as a habit to see its streak and last 7 days, also in a Habits section in Today.
+- **Reminders before the due time.** 10 min, 1 hour, 1 day or 1 week before, set in the card's details.
 
 - **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.

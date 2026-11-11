@@ -6,6 +6,7 @@ import { NomaOrb, type OrbState } from "../../components/NomaOrb";
 import { copy } from "../../copy";
 import { useShortcutLabels } from "../../hooks/useShortcuts";
 import styles from "./orb.module.css";
+import { FocusRing } from "./FocusRing";
 
 const DRAG_THRESHOLD = 4;
 const FLASH_MS = 1400;
@@ -67,6 +68,7 @@ export function OrbWindow() {
       }}
     >
       <NomaOrb size={52} state={state} label={copy.orbHere} className={styles.orb} />
+      <FocusRing />
     </button>
   );
 }

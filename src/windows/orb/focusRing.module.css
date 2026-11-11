@@ -1,0 +1,30 @@
+.wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.wrap svg {
+  transform: rotate(-90deg);
+}
+
+.track {
+  fill: none;
+  stroke: rgba(167, 139, 250, 0.18);
+}
+
+.fill {
+  fill: none;
+  stroke: var(--noma-lavender);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}

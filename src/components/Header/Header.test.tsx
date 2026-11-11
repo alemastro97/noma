@@ -7,13 +7,10 @@ beforeEach(() => {
   useUiStore.setState({ target: { kind: "inbox" }, viewMode: "canvas", sidebarCollapsed: false });
 });
 
-test("Calendar and Timeline buttons are disabled and labelled Soon", () => {
+test("Calendar and Timeline buttons are enabled", () => {
   render(<Header title="Inbox" count={4} />);
-  const calendar = screen.getByRole("button", { name: /calendar/i });
-  const timeline = screen.getByRole("button", { name: /timeline/i });
-  expect(calendar).toBeDisabled();
-  expect(timeline).toBeDisabled();
-  expect(calendar).toHaveAccessibleName(/soon/i);
+  expect(screen.getByRole("button", { name: /^calendar$/i })).toBeEnabled();
+  expect(screen.getByRole("button", { name: /^timeline$/i })).toBeEnabled();
 });
 
 test("active view mode has aria-pressed=true and clicking switches", async () => {

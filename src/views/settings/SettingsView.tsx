@@ -20,6 +20,7 @@ import { aiStatusLabel, useAiStore } from "../../stores/ai";
 import { readTheme, setTheme, type Theme } from "../../theme/theme";
 import styles from "./Settings.module.css";
 import { SemanticSection } from "./SemanticSection";
+import { TimeSettings } from "./TimeSettings";
 
 function Segmented<T extends string>({
   value,
@@ -491,6 +492,7 @@ export function SettingsView() {
         <VoiceSection />
         <SemanticSection />
         <DesktopSection />
+        <TimeSettings />
         <DataSection />
 
         <section className={styles.section} aria-labelledby="appearance-title">

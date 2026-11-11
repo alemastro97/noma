@@ -27,8 +27,7 @@ export const ALL_VIEW_MODES: ViewMode[] = [
   "calendar",
   "timeline",
 ];
-/** Calendar and Timeline are shown disabled ("Soon") until they are designed. */
-export const AVAILABLE_VIEW_MODES: ViewMode[] = ["canvas", "kanban", "list", "graph"];
+export const AVAILABLE_VIEW_MODES: ViewMode[] = ALL_VIEW_MODES;
 
 export const UI_STORAGE_KEY = "noma.ui";
 
@@ -38,6 +37,8 @@ export interface QuickAddState {
   status?: Status;
   /** Canvas position (flow coordinates) when opened by double-clicking the board. */
   position?: { x: number; y: number };
+  /** Due date (ISO) when opened from an empty calendar day. */
+  dueAt?: string;
 }
 
 export type Creating = "project" | "board" | null;

@@ -23,6 +23,7 @@ pub mod settings;
 pub mod subtasks;
 pub mod tags;
 pub mod workspace;
+pub mod timekeeping;
 
 use std::path::Path;
 

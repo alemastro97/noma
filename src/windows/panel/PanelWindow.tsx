@@ -9,12 +9,15 @@ import { anchorDate, formatTime } from "../../lib/dates";
 import glass from "../shared/glass.module.css";
 import { todayRows } from "./today";
 import styles from "./panel.module.css";
+import { useFocus } from "../../hooks/useFocus";
+import { FocusBar, FocusButton, focusRowClass } from "./FocusBar";
 
 const MAX_ROWS = 7;
 
 /** The orb's panel: today at a glance, tick things off, talk, or open NOMA. */
 export function PanelWindow() {
   const [items, setItems] = useState<Item[]>([]);
+  const focus = useFocus();
 
   const load = useCallback(() => {
     void listItems({ kind: "today" }, true)
@@ -54,6 +57,7 @@ export function PanelWindow() {
           <span className={styles.title}>{desktopCopy.today}</span>
           <span className={styles.meta}>{desktopCopy.left(left)}</span>
         </header>
+        <FocusBar clock={focus} />
 
         {rows.length === 0 ? (
           <p className={styles.empty}>{desktopCopy.allClear}</p>
@@ -64,7 +68,7 @@ export function PanelWindow() {
               const at = anchorDate(item);
               const timed = at && (at.getHours() !== 0 || at.getMinutes() !== 0);
               return (
-                <li key={item.id}>
+                <li key={item.id} className={focusRowClass}>
                   <button
                     type="button"
                     className={`${styles.row} ${done ? styles.done : ""}`}
@@ -78,6 +82,7 @@ export function PanelWindow() {
                     <span className={styles.label}>{item.title}</span>
                     {timed && !done && <span className={styles.time}>{formatTime(at)}</span>}
                   </button>
+                  {!done && <FocusButton title={item.title} onStart={() => focus.start(item.id)} />}
                 </li>
               );
             })}

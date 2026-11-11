@@ -64,7 +64,9 @@ function QuickAddDialog() {
       x: quickAdd.position?.x ?? null,
       y: quickAdd.position?.y ?? null,
     };
-    if (target.kind === "today" && (mode === "task" || mode === "event")) {
+    if (quickAdd.dueAt) {
+      input.dueAt = quickAdd.dueAt;
+    } else if (target.kind === "today" && (mode === "task" || mode === "event")) {
       const end = new Date();
       end.setHours(18, 0, 0, 0);
       input.dueAt = end.toISOString();

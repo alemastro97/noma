@@ -542,3 +542,67 @@ export const workspaceCopy = {
     body: "Connect cards on a board's canvas and they show up here as a map.",
   },
 } as const;
+
+export const timeCopy = {
+  // Calendar
+  calendar: "Calendar",
+  month: "Month",
+  week: "Week",
+  previous: "Previous",
+  next: "Next",
+  today: "Today",
+  weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  addOn: (day: string) => `Add a card on ${day}`,
+  more: (n: number) => `+${n} more`,
+  // Timeline
+  timeline: "Timeline",
+  nothingScheduled: "Nothing scheduled in these days. Give a card a date to see it here.",
+  // Custom snooze
+  later: "Later…",
+  thisEvening: "This evening",
+  nextMonday: "Next Monday",
+  pickTime: "Pick a time",
+  snooze: "Snooze",
+  // Reminders before the due time
+  due: (when: string) => `Due ${when}`,
+  remindBefore: "Remind me before",
+  remindBeforeNeedsDue: "Set a due date to be reminded before it",
+  offsetLabel: (minutes: number) =>
+    minutes % 10080 === 0
+      ? `${minutes / 10080} ${minutes === 10080 ? "week" : "weeks"}`
+      : minutes % 1440 === 0
+        ? `${minutes / 1440} ${minutes === 1440 ? "day" : "days"}`
+        : minutes % 60 === 0
+          ? `${minutes / 60} ${minutes === 60 ? "hour" : "hours"}`
+          : `${minutes} min`,
+  // Habits
+  habit: "Habit",
+  habitHint: "Track a streak for this repeating card",
+  habitNeedsRepeat: "Make the card repeat to track it as a habit",
+  habits: "Habits",
+  streak: (n: number) => `${n} in a row`,
+  dayDone: "Done",
+  dayMissed: "Not done",
+  // Focus timer
+  focus: "Focus",
+  startFocus: (minutes: number) => `Focus ${minutes} min`,
+  stopFocus: "Stop",
+  focusing: "Focusing",
+  focusLeft: (clock: string) => `${clock} left`,
+  focusStats: (sessions: number, minutes: number) =>
+    sessions === 0 && minutes === 0
+      ? "No focus sessions yet"
+      : `${sessions} ${sessions === 1 ? "session" : "sessions"} · ${minutes} min`,
+  focusDone: "Focus session done",
+  focusAgain: (minutes: number) => `${minutes} more`,
+  markDone: "Mark done",
+  focusOn: (title: string) => `Focus on ${title}`,
+  // Evening recap
+  recapTitle: (done: number, open: number) => `Your day · ${done} done, ${open} open`,
+  recapDone: "Done today",
+  recapOpen: "Still open",
+  // Settings
+  settingsTitle: "Time",
+  recap: "Evening recap",
+  recapHint: "After 19:00, a toast with what you finished today and what is still open.",
+};

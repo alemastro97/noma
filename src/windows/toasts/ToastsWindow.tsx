@@ -14,6 +14,8 @@ import type { Item, ReminderToast } from "../../api/types";
 import { desktopCopy } from "../../copy";
 import glass from "../shared/glass.module.css";
 import { FiledCard } from "./FiledCard";
+import { RECAP_TOAST, isBeforeToast, isFocusToast } from "../../api/time";
+import { BeforeToast, FocusDoneToast, RecapToast, SnoozeLater } from "./TimeToasts";
 import styles from "./toasts.module.css";
 import { whenLabel } from "./when";
 
@@ -57,15 +59,32 @@ export function ToastsWindow() {
       {toasts.map((t) => {
         const first = t.items[0];
         if (t.filed) return <FiledCard key={t.id} toast={t} onResize={remeasure} />;
+        if (t.id === RECAP_TOAST) return <RecapToast key={t.id} toast={t} />;
+        if (isFocusToast(t.id) && first)
+          return <FocusDoneToast key={t.id} toast={t} item={first} />;
+        if (isBeforeToast(t.id) && first)
+          return <BeforeToast key={t.id} toast={t} item={first} now={now} onResize={remeasure} />;
         if (t.brief) return <BriefToast key={t.id} toast={t} />;
         if (t.missed) return <MissedToast key={t.id} toast={t} />;
-        return first ? <ReminderCard key={t.id} toastId={t.id} item={first} now={now} /> : null;
+        return first ? (
+          <ReminderCard key={t.id} toastId={t.id} item={first} now={now} onResize={remeasure} />
+        ) : null;
       })}
     </div>
   );
 }
 
-function ReminderCard({ toastId, item, now }: { toastId: string; item: Item; now: Date }) {
+function ReminderCard({
+  toastId,
+  item,
+  now,
+  onResize,
+}: {
+  toastId: string;
+  item: Item;
+  now: Date;
+  onResize: () => void;
+}) {
   return (
     <section className={`${glass.glass} ${styles.toast}`} aria-label="Reminder">
       <Icon />
@@ -97,6 +116,7 @@ function ReminderCard({ toastId, item, now }: { toastId: string; item: Item; now
             {desktopCopy.done}
           </button>
         </div>
+        <SnoozeLater itemId={item.id} onResize={onResize} />
       </div>
       <button
         type="button"

@@ -21,6 +21,7 @@ import { cardVersion } from "../../stores/cards";
 import { NotesField } from "../Cards/NotesField";
 import { Subtasks } from "../Cards/Subtasks";
 import styles from "./DetailPanel.module.css";
+import { TimeSection } from "./TimeSection";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -260,6 +261,8 @@ function Editor({ item }: { item: Item }) {
           ))}
         </select>
       </Field>
+
+      <TimeSection item={item} />
 
       <Field label={detailCopy.project}>
         <select

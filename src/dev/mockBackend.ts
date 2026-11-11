@@ -17,8 +17,8 @@ import type {
 import { handleOrganize, NOT_HANDLED } from "./mock/organize";
 import { handleSemantic } from "./mock/semantic";
 import { handleCards, NOT_HANDLED as CARDS_NOT_HANDLED } from "./mock/cards";
-
 import { handleWorkspace } from "./mock/workspace";
+import { NOT_HANDLED as TIME_NOT_HANDLED, handleTime } from "./mock/time";
 
 type Args = Record<string, unknown>;
 
@@ -718,6 +718,8 @@ function handle(cmd: string, a: Args): unknown {
         changed,
       });
       if (ws !== undefined) return ws;
+      const time = handleTime(cmd, a);
+      if (time !== TIME_NOT_HANDLED) return time;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
     }

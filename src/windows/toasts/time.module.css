@@ -1,0 +1,84 @@
+.later {
+  align-self: flex-start;
+  margin-top: -4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+.later:hover {
+  color: var(--noma-text);
+}
+
+.laterPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-theme="light"] .laterPanel {
+  border-top-color: rgba(36, 33, 45, 0.07);
+}
+
+.pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pickChip {
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--noma-text-2);
+  font-size: 12px;
+  transition:
+    background var(--noma-fast) ease,
+    color var(--noma-fast) ease;
+}
+.pickChip:hover:not(:disabled) {
+  color: var(--noma-text);
+  background: rgba(255, 255, 255, 0.08);
+}
+.pickChip[aria-checked="true"] {
+  color: var(--noma-pale);
+  border-color: rgba(167, 139, 250, 0.5);
+  background: rgba(167, 139, 250, 0.14);
+}
+.pickChip:disabled {
+  opacity: 0.4;
+}
+[data-theme="light"] .pickChip {
+  border-color: rgba(36, 33, 45, 0.1);
+  background: rgba(36, 33, 45, 0.04);
+}
+[data-theme="light"] .pickChip[aria-checked="true"] {
+  color: var(--noma-lavender);
+}
+
+.focusIcon {
+  background: rgba(167, 139, 250, 0.12);
+  border-color: rgba(167, 139, 250, 0.3);
+  color: var(--noma-lavender);
+}
+
+.recapIcon {
+  background: rgba(121, 184, 245, 0.12);
+  border-color: rgba(121, 184, 245, 0.3);
+  color: var(--noma-project);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.groupLabel {
+  font-size: 12px;
+  color: var(--noma-text-2);
+}

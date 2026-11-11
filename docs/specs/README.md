@@ -10,6 +10,7 @@ Living specifications. One file per feature; each is updated in the same PR as t
 | [AI capture](ai-capture.md)                  | Shipped  | 2     |
 | [Desktop presence](desktop-presence.md)      | Shipped  | 3     |
 | [Workspace power tools](workspace.md)        | Shipped  | 4     |
+| [Time](time.md)                              | Shipped  | 4     |
 
 Plans live in [`../plans/`](../plans/), decisions in [`../adr/`](../adr/).
 
