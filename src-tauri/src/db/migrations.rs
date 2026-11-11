@@ -10,6 +10,7 @@ const MIGRATIONS: &[&str] = &[
     include_str!("migrations/0004_reminders.sql"),
     include_str!("migrations/0005_filing_examples.sql"),
     include_str!("migrations/0006_organize.sql"),
+    include_str!("migrations/0007_semantic.sql"),
 ];
 
 /// Applies any pending migrations and returns the schema version afterwards.

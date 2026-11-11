@@ -15,6 +15,7 @@ import type {
   Project,
 } from "../api/types";
 import { handleOrganize, NOT_HANDLED } from "./mock/organize";
+import { handleSemantic } from "./mock/semantic";
 
 type Args = Record<string, unknown>;
 
@@ -699,6 +700,8 @@ function handle(cmd: string, a: Args): unknown {
     default: {
       const organized = handleOrganize(cmd, a);
       if (organized !== NOT_HANDLED) return organized;
+      const semantic = handleSemantic(cmd, a);
+      if (semantic !== undefined) return semantic;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
     }

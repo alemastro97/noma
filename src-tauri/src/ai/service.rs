@@ -590,7 +590,7 @@ impl AiService {
     }
 
     /// One schema-constrained completion outside the capture queue (organize
-    /// features: re-sort, break down, summaries). Starts the model if needed.
+    /// features: re-sort, break down, summaries; Ask NOMA). Starts the model if needed.
     pub async fn complete_json(
         &self,
         system: &str,

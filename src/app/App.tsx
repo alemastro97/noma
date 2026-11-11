@@ -5,6 +5,8 @@ import { Onboarding } from "../components/Onboarding/Onboarding";
 import type { Board, ItemFilter, Project } from "../api/types";
 import { copy, organizeCopy } from "../copy";
 import { CommandPalette } from "../components/CommandPalette/CommandPalette";
+import { AskNoma } from "../components/AskNoma/AskNoma";
+import { useAskStore } from "../stores/ask";
 import { DetailPanel } from "../components/DetailPanel/DetailPanel";
 import { Header } from "../components/Header/Header";
 import { QuickAdd } from "../components/QuickAdd/QuickAdd";
@@ -146,6 +148,7 @@ export function App() {
           plain={target.kind === "settings" || target.kind === "review"}
           onCapture={() => useUiStore.getState().openQuickAdd()}
           onSearch={() => useUiStore.getState().setPaletteOpen(true)}
+          onAsk={() => useAskStore.getState().openAsk()}
         />
         <div className={styles.content}>
           <Workspace target={target} />
@@ -154,6 +157,7 @@ export function App() {
       </main>
       <QuickAdd />
       <CommandPalette />
+      <AskNoma />
       <Toasts />
       {onboarding && <Onboarding onDone={() => setOnboarding(false)} />}
     </div>

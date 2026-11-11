@@ -1,5 +1,5 @@
-import { Plus, Search } from "lucide-react";
-import { copy } from "../../copy";
+import { Plus, Search, Sparkles } from "lucide-react";
+import { copy, semanticCopy } from "../../copy";
 import { AiStatusChip } from "./AiStatusChip";
 import styles from "./Header.module.css";
 import { ViewSwitcher } from "./ViewSwitcher";
@@ -13,9 +13,19 @@ interface HeaderProps {
   plain?: boolean;
   onCapture?: () => void;
   onSearch?: () => void;
+  /** Opens Ask NOMA; the button is shown only when set. */
+  onAsk?: () => void;
 }
 
-export function Header({ title, count, color, plain = false, onCapture, onSearch }: HeaderProps) {
+export function Header({
+  title,
+  count,
+  color,
+  plain = false,
+  onCapture,
+  onSearch,
+  onAsk,
+}: HeaderProps) {
   return (
     <header className={styles.header} data-tauri-drag-region>
       <div className={styles.titleGroup}>
@@ -40,6 +50,18 @@ export function Header({ title, count, color, plain = false, onCapture, onSearch
           />
           <span className={styles.meta}>{copy.searchHint}</span>
         </label>
+        {onAsk && (
+          <button
+            type="button"
+            className={styles.aiChip}
+            onClick={onAsk}
+            title={semanticCopy.askHint}
+            aria-label={semanticCopy.askHint}
+          >
+            <Sparkles size={15} strokeWidth={1.75} aria-hidden="true" />
+            <span>{semanticCopy.ask}</span>
+          </button>
+        )}
         <button type="button" className={styles.capture} onClick={onCapture}>
           <Plus size={15} strokeWidth={2} aria-hidden="true" />
           {copy.capture}

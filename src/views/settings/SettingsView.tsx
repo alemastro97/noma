@@ -19,6 +19,7 @@ import { NomaOrb } from "../../components/NomaOrb";
 import { aiStatusLabel, useAiStore } from "../../stores/ai";
 import { readTheme, setTheme, type Theme } from "../../theme/theme";
 import styles from "./Settings.module.css";
+import { SemanticSection } from "./SemanticSection";
 
 function Segmented<T extends string>({
   value,
@@ -488,6 +489,7 @@ export function SettingsView() {
         </section>
 
         <VoiceSection />
+        <SemanticSection />
         <DesktopSection />
         <DataSection />
 

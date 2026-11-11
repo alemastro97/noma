@@ -12,7 +12,8 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 - **Weekly review.** A new Review page: done this week, overdue, forgotten (30+ days untouched) and a three-sentence summary.
 - **Tags are reused.** Captures can pick up your existing tags; NOMA never invents new ones.
 - **Bigger model option.** Qwen3 8B for Macs with 16 GB or more, with its memory need shown in Settings.
-
+- **Search by meaning.** An optional small model (EmbeddingGemma, 334 MB, on your Mac) indexes your cards in the background; the ⌘K palette adds _Related_ cards that match what you mean, not only the exact words. Settings → Search by meaning.
+- **Ask NOMA.** Ask a question about your cards (header _Ask_ button or the palette) and get a short answer from the local model, citing the cards it used; click a citation to open the card.
 - **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.
 - **Morning brief.** Once a day, a small note with what is on today.

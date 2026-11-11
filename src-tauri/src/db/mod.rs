@@ -3,6 +3,7 @@
 
 pub mod boards;
 pub mod captures;
+pub mod embeddings;
 pub mod error;
 pub mod filing;
 pub mod items;

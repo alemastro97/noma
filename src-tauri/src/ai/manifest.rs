@@ -56,11 +56,44 @@ pub struct SpeechSpec {
     pub recommended: bool,
 }
 
+/// A text-embedding GGUF served by `llama-server --embedding` (semantic search).
+#[derive(Deserialize, Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct EmbeddingSpec {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub file: String,
+    pub url: String,
+    pub sha256: String,
+    pub size_bytes: u64,
+    pub ram_gb: f32,
+    pub context_size: u32,
+    /// Prepended to search queries (the model's retrieval prompt).
+    #[serde(default)]
+    pub query_prefix: String,
+    /// Prepended to indexed card text.
+    #[serde(default)]
+    pub document_prefix: String,
+    pub recommended: bool,
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Manifest {
     pub server: ServerSpec,
     pub models: Vec<ModelSpec>,
     pub speech: Vec<SpeechSpec>,
+    #[serde(default)]
+    pub embedding: Vec<EmbeddingSpec>,
+}
+
+/// The embedding model used for the semantic index.
+pub fn embedding_model() -> Option<&'static EmbeddingSpec> {
+    let m = manifest();
+    m.embedding
+        .iter()
+        .find(|x| x.recommended)
+        .or(m.embedding.first())
 }
 
 pub fn manifest() -> &'static Manifest {

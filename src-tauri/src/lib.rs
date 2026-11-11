@@ -7,6 +7,7 @@ pub mod organize;
 pub mod reminders;
 #[cfg(debug_assertions)]
 mod selftest;
+pub mod semantic;
 pub mod shortcuts;
 pub mod state;
 mod tray;
@@ -82,6 +83,13 @@ pub fn run() {
             let ai_service = AiService::new(app.handle().clone(), paths);
             app.manage(Arc::clone(&ai_service));
             tauri::async_runtime::spawn(ai_service.run_worker());
+
+            let semantic = semantic::SemanticService::new(
+                app.handle().clone(),
+                ai::Paths::new(&app.path().app_data_dir()?),
+            );
+            app.manage(Arc::clone(&semantic));
+            tauri::async_runtime::spawn(semantic.run());
 
             let voice = VoiceService::new(app.handle().clone());
             app.manage(Arc::clone(&voice));
@@ -209,6 +217,15 @@ pub fn run() {
             organize::commands::organize_next_action,
             organize::commands::organize_review,
             organize::commands::organize_review_summary,
+            // semantic
+            commands::semantic::semantic_state,
+            commands::semantic::semantic_configure,
+            commands::semantic::semantic_download,
+            commands::semantic::semantic_cancel_download,
+            commands::semantic::semantic_remove,
+            commands::semantic::semantic_reindex,
+            commands::semantic::semantic_search,
+            commands::semantic::ask_noma,
         ])
         .build(tauri::generate_context!())
         .expect("error while building NOMA")
@@ -226,6 +243,9 @@ pub fn run() {
             tauri::RunEvent::Exit => {
                 if let Some(ai) = app.try_state::<Arc<AiService>>() {
                     ai.kill_server_now();
+                }
+                if let Some(sem) = app.try_state::<Arc<semantic::SemanticService>>() {
+                    sem.kill_server_now();
                 }
                 // Whisper's Metal device asserts at process exit if a model is still
                 // loaded, which macOS reports as a crash: free it first.
