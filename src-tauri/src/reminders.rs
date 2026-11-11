@@ -184,16 +184,17 @@ impl Reminders {
                 }
             }
         }
+        let lang = crate::i18n::current(&self.app);
         for item in &fresh {
-            self.notify_native(&item.title, "Reminder from NOMA");
+            self.notify_native(&item.title, lang.reminder_body());
         }
         if !missed.is_empty() {
             let body = if missed.len() == 1 {
                 missed[0].title.clone()
             } else {
-                format!("{} reminders while you were away", missed.len())
+                lang.away_body(missed.len())
             };
-            self.notify_native("While you were away", &body);
+            self.notify_native(lang.away_title(), &body);
         }
         self.publish();
         next
@@ -222,12 +223,13 @@ impl Reminders {
         if items.is_empty() {
             return;
         }
+        let lang = crate::i18n::current(&self.app);
         let body = if items.len() == 1 {
             items[0].title.clone()
         } else {
-            format!("{} and {} more", items[0].title, items.len() - 1)
+            lang.brief_body(&items[0].title, items.len() - 1)
         };
-        self.notify_native("Today in NOMA", &body);
+        self.notify_native(lang.brief_title(), &body);
         self.push(Toast {
             id: BRIEF_ID.into(),
             items,

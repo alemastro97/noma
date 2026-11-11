@@ -68,9 +68,19 @@ export const FrameNode = memo(function FrameNode({ data }: NodeProps<FrameNodeTy
           <span
             className={styles.label}
             title={workspaceCopy.groupRename}
+            role="button"
+            tabIndex={0}
+            aria-label={`${workspaceCopy.groupRename}: ${group.label}`}
             onDoubleClick={(e) => {
               e.stopPropagation();
               setEdit(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === "F2") {
+                e.preventDefault();
+                e.stopPropagation();
+                setEdit(true);
+              }
             }}
           >
             {group.label}

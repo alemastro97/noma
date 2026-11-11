@@ -9,6 +9,7 @@ import { selectCard } from "../../stores/selection";
 import { useUiStore } from "../../stores/ui";
 import { useWorkspaceData } from "../useWorkspace";
 import styles from "./Graph.module.css";
+import { prefersReducedMotion } from "../../lib/motion";
 
 const MAX_LABEL = 28;
 const MIN_ZOOM = 0.3;
@@ -80,6 +81,19 @@ export function GraphView({ empty }: { empty?: ReactNode }) {
   const kick = (to = 0.8) => {
     alpha.current = Math.max(alpha.current, to);
     if (raf.current !== null) return;
+    // Reduced motion: settle the layout in one frame and draw only the result.
+    if (prefersReducedMotion()) {
+      raf.current = requestAnimationFrame(() => {
+        for (let i = 0; i < 600 && alpha.current > 0.02; i++) {
+          const moved = tick(nodes, edges, alpha.current);
+          alpha.current *= 0.985;
+          if (moved <= 0.05) break;
+        }
+        raf.current = null;
+        setFrame((f) => f + 1);
+      });
+      return;
+    }
     const loop = () => {
       const moved = tick(nodes, edges, alpha.current);
       alpha.current *= 0.985;

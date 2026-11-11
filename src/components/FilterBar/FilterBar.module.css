@@ -223,3 +223,6 @@
   color: var(--noma-text);
   background: var(--noma-surface);
 }
+.nameInput:focus-visible {
+  border-color: var(--noma-lavender);
+}

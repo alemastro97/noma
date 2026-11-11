@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { onItemsChanged } from "../api/events";
 import { restoreItem, trashItem } from "../api/cards";
 import * as api from "../api/items";
-import { cardsCopy } from "../copy";
+import { cardsCopy, uiCopy } from "../copy";
 import {
   EMPTY_COUNTS,
   type Counts,
@@ -161,7 +161,7 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
       const updated = await api.completeItem(id);
       set((s) => replaceOne(s, updated));
       if (before?.recurrence && updated.status !== "done") {
-        useToastsStore.getState().push({ message: "Done for now — next one scheduled." });
+        useToastsStore.getState().push({ message: uiCopy.recurringDone });
       }
     } catch (err) {
       if (before) set((s) => replaceOne(s, before));
@@ -227,7 +227,7 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
     if (opts.quiet) return;
     useToastsStore.getState().push({
       message: cardsCopy.trashed(item.title),
-      action: { label: "Undo", run: () => void cancelPendingDelete(id) },
+      action: { label: uiCopy.undo, run: () => void cancelPendingDelete(id) },
     });
   },
 

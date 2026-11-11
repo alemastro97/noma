@@ -119,7 +119,10 @@ impl TimeService {
             (fired, next)
         };
         for (item, minutes) in fired {
-            self.notify_native(&item.title, &before_label(minutes));
+            self.notify_native(
+                &item.title,
+                &crate::i18n::current(&self.app).due_in(minutes),
+            );
             self.push(Toast {
                 id: format!("pre:{}", item.id),
                 items: vec![item],
@@ -155,10 +158,8 @@ impl TimeService {
         }
         let done = items.iter().filter(|i| i.status == Status::Done).count();
         let open = items.len() - done;
-        self.notify_native(
-            "Your day in NOMA",
-            &format!("{done} done, {open} still open"),
-        );
+        let lang = crate::i18n::current(&self.app);
+        self.notify_native(lang.recap_title(), &lang.recap_body(done, open));
         self.push(Toast {
             id: RECAP_ID.into(),
             items,
@@ -187,7 +188,7 @@ impl TimeService {
         });
         self.set_focus(None);
         if let Some(item) = item {
-            self.notify_native("Focus session done", &item.title);
+            self.notify_native(crate::i18n::current(&self.app).focus_done(), &item.title);
             self.push(Toast {
                 id: format!("focus:{}", item.id),
                 items: vec![item],
@@ -220,21 +221,6 @@ impl TimeService {
             }
         }
     }
-}
-
-/// "1 hour before" style body for a "before" notification.
-fn before_label(minutes: i64) -> String {
-    let (n, unit) = if minutes % (60 * 24 * 7) == 0 {
-        (minutes / (60 * 24 * 7), "week")
-    } else if minutes % (60 * 24) == 0 {
-        (minutes / (60 * 24), "day")
-    } else if minutes % 60 == 0 {
-        (minutes / 60, "hour")
-    } else {
-        (minutes, "minute")
-    };
-    let s = if n == 1 { "" } else { "s" };
-    format!("Due in {n} {unit}{s}")
 }
 
 // ── Commands ─────────────────────────────────────────────────────────────
@@ -381,13 +367,13 @@ pub async fn focus_stop(
 
 #[cfg(test)]
 mod tests {
-    use super::before_label;
+    use crate::i18n::Lang;
 
     #[test]
     fn before_labels_use_the_largest_whole_unit() {
-        assert_eq!(before_label(60), "Due in 1 hour");
-        assert_eq!(before_label(24 * 60), "Due in 1 day");
-        assert_eq!(before_label(15), "Due in 15 minutes");
-        assert_eq!(before_label(2 * 24 * 60 * 7), "Due in 2 weeks");
+        assert_eq!(Lang::En.due_in(60), "Due in 1 hour");
+        assert_eq!(Lang::En.due_in(24 * 60), "Due in 1 day");
+        assert_eq!(Lang::En.due_in(15), "Due in 15 minutes");
+        assert_eq!(Lang::En.due_in(2 * 24 * 60 * 7), "Due in 2 weeks");
     }
 }

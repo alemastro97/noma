@@ -4,6 +4,8 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- **Italian interface.** Settings → Appearance → _Interface language_: Match system, English or Italiano. Every window, the menu-bar menu and notifications switch live.
+- **Accessibility pass.** Visible focus everywhere, labelled icon buttons, modal dialogs that keep focus inside and return it, keyboard-operable segmented settings and canvas group labels, Reduce motion respected by the graph and canvas zoom, and darker light-theme text tokens for 4.5:1 contrast.
 - **Re-sort Inbox.** One button files captured Inbox cards again with your current projects, boards and corrections, and tells you how many moved.
 - **Duplicate hints.** A capture that repeats an open card shows "Looks like …", with Merge or Keep both in the card details.
 - **Break down.** Turn a task into 3–7 linked next-step tasks in the same place.

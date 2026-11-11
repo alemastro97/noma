@@ -1,5 +1,5 @@
 import { Check, Download, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
 import type { ModelInfo, SpeechInfo } from "../../api/types";
 import type { BackupInfo } from "../../api/types";
 import {
@@ -24,6 +24,13 @@ import { TimeSettings } from "./TimeSettings";
 import { VoiceExtrasSection } from "./VoiceExtrasSection";
 import { DesktopPresenceSettings } from "./DesktopPresenceSettings";
 import { DataToolsSection } from "./DataToolsSection";
+import { intlLocale } from "../../lib/dates";
+import {
+  LANGUAGE_PREFS,
+  setLanguage as setInterfaceLanguage,
+  useLanguagePref,
+  type LanguagePref,
+} from "../../i18n/locale";
 
 function Segmented<T extends string>({
   value,
@@ -36,14 +43,28 @@ function Segmented<T extends string>({
   onChange: (v: T) => void;
   label: string;
 }) {
+  // Radio-group keyboard pattern: one tab stop, arrows move the choice.
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const i = options.findIndex((o) => o.value === value);
+    const next = options[(i + step + options.length) % options.length];
+    if (!next) return;
+    onChange(next.value);
+    const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>("button");
+    buttons[options.indexOf(next)]?.focus();
+  };
+  const selected = options.some((o) => o.value === value);
   return (
-    <div className={styles.segmented} role="radiogroup" aria-label={label}>
-      {options.map((o) => (
+    <div className={styles.segmented} role="radiogroup" aria-label={label} onKeyDown={onKeyDown}>
+      {options.map((o, i) => (
         <button
           key={o.value}
           type="button"
           role="radio"
           aria-checked={o.value === value}
+          tabIndex={o.value === value || (!selected && i === 0) ? 0 : -1}
           className={styles.segment}
           onClick={() => onChange(o.value)}
         >
@@ -376,7 +397,10 @@ function DataSection() {
       .catch(() => undefined);
   }, []);
   const last = info?.lastAt
-    ? new Date(info.lastAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+    ? new Date(info.lastAt).toLocaleString(intlLocale(), {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
     : null;
   return (
     <section className={styles.section} aria-labelledby="data-title">
@@ -421,6 +445,7 @@ export function SettingsView() {
   const orb = useAiStore((s) => s.orb);
   const configure = useAiStore((s) => s.configure);
   const [theme, setThemeState] = useState<Theme>(readTheme);
+  const languagePref = useLanguagePref();
 
   return (
     <div className={styles.scroll}>
@@ -505,19 +530,39 @@ export function SettingsView() {
           <h2 id="appearance-title" className={styles.h2}>
             {t.appearance}
           </h2>
-          <Segmented<Theme>
-            label={t.appearance}
-            value={theme}
-            options={[
-              { value: "dark", label: t.theme.dark },
-              { value: "light", label: t.theme.light },
-              { value: "system", label: t.theme.system },
-            ]}
-            onChange={(v) => {
-              setTheme(v);
-              setThemeState(v);
-            }}
-          />
+          <div className={styles.row}>
+            <span className={styles.toggleText}>
+              <span className={styles.toggleLabel}>{t.themeLabel}</span>
+            </span>
+            <Segmented<Theme>
+              label={t.themeLabel}
+              value={theme}
+              options={[
+                { value: "dark", label: t.theme.dark },
+                { value: "light", label: t.theme.light },
+                { value: "system", label: t.theme.system },
+              ]}
+              onChange={(v) => {
+                setTheme(v);
+                setThemeState(v);
+              }}
+            />
+          </div>
+          <div className={styles.row}>
+            <span className={styles.toggleText}>
+              <span className={styles.toggleLabel}>{t.interfaceLanguage}</span>
+              <span className={styles.meta}>{t.interfaceLanguageHint}</span>
+            </span>
+            <Segmented<LanguagePref>
+              label={t.interfaceLanguage}
+              value={languagePref}
+              options={LANGUAGE_PREFS.map((value) => ({
+                value,
+                label: t.interfaceLanguages[value],
+              }))}
+              onChange={setInterfaceLanguage}
+            />
+          </div>
         </section>
 
         <section className={styles.section} aria-labelledby="about-title">

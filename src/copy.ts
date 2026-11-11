@@ -1,5 +1,8 @@
-/** All user-facing strings. English only in v1; kept in one module so i18n can be added later. */
-export const copy = {
+/** All user-facing strings, English (the source locale). Italian lives in copy.it.ts; the exports below follow the active interface language. */
+import { it } from "./copy.it";
+import { getLocale, type Locale } from "./i18n/locale";
+
+const copy_en = {
   appName: "NOMA",
   tagline: "YOUR SECOND MIND.",
   nav: {
@@ -71,9 +74,9 @@ export const copy = {
   },
 } as const;
 
-export type EmptyKind = keyof typeof copy.empty;
+export type EmptyKind = keyof typeof copy_en.empty;
 
-export const kindLabel = {
+const kindLabel_en = {
   task: "Task",
   reminder: "Reminder",
   note: "Note",
@@ -82,21 +85,21 @@ export const kindLabel = {
   event: "Event",
 } as const;
 
-export const statusLabel = {
+const statusLabel_en = {
   inbox: "Inbox",
   next: "Next",
   doing: "Doing",
   done: "Done",
 } as const;
 
-export const priorityLabel = {
+const priorityLabel_en = {
   low: "Low",
   normal: "Normal",
   high: "High",
   urgent: "Urgent",
 } as const;
 
-export const cardCopy = {
+const cardCopy_en = {
   open: "Open",
   duplicate: "Duplicate",
   delete: "Delete",
@@ -107,7 +110,7 @@ export const cardCopy = {
   repeats: "Repeats",
 } as const;
 
-export const listCopy = {
+const listCopy_en = {
   overdue: "Overdue",
   morning: "Morning",
   afternoon: "Afternoon",
@@ -120,7 +123,7 @@ export const listCopy = {
   checked: "Checked",
 } as const;
 
-export const quickAddCopy = {
+const quickAddCopy_en = {
   placeholder: "What's on your mind?",
   autoPlaceholder: "Say it like you'd say it — “call Marta tomorrow at 10”",
   auto: "Auto",
@@ -130,7 +133,7 @@ export const quickAddCopy = {
   add: "Add",
 } as const;
 
-export const hintCopy = {
+const hintCopy_en = {
   checkDate: (phrase: string) => `Check date · ${phrase}`,
   checkThis: "Check this",
   newProject: (name: string) => `New project? ${name}`,
@@ -138,7 +141,7 @@ export const hintCopy = {
   reading: "Reading…",
 } as const;
 
-export const settingsCopy = {
+const settingsCopy_en = {
   title: "Settings",
   aiTitle: "On-device AI",
   aiLead:
@@ -212,11 +215,16 @@ export const settingsCopy = {
   shortcutCapture: "Quick capture",
   appearance: "Appearance",
   theme: { dark: "Dark", light: "Light", system: "Match system" },
+  themeLabel: "Theme",
+  interfaceLanguage: "Interface language",
+  interfaceLanguageHint:
+    "The language of menus, buttons and notifications. What you say or type is never translated.",
+  interfaceLanguages: { system: "Match system", en: "English", it: "Italiano" },
   about: "About",
   version: "NOMA — your second mind.",
 } as const;
 
-export const detailCopy = {
+const detailCopy_en = {
   close: "Close",
   title: "Title",
   notes: "Notes",
@@ -238,7 +246,7 @@ export const detailCopy = {
   clear: "Clear",
 } as const;
 
-export const paletteCopy = {
+const paletteCopy_en = {
   placeholder: "Search cards or type a command…",
   goTo: "Go to",
   actions: "Actions",
@@ -246,14 +254,14 @@ export const paletteCopy = {
   noResults: "Nothing matches. Press ↵ to add it as a task.",
 } as const;
 
-export const sidebarCopy = {
+const sidebarCopy_en = {
   newProject: "New project",
   newBoard: "New board",
   projectPlaceholder: "Project name",
   boardPlaceholder: "Board name",
 } as const;
 
-export const desktopCopy = {
+const desktopCopy_en = {
   listening: "Listening…",
   transcribing: "Transcribing…",
   editing: "Edit before saving",
@@ -292,7 +300,7 @@ export const desktopCopy = {
   missed: (n: number) => `While you were away · ${n} ${n === 1 ? "reminder" : "reminders"}`,
 };
 
-export const onboardingCopy = {
+const onboardingCopy_en = {
   welcomeTitle: "Meet NOMA.",
   welcomeBody:
     "Your second mind. Say or type anything — tasks, reminders, ideas — and NOMA files it for you. Everything stays on this Mac.",
@@ -317,7 +325,7 @@ export const onboardingCopy = {
   step: (i: number, n: number) => `${i} of ${n}`,
 };
 
-export const organizeCopy = {
+const organizeCopy_en = {
   aiFailed: "NOMA couldn't do that right now. Check that the AI model is set up in Settings.",
   resort: {
     button: "Re-sort Inbox",
@@ -368,7 +376,7 @@ export const organizeCopy = {
   },
 } as const;
 
-export const semanticCopy = {
+const semanticCopy_en = {
   // Command palette
   askCommand: "Ask NOMA",
   askAbout: (q: string) => `Ask NOMA: “${q}”`,
@@ -404,7 +412,7 @@ export const semanticCopy = {
   rebuild: "Rebuild index",
 };
 
-export const cardsCopy = {
+const cardsCopy_en = {
   pin: "Pin",
   unpin: "Unpin",
   pinned: "Pinned",
@@ -476,7 +484,7 @@ export const cardsCopy = {
     n > 0 ? `Deleted “${name}” · ${n} ${n === 1 ? "card" : "cards"} in Trash` : `Deleted “${name}”`,
 } as const;
 
-export const workspaceCopy = {
+const workspaceCopy_en = {
   // Multi-select
   selected: (n: number) => `${n} selected`,
   bulkDone: "Done",
@@ -545,7 +553,7 @@ export const workspaceCopy = {
   },
 } as const;
 
-export const timeCopy = {
+const timeCopy_en = {
   // Calendar
   calendar: "Calendar",
   month: "Month",
@@ -609,7 +617,7 @@ export const timeCopy = {
   recapHint: "After 19:00, a toast with what you finished today and what is still open.",
 };
 
-export const voiceCopy = {
+const voiceCopy_en = {
   // Toast confirming a voice command
   markedDone: "Marked done",
   movedTo: (when: string) => `Moved to ${when}`,
@@ -640,7 +648,7 @@ export const voiceCopy = {
 };
 
 /** Desktop presence extras: orb look, menu-bar count, quiet hours, panel search/capture, extra shortcuts. */
-export const desktopPresenceCopy = {
+const desktopPresenceCopy_en = {
   menubarCount: "Count in the menu bar",
   menubarCountHint: "Shows how many things are left today next to the NOMA symbol.",
   orbSize: "Orb size",
@@ -672,7 +680,7 @@ export const desktopPresenceCopy = {
   captureSaved: "Saved to NOMA",
 };
 
-export const dataCopy = {
+const dataCopy_en = {
   restoreTitle: "Restore a backup",
   restoreLead:
     "Go back to an earlier state of all your cards. NOMA backs up the current state first, so a restore can be undone too.",
@@ -781,3 +789,218 @@ export const dataCopy = {
     "The noma-mcp program isn't next to NOMA yet. In a development build, run: cargo build --bin noma-mcp",
   mcpCaptureNote: "Captures from assistants are picked up within about 30 seconds while NOMA runs.",
 } as const;
+
+/** Strings that used to live inline: region labels, palette commands, status chips, toasts. */
+const uiCopy_en = {
+  regions: {
+    settings: "Settings",
+    workspace: "Workspace",
+    mainNav: "Main",
+    cardDetails: "Card details",
+    commandPalette: "Command palette",
+    quickAdd: "Quick add",
+    viewMode: "View mode",
+    cards: "Cards",
+    quickCapture: "Quick capture",
+    panel: "NOMA panel",
+    reminder: "Reminder",
+    missedReminders: "Missed reminders",
+    today: "Today",
+    captureFiled: "Capture filed",
+    voiceCapture: "Voice capture",
+    editTranscript: "Edit transcript",
+    type: "Type",
+  },
+  dismiss: "Dismiss",
+  undo: "Undo",
+  retry: "Retry",
+  close: "Close",
+  add: "Add",
+  duplicate: "Duplicate",
+  delete: "Delete",
+  captureFailed: "Couldn't read that capture. It's kept as a note.",
+  recurringDone: "Done for now — next one scheduled.",
+  removeTag: (tag: string) => `Remove ${tag}`,
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
+  needsCheck: "Needs a quick check",
+  ai: {
+    captured: "Captured",
+    idle: "Idle",
+    downloading: (pct: number) => `Downloading ${pct}%`,
+    wakingUp: "Waking up",
+    thinking: "Thinking",
+    needsAttention: "Needs attention",
+    waiting: (n: number) => `${n} waiting`,
+    setUp: "Set up AI",
+  },
+  palette: {
+    goTo: (place: string) => `Go to ${place}`,
+    newKind: {
+      task: "New task",
+      reminder: "New reminder",
+      note: "New note",
+      idea: "New idea",
+      project_ref: "New project",
+      event: "New event",
+    },
+    canvasView: "Canvas view",
+    kanbanView: "Kanban view",
+    listView: "List view",
+    toggleSidebar: "Toggle sidebar",
+    themeDark: "Theme: Dark",
+    themeLight: "Theme: Light",
+    themeSystem: "Theme: Match system",
+    languageEnglish: "Language: English",
+    languageItalian: "Language: Italiano",
+    languageSystem: "Language: Match system",
+    loadSample: "Load sample data",
+    sampleLoaded: "Sample data loaded.",
+    sampleNeedsEmpty: "Sample data needs an empty database.",
+  },
+} as const;
+
+/** Words used by the date helpers in lib/dates.ts. */
+const dateCopy_en = {
+  /** BCP 47 locale for weekday and time formatting. */
+  intl: "en-GB",
+  /** Locale for short month names ("Apr"). */
+  intlMonth: "en-US",
+  today: "Today",
+  tomorrow: "Tomorrow",
+  yesterday: "Yesterday",
+  weekdayDay: (weekday: string, day: number) => `${weekday} ${day}`,
+  monthDay: (month: string, day: number) => `${month} ${day}`,
+  monthDayYear: (month: string, day: number, year: number) => `${month} ${day}, ${year}`,
+  units: { m: "m", h: "h", d: "d" },
+  now: "now",
+  inFuture: (span: string) => `in ${span}`,
+  inPast: (span: string) => `${span} ago`,
+  editedJustNow: "edited just now",
+  editedAgo: (span: string) => `edited ${span} ago`,
+  editedYesterday: "edited yesterday",
+  editedOn: (day: string) => `edited ${day}`,
+};
+
+function ordinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]!);
+}
+
+/** Repeat presets and plain-language descriptions of repeat rules (lib/recurrence.ts). */
+const recurrenceCopy_en = {
+  presets: {
+    none: "Doesn't repeat",
+    daily: "Every day",
+    weekdays: "Every weekday",
+    weekly: "Every week",
+    monthly: "Every month",
+    yearly: "Every year",
+  },
+  days: {
+    MO: "Monday",
+    TU: "Tuesday",
+    WE: "Wednesday",
+    TH: "Thursday",
+    FR: "Friday",
+    SA: "Saturday",
+    SU: "Sunday",
+  } as Record<string, string>,
+  every: (unit: "day" | "week" | "month" | "year", n: number) =>
+    n > 1 ? `every ${n} ${unit}s` : `every ${unit}`,
+  everyWeekday: "every weekday",
+  everyDay: (day: string) => `every ${day}`,
+  onDays: (every: string, days: string) => `${every} on ${days}`,
+  onMonthDay: (every: string, n: number) => `${every} on the ${ordinal(n)}`,
+  times: (n: number) => `, ${n} times`,
+  repeats: "repeats",
+};
+
+// ── Locales ─────────────────────────────────────────────────────────────
+
+const en = {
+  copy: copy_en,
+  kindLabel: kindLabel_en,
+  statusLabel: statusLabel_en,
+  priorityLabel: priorityLabel_en,
+  cardCopy: cardCopy_en,
+  listCopy: listCopy_en,
+  quickAddCopy: quickAddCopy_en,
+  hintCopy: hintCopy_en,
+  settingsCopy: settingsCopy_en,
+  detailCopy: detailCopy_en,
+  paletteCopy: paletteCopy_en,
+  sidebarCopy: sidebarCopy_en,
+  desktopCopy: desktopCopy_en,
+  onboardingCopy: onboardingCopy_en,
+  organizeCopy: organizeCopy_en,
+  semanticCopy: semanticCopy_en,
+  cardsCopy: cardsCopy_en,
+  workspaceCopy: workspaceCopy_en,
+  timeCopy: timeCopy_en,
+  voiceCopy: voiceCopy_en,
+  desktopPresenceCopy: desktopPresenceCopy_en,
+  dataCopy: dataCopy_en,
+  uiCopy: uiCopy_en,
+  dateCopy: dateCopy_en,
+  recurrenceCopy: recurrenceCopy_en,
+};
+
+/** Same shape as the English strings, with every literal widened to `string`. */
+type Widen<T> = T extends string
+  ? string
+  : T extends (...args: infer A) => infer R
+    ? (...args: A) => Widen<R>
+    : T extends object
+      ? { readonly [K in keyof T]: Widen<T[K]> }
+      : T;
+
+/** Every string in the app, for one language. `copy.it.ts` implements it in Italian. */
+export type CopyBundle = Widen<typeof en>;
+
+const bundles: Record<Locale, CopyBundle> = { en, it };
+
+/**
+ * A live view of one section: property reads go to the active language, so
+ * `copy.nav.inbox` follows the interface language without changing call sites.
+ * Read strings at render time (not at module load) so they follow a switch.
+ */
+function live<K extends keyof CopyBundle>(key: K): CopyBundle[K] {
+  const pick = () => bundles[getLocale()][key] as object;
+  return new Proxy(en[key] as object, {
+    get: (_t, p) => Reflect.get(pick(), p),
+    has: (_t, p) => Reflect.has(pick(), p),
+    ownKeys: () => Reflect.ownKeys(pick()),
+    getOwnPropertyDescriptor: (_t, p) => {
+      const d = Reflect.getOwnPropertyDescriptor(pick(), p);
+      return d && { ...d, configurable: true };
+    },
+  }) as CopyBundle[K];
+}
+
+export const copy = live("copy");
+export const kindLabel = live("kindLabel");
+export const statusLabel = live("statusLabel");
+export const priorityLabel = live("priorityLabel");
+export const cardCopy = live("cardCopy");
+export const listCopy = live("listCopy");
+export const quickAddCopy = live("quickAddCopy");
+export const hintCopy = live("hintCopy");
+export const settingsCopy = live("settingsCopy");
+export const detailCopy = live("detailCopy");
+export const paletteCopy = live("paletteCopy");
+export const sidebarCopy = live("sidebarCopy");
+export const desktopCopy = live("desktopCopy");
+export const onboardingCopy = live("onboardingCopy");
+export const organizeCopy = live("organizeCopy");
+export const semanticCopy = live("semanticCopy");
+export const cardsCopy = live("cardsCopy");
+export const workspaceCopy = live("workspaceCopy");
+export const timeCopy = live("timeCopy");
+export const voiceCopy = live("voiceCopy");
+export const desktopPresenceCopy = live("desktopPresenceCopy");
+export const dataCopy = live("dataCopy");
+export const uiCopy = live("uiCopy");
+export const dateCopy = live("dateCopy");
+export const recurrenceCopy = live("recurrenceCopy");

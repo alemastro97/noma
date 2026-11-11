@@ -14,7 +14,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShortcutLabels } from "../../hooks/useShortcuts";
 import { CalendarCheck } from "lucide-react";
-import { cardsCopy, copy, organizeCopy, sidebarCopy } from "../../copy";
+import { cardsCopy, copy, organizeCopy, sidebarCopy, uiCopy } from "../../copy";
 import { nextProjectColor } from "../../lib/colors";
 import { useHotkey } from "../../hooks/useHotkey";
 import { useItemsStore } from "../../stores/items";
@@ -37,23 +37,43 @@ const MAIN_NAV: {
   icon: React.ReactNode;
   count: "inbox" | "today" | "upcoming" | "ideas" | "notes";
 }[] = [
-  { target: { kind: "inbox" }, label: copy.nav.inbox, icon: <Inbox {...ICON} />, count: "inbox" },
-  { target: { kind: "today" }, label: copy.nav.today, icon: <Sun {...ICON} />, count: "today" },
+  {
+    target: { kind: "inbox" },
+    get label() {
+      return copy.nav.inbox;
+    },
+    icon: <Inbox {...ICON} />,
+    count: "inbox",
+  },
+  {
+    target: { kind: "today" },
+    get label() {
+      return copy.nav.today;
+    },
+    icon: <Sun {...ICON} />,
+    count: "today",
+  },
   {
     target: { kind: "upcoming" },
-    label: copy.nav.upcoming,
+    get label() {
+      return copy.nav.upcoming;
+    },
     icon: <CalendarDays {...ICON} />,
     count: "upcoming",
   },
   {
     target: { kind: "ideas" },
-    label: copy.nav.ideas,
+    get label() {
+      return copy.nav.ideas;
+    },
     icon: <Lightbulb {...ICON} />,
     count: "ideas",
   },
   {
     target: { kind: "notes" },
-    label: copy.nav.notes,
+    get label() {
+      return copy.nav.notes;
+    },
     icon: <FileText {...ICON} />,
     count: "notes",
   },
@@ -175,7 +195,7 @@ export function Sidebar() {
         </button>
       </div>
 
-      <nav className={styles.group} aria-label="Main">
+      <nav className={styles.group} aria-label={uiCopy.regions.mainNav}>
         {MAIN_NAV.map((item) => (
           <NavItem
             key={item.label}

@@ -1,26 +1,21 @@
-/** Repeat presets for the detail panel, and plain-English descriptions of rules. */
+/** Repeat presets for the detail panel, and plain-language descriptions of rules. */
+
+import { recurrenceCopy as t } from "../copy";
 
 export type RecurrencePreset = "none" | "daily" | "weekdays" | "weekly" | "monthly" | "yearly";
 
-export const RECURRENCE_PRESETS: { value: RecurrencePreset; label: string }[] = [
-  { value: "none", label: "Doesn't repeat" },
-  { value: "daily", label: "Every day" },
-  { value: "weekdays", label: "Every weekday" },
-  { value: "weekly", label: "Every week" },
-  { value: "monthly", label: "Every month" },
-  { value: "yearly", label: "Every year" },
-];
+const PRESETS: RecurrencePreset[] = ["none", "daily", "weekdays", "weekly", "monthly", "yearly"];
+
+/** Presets with their labels in the interface language (read at render time). */
+export const RECURRENCE_PRESETS: readonly { value: RecurrencePreset; readonly label: string }[] =
+  PRESETS.map((value) => ({
+    value,
+    get label() {
+      return t.presets[value];
+    },
+  }));
 
 const DAY_CODES = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"] as const;
-const DAY_NAMES: Record<string, string> = {
-  MO: "Monday",
-  TU: "Tuesday",
-  WE: "Wednesday",
-  TH: "Thursday",
-  FR: "Friday",
-  SA: "Saturday",
-  SU: "Sunday",
-};
 const WEEKDAYS = "MO,TU,WE,TH,FR";
 
 function parts(rule: string): Record<string, string> {
@@ -68,18 +63,12 @@ export function presetFor(rule: string | null): RecurrencePreset {
   }
 }
 
-function ordinal(n: number): string {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]!);
-}
-
 /** "every Monday" · "every weekday" · "every 2 weeks on Monday" · "every month on the 9th". */
 export function describeRule(rule: string | null): string {
   if (!rule) return "";
   const p = parts(rule);
   const interval = Number(p.INTERVAL ?? "1");
-  const every = (unit: string) => (interval > 1 ? `every ${interval} ${unit}s` : `every ${unit}`);
+  const every = (unit: "day" | "week" | "month" | "year") => t.every(unit, interval);
   let text: string;
   switch (p.FREQ) {
     case "DAILY":
@@ -87,28 +76,26 @@ export function describeRule(rule: string | null): string {
       break;
     case "WEEKLY": {
       if (p.BYDAY === WEEKDAYS && interval === 1) {
-        text = "every weekday";
+        text = t.everyWeekday;
         break;
       }
       const days = (p.BYDAY ?? "")
         .split(",")
         .filter(Boolean)
-        .map((d) => DAY_NAMES[d.replace(/^[+-]?\d+/, "")] ?? d);
-      if (interval === 1 && days.length === 1) text = `every ${days[0]}`;
-      else text = days.length ? `${every("week")} on ${days.join(", ")}` : every("week");
+        .map((d) => t.days[d.replace(/^[+-]?\d+/, "")] ?? d);
+      if (interval === 1 && days.length === 1) text = t.everyDay(days[0]!);
+      else text = days.length ? t.onDays(every("week"), days.join(", ")) : every("week");
       break;
     }
     case "MONTHLY":
-      text = p.BYMONTHDAY
-        ? `${every("month")} on the ${ordinal(Number(p.BYMONTHDAY))}`
-        : every("month");
+      text = p.BYMONTHDAY ? t.onMonthDay(every("month"), Number(p.BYMONTHDAY)) : every("month");
       break;
     case "YEARLY":
       text = every("year");
       break;
     default:
-      return "repeats";
+      return t.repeats;
   }
-  if (p.COUNT) text += `, ${p.COUNT} times`;
+  if (p.COUNT) text += t.times(Number(p.COUNT));
   return text;
 }

@@ -202,6 +202,7 @@ pub async fn settings_set(
         }
         "orb.enabled" => windows::show(&app, windows::ORB),
         k if k.starts_with("reminders.") => reminders.nudge(),
+        crate::i18n::LANGUAGE_SETTING => crate::i18n::on_changed(&app, &value),
         _ => {}
     }
     Ok(())

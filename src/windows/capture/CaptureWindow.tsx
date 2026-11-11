@@ -2,7 +2,7 @@ import { Check, Plus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { captureText } from "../../api/ai";
 import { panelHide } from "../../api/desktop";
-import { desktopCopy } from "../../copy";
+import { desktopCopy, uiCopy } from "../../copy";
 import { useShortcutLabels } from "../../hooks/useShortcuts";
 import glass from "../shared/glass.module.css";
 import styles from "./capture.module.css";
@@ -52,7 +52,7 @@ export function CaptureWindow() {
   return (
     <section
       className={`${glass.glass} ${styles.panel}`}
-      aria-label="Quick capture"
+      aria-label={uiCopy.regions.quickCapture}
       onKeyDown={(e) => {
         if (e.key === "Escape") {
           e.preventDefault();
@@ -69,7 +69,7 @@ export function CaptureWindow() {
         <input
           ref={inputRef}
           type="text"
-          aria-label="Quick capture"
+          aria-label={uiCopy.regions.quickCapture}
           placeholder={saved ? desktopCopy.captureSaved : desktopCopy.capturePlaceholder}
           value={value}
           autoFocus
@@ -88,7 +88,11 @@ export function CaptureWindow() {
       <div className={styles.row}>
         <span className={`${glass.chip} ${styles.small} ${styles.auto}`}>{desktopCopy.auto}</span>
         <span className={`${glass.chip} ${styles.small} ${styles.muted}`}>{desktopCopy.inbox}</span>
-        {error && <span className={styles.error}>{error}</span>}
+        {error && (
+          <span className={styles.error} role="alert">
+            {error}
+          </span>
+        )}
         <span className={`${glass.kbd} ${styles.right}`}>{keys.capture}</span>
       </div>
     </section>

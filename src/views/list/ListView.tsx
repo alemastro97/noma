@@ -1,7 +1,7 @@
 import { Bell, Flag, Pin, Repeat } from "lucide-react";
 import { memo, type KeyboardEvent, type ReactNode } from "react";
 import type { Item, Project } from "../../api/types";
-import { cardsCopy, priorityLabel } from "../../copy";
+import { cardsCopy, priorityLabel, uiCopy, cardCopy } from "../../copy";
 import { Checkbox } from "../../components/Card/Checkbox";
 import { KIND_STYLE } from "../../components/Card/kind";
 import { anchorDate, formatDue, formatTime, timeRange, toDate } from "../../lib/dates";
@@ -72,7 +72,7 @@ const Row = memo(function Row({ item, project, mode, now, selected, fresh, handl
           type="button"
           className={styles.kindBox}
           style={{ borderColor: color, color }}
-          aria-label="Mark complete"
+          aria-label={cardCopy.complete}
           onClick={(e) => {
             e.stopPropagation();
             handlers.onToggle(item.id);
@@ -89,7 +89,7 @@ const Row = memo(function Row({ item, project, mode, now, selected, fresh, handl
       )}
       {item.capturing && <span className={styles.reading}>Reading…</span>}
       {item.hint && !item.capturing && (
-        <span className={styles.hintDot} title="Needs a quick check" />
+        <span className={styles.hintDot} title={uiCopy.needsCheck} />
       )}
       {item.recurrence && (
         <span className={styles.repeat} title={describeRule(item.recurrence)}>
@@ -132,7 +132,7 @@ export function ListView({ mode, empty }: ListViewProps) {
 
   return (
     <div className={styles.scroll}>
-      <div className={styles.list} role="grid" aria-label="Cards">
+      <div className={styles.list} role="grid" aria-label={uiCopy.regions.cards}>
         {groups.length === 0 && empty}
         {groups.map((g) => (
           <section key={g.key} className={styles.group} aria-label={g.label}>

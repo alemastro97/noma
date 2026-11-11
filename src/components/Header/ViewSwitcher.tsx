@@ -1,5 +1,5 @@
 import { Spline } from "lucide-react";
-import { copy, workspaceCopy } from "../../copy";
+import { copy, workspaceCopy, uiCopy } from "../../copy";
 import { ALL_VIEW_MODES, AVAILABLE_VIEW_MODES, useUiStore, type ViewMode } from "../../stores/ui";
 import styles from "./Header.module.css";
 
@@ -8,7 +8,7 @@ export function ViewSwitcher() {
   const setViewMode = useUiStore((s) => s.setViewMode);
 
   return (
-    <div className={styles.switcher} role="group" aria-label="View mode">
+    <div className={styles.switcher} role="group" aria-label={uiCopy.regions.viewMode}>
       {ALL_VIEW_MODES.map((mode: ViewMode) => {
         const available = AVAILABLE_VIEW_MODES.includes(mode);
         const label = mode === "graph" ? workspaceCopy.viewGraph : copy.viewModes[mode];

@@ -13,7 +13,7 @@ import {
 } from "../../api/desktop";
 import type { VoicePhase, VoiceState } from "../../api/types";
 import { NomaOrb, type OrbState } from "../../components/NomaOrb";
-import { desktopCopy } from "../../copy";
+import { desktopCopy, uiCopy } from "../../copy";
 import { useShortcutLabels } from "../../hooks/useShortcuts";
 import glass from "../shared/glass.module.css";
 import styles from "./overlay.module.css";
@@ -166,22 +166,28 @@ export function OverlayWindow() {
   const live = view === "listening";
 
   return (
-    <section className={`${glass.glass} ${styles.panel}`} aria-label="Voice capture">
+    <section className={`${glass.glass} ${styles.panel}`} aria-label={uiCopy.regions.voiceCapture}>
       <div className={styles.head}>
         <NomaOrb size={64} state={ORB_FOR[view]} />
         <div className={styles.copy}>
-          {status && <span className={styles.status}>{status}</span>}
+          {status && (
+            <span className={styles.status} role="status">
+              {status}
+            </span>
+          )}
           {view === "editing" ? (
             <textarea
               ref={inputRef}
               className={styles.edit}
               value={draft}
               rows={2}
-              aria-label="Edit transcript"
+              aria-label={uiCopy.regions.editTranscript}
               onChange={(e) => setDraft(e.target.value)}
             />
           ) : message && ["empty", "unavailable", "error"].includes(view) ? (
-            <p className={styles.message}>{message}</p>
+            <p className={styles.message} role="alert">
+              {message}
+            </p>
           ) : (
             <p className={styles.transcript} aria-live="polite">
               {text || <span className={styles.placeholder}>…</span>}

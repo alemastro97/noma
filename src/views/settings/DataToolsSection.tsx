@@ -30,10 +30,11 @@ import { dataCopy as t } from "../../copy";
 import { useProjectsStore } from "../../stores/projects";
 import base from "./Settings.module.css";
 import styles from "./DataTools.module.css";
+import { intlLocale } from "../../lib/dates";
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 const when = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  new Date(iso).toLocaleString(intlLocale(), { dateStyle: "medium", timeStyle: "short" });
 
 /** Re-runs `load` whenever cards change. */
 function useReload(load: () => void) {
@@ -362,7 +363,7 @@ function StatsSection() {
   const captures = stats.weeks.reduce((n, w) => n + w.captures, 0);
   const completed = stats.weeks.reduce((n, w) => n + w.completed, 0);
   const day = (d: string) =>
-    new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    new Date(`${d}T12:00:00`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short" });
 
   return (
     <section className={base.section} aria-labelledby="stats-title">

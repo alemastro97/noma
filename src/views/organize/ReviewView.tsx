@@ -10,8 +10,6 @@ import { useUiStore } from "../../stores/ui";
 import styles from "./Organize.module.css";
 import { useAiAction } from "./useAiAction";
 
-const t = organizeCopy.review;
-
 type SectionKey = "completed" | "overdue" | "forgotten";
 
 function Row({ item, section, now }: { item: Item; section: SectionKey; now: Date }) {
@@ -99,11 +97,11 @@ export function ReviewView() {
   return (
     <div className={styles.review}>
       <div className={styles.reviewInner}>
-        <p className={styles.lead}>{t.lead}</p>
+        <p className={styles.lead}>{organizeCopy.review.lead}</p>
 
         <div className={styles.brief}>
           <div className={styles.next}>
-            <span className={styles.nextLabel}>{t.summary}</span>
+            <span className={styles.nextLabel}>{organizeCopy.review.summary}</span>
             <span className={styles.spacer} />
             <button
               type="button"
@@ -112,35 +110,39 @@ export function ReviewView() {
               onClick={() => void write()}
             >
               <Sparkles size={13} strokeWidth={1.9} aria-hidden="true" />
-              {busy ? t.working : summary ? t.resummarize : t.summarize}
+              {busy
+                ? organizeCopy.review.working
+                : summary
+                  ? organizeCopy.review.resummarize
+                  : organizeCopy.review.summarize}
             </button>
           </div>
           {summary && <p className={styles.summary}>{summary}</p>}
         </div>
 
         {!review ? (
-          <p className={styles.empty}>{t.loading}</p>
+          <p className={styles.empty}>{organizeCopy.review.loading}</p>
         ) : (
           <>
             <Section
               id="overdue"
-              label={t.overdue}
-              empty={t.emptyOverdue}
+              label={organizeCopy.review.overdue}
+              empty={organizeCopy.review.emptyOverdue}
               items={review.overdue}
               now={now}
             />
             <Section
               id="completed"
-              label={t.completed}
-              empty={t.emptyCompleted}
+              label={organizeCopy.review.completed}
+              empty={organizeCopy.review.emptyCompleted}
               items={review.completed}
               now={now}
             />
             <Section
               id="forgotten"
-              label={t.forgotten}
-              hint={t.forgottenHint}
-              empty={t.emptyForgotten}
+              label={organizeCopy.review.forgotten}
+              hint={organizeCopy.review.forgottenHint}
+              empty={organizeCopy.review.emptyForgotten}
               items={review.forgotten}
               now={now}
             />

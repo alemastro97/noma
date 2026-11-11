@@ -1,13 +1,14 @@
 import { Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CaptureContext, ItemType, NewItem } from "../../api/types";
-import { kindLabel, quickAddCopy } from "../../copy";
+import { kindLabel, quickAddCopy, uiCopy } from "../../copy";
 import { useAiStore } from "../../stores/ai";
 import { useItemsStore } from "../../stores/items";
 import { useProjectsStore } from "../../stores/projects";
 import { useUiStore } from "../../stores/ui";
 import { KIND_STYLE } from "../Card/kind";
 import styles from "./Overlay.module.css";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 
 /** "auto" lets the on-device model decide the type, dates and project. */
 type Mode = "auto" | ItemType;
@@ -29,6 +30,8 @@ function QuickAddDialog() {
   const [title, setTitle] = useState("");
   const [mode, setMode] = useState<Mode>(() => quickAdd.kind ?? "auto");
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
 
   useEffect(() => {
     requestAnimationFrame(() => inputRef.current?.focus());
@@ -85,9 +88,12 @@ function QuickAddDialog() {
   return (
     <div className={styles.backdrop} onMouseDown={close}>
       <div
+        ref={dialogRef}
         className={styles.panel}
         role="dialog"
-        aria-label="Quick add"
+        aria-modal="true"
+        aria-label={uiCopy.regions.quickAdd}
+        tabIndex={-1}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <input
@@ -111,7 +117,7 @@ function QuickAddDialog() {
           }}
         />
         <div className={styles.footer}>
-          <div className={styles.kinds} role="radiogroup" aria-label="Type">
+          <div className={styles.kinds} role="radiogroup" aria-label={uiCopy.regions.type}>
             {MODES.map((m) => {
               const active = m === mode;
               const { Icon, color } =

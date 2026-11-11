@@ -7,6 +7,7 @@ import { useUiStore } from "../../stores/ui";
 import { KIND_STYLE } from "../Card/kind";
 import overlay from "../QuickAdd/Overlay.module.css";
 import styles from "./AskNoma.module.css";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 
 /** Shows a cited card in its place, like "Open" on a filed toast. */
 function openCard(item: Item) {
@@ -102,6 +103,8 @@ function AskDialog() {
   const [text, setText] = useState(draft);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
   const busy = turns.some((x) => x.pending);
 
   useEffect(() => {
@@ -122,9 +125,12 @@ function AskDialog() {
   return (
     <div className={overlay.backdrop} onMouseDown={close}>
       <div
+        ref={dialogRef}
         className={`${overlay.panel} ${styles.panel}`}
         role="dialog"
+        aria-modal="true"
         aria-label={t.title}
+        tabIndex={-1}
         onMouseDown={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === "Escape") {

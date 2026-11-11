@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import { useState, type DragEvent, type ReactNode } from "react";
 import { STATUSES, type Status } from "../../api/types";
-import { statusLabel } from "../../copy";
+import { statusLabel, uiCopy } from "../../copy";
 import { Card } from "../../components/Card/Card";
 import { useItemsStore } from "../../stores/items";
 import { useUiStore } from "../../stores/ui";
@@ -94,7 +94,7 @@ export function KanbanView({ empty }: { empty?: ReactNode }) {
                 onClick={() => useUiStore.getState().openQuickAdd({ status })}
               >
                 <Plus size={14} strokeWidth={1.75} aria-hidden="true" />
-                Add
+                {uiCopy.add}
               </button>
             )}
           </div>

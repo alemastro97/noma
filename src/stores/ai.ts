@@ -5,6 +5,7 @@ import type { OrbState } from "../components/NomaOrb";
 import { SUCCESS_FLASH_MS } from "../components/NomaOrb";
 import { useItemsStore } from "./items";
 import { toastError, useToastsStore } from "./toasts";
+import { uiCopy } from "../copy";
 
 interface AiStore {
   state: AiState | null;
@@ -53,9 +54,9 @@ export const useAiStore = create<AiStore>()((set, get) => {
       flash("error", 2500);
       const itemId = event.itemIds[0];
       useToastsStore.getState().push({
-        message: "Couldn't read that capture. It's kept as a note.",
+        message: uiCopy.captureFailed,
         tone: "error",
-        action: itemId ? { label: "Retry", run: () => void get().retry(itemId) } : undefined,
+        action: itemId ? { label: uiCopy.retry, run: () => void get().retry(itemId) } : undefined,
       });
     }
   };
@@ -139,17 +140,17 @@ export const useAiStore = create<AiStore>()((set, get) => {
 
 /** Short status for the header chip and the orb label. */
 export function aiStatusLabel(state: AiState | null, orb: OrbState): string {
-  if (orb === "success") return "Captured";
-  if (!state) return "Idle";
+  if (orb === "success") return uiCopy.ai.captured;
+  if (!state) return uiCopy.ai.idle;
   if (state.download) {
     const pct = state.download.total
       ? Math.floor((state.download.received / state.download.total) * 100)
       : 0;
-    return `Downloading ${pct}%`;
+    return uiCopy.ai.downloading(pct);
   }
-  if (state.phase === "loading") return "Waking up";
-  if (state.phase === "processing") return "Thinking";
-  if (state.phase === "error") return "Needs attention";
-  if (!state.ready) return state.pending > 0 ? `${state.pending} waiting` : "Set up AI";
-  return "Idle";
+  if (state.phase === "loading") return uiCopy.ai.wakingUp;
+  if (state.phase === "processing") return uiCopy.ai.thinking;
+  if (state.phase === "error") return uiCopy.ai.needsAttention;
+  if (!state.ready) return state.pending > 0 ? uiCopy.ai.waiting(state.pending) : uiCopy.ai.setUp;
+  return uiCopy.ai.idle;
 }

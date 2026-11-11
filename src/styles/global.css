@@ -64,6 +64,12 @@ a {
   outline-offset: 2px;
 }
 
+/* Dialog containers take focus only as a fallback; their controls show the ring. */
+[role="dialog"][tabindex="-1"]:focus,
+[role="alertdialog"][tabindex="-1"]:focus {
+  outline: none;
+}
+
 ::selection {
   background: rgba(167, 139, 250, 0.35);
 }

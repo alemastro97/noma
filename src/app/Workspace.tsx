@@ -1,7 +1,7 @@
 import { InboxResort } from "../views/organize/InboxResort";
 import { ProjectBrief } from "../views/organize/ProjectBrief";
 import { ReviewView } from "../views/organize/ReviewView";
-import { cardsCopy, copy, organizeCopy, workspaceCopy } from "../copy";
+import { cardsCopy, copy, organizeCopy, workspaceCopy, uiCopy } from "../copy";
 import { FilterBar } from "../components/FilterBar/FilterBar";
 import { GraphView } from "../views/graph/GraphView";
 import { EmptyState } from "../components/EmptyState/EmptyState";
@@ -51,7 +51,7 @@ function PlaceWorkspace({ target }: { target: Exclude<NavTarget, { kind: "archiv
 
   if (target.kind === "settings") {
     return (
-      <section className={styles.views} aria-label="Settings">
+      <section className={styles.views} aria-label={uiCopy.regions.settings}>
         <SettingsView />
       </section>
     );
@@ -61,7 +61,7 @@ function PlaceWorkspace({ target }: { target: Exclude<NavTarget, { kind: "archiv
   const key = targetKey(target);
 
   return (
-    <section className={styles.views} aria-label="Workspace">
+    <section className={styles.views} aria-label={uiCopy.regions.workspace}>
       {target.kind === "inbox" && <InboxResort />}
       {target.kind === "project" && <ProjectBrief key={target.id} projectId={target.id} />}
       <FilterBar />

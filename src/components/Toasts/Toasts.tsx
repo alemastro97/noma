@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { useToastsStore } from "../../stores/toasts";
 import styles from "./Toasts.module.css";
+import { uiCopy } from "../../copy";
 
 export function Toasts() {
   const toasts = useToastsStore((s) => s.toasts);
@@ -26,7 +27,7 @@ export function Toasts() {
           <button
             type="button"
             className={styles.close}
-            aria-label="Dismiss"
+            aria-label={uiCopy.dismiss}
             onClick={() => dismiss(t.id)}
           >
             <X size={13} strokeWidth={1.75} aria-hidden="true" />

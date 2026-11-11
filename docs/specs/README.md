@@ -16,6 +16,8 @@ Living specifications. One file per feature; each is updated in the same PR as t
 | [Cards](cards.md)                            | Shipped  | 4     |
 | [Voice](voice.md)                            | Shipped  | 4     |
 | [Your data](data.md)                         | Shipped  | 4     |
+| [Interface language](i18n.md)                | Shipped  | 4     |
+| [Accessibility](accessibility.md)            | Shipped  | 4     |
 
 Plans live in [`../plans/`](../plans/), decisions in [`../adr/`](../adr/).
 

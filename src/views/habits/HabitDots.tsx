@@ -1,6 +1,7 @@
 import { timeCopy as t } from "../../copy";
 import { addDays } from "../calendar/calendar";
 import styles from "./Habits.module.css";
+import { intlLocale } from "../../lib/dates";
 
 /** Streak count and the last 7 days as dots (oldest first, today last). */
 export function HabitDots({ streak, last7 }: { streak: number; last7: boolean[] }) {
@@ -13,7 +14,7 @@ export function HabitDots({ streak, last7 }: { streak: number; last7: boolean[] 
       <span className={styles.dots}>
         {last7.map((done, i) => {
           const day = addDays(today, i - (last7.length - 1));
-          const label = `${day.toLocaleDateString("en-GB", { weekday: "short" })}: ${
+          const label = `${day.toLocaleDateString(intlLocale(), { weekday: "short" })}: ${
             done ? t.dayDone : t.dayMissed
           }`;
           return (

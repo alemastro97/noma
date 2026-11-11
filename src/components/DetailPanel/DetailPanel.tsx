@@ -2,8 +2,15 @@ import { Copy, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { getItem } from "../../api/items";
 import { ITEM_TYPES, PRIORITIES, STATUSES, type Item, type ItemPatch } from "../../api/types";
-import { detailCopy, kindLabel, priorityLabel, statusLabel } from "../../copy";
-import { anchorDate, editedAgo, fromLocalInput, toDate, toLocalInput } from "../../lib/dates";
+import { detailCopy, kindLabel, priorityLabel, statusLabel, uiCopy } from "../../copy";
+import {
+  anchorDate,
+  editedAgo,
+  fromLocalInput,
+  toDate,
+  toLocalInput,
+  intlLocale,
+} from "../../lib/dates";
 import {
   RECURRENCE_PRESETS,
   presetFor,
@@ -62,7 +69,7 @@ function TagsField({ tags, onChange }: { tags: string[]; onChange: (tags: string
           #{t}
           <button
             type="button"
-            aria-label={`Remove ${t}`}
+            aria-label={uiCopy.removeTag(t)}
             onClick={() => onChange(tags.filter((x) => x !== t))}
           >
             <X size={11} strokeWidth={2} aria-hidden="true" />
@@ -289,7 +296,7 @@ function Editor({ item }: { item: Item }) {
       {created && (
         <p className={styles.footnote}>
           {detailCopy.created}{" "}
-          {created.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ·{" "}
+          {created.toLocaleDateString(intlLocale(), { day: "numeric", month: "short" })} ·{" "}
           {editedAgo(toDate(item.updatedAt) ?? created, new Date())}
         </p>
       )}
@@ -324,7 +331,7 @@ export function DetailPanel() {
   if (!detailId || !item) return null;
 
   return (
-    <aside className={styles.panel} aria-label="Card details">
+    <aside className={styles.panel} aria-label={uiCopy.regions.cardDetails}>
       <header className={styles.header}>
         <span className={styles.headerKind} style={{ color: KIND_STYLE[item.kind].color }}>
           {kindLabel[item.kind]}
@@ -334,7 +341,7 @@ export function DetailPanel() {
           <button
             type="button"
             className={styles.iconBtn}
-            aria-label="Duplicate"
+            aria-label={uiCopy.duplicate}
             onClick={() => void useItemsStore.getState().duplicate(item.id)}
           >
             <Copy size={15} strokeWidth={1.75} aria-hidden="true" />
@@ -342,7 +349,7 @@ export function DetailPanel() {
           <button
             type="button"
             className={styles.iconBtn}
-            aria-label="Delete"
+            aria-label={uiCopy.delete}
             onClick={() => {
               useItemsStore.getState().remove(item.id);
               close();

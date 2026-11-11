@@ -4,7 +4,7 @@ import { listBoards } from "../../api/boards";
 import { filedMove, filedOpen, filedUndo, reminderDismiss } from "../../api/desktop";
 import { listProjects } from "../../api/projects";
 import type { Place, ReminderToast } from "../../api/types";
-import { desktopCopy } from "../../copy";
+import { desktopCopy, uiCopy } from "../../copy";
 import glass from "../shared/glass.module.css";
 import { movePlaces, type PlaceOption } from "./places";
 import styles from "./toasts.module.css";
@@ -47,7 +47,7 @@ export function FiledCard({ toast, onResize }: { toast: ReminderToast; onResize:
   return (
     <section
       className={`${glass.glass} ${styles.toast}`}
-      aria-label="Capture filed"
+      aria-label={uiCopy.regions.captureFiled}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >

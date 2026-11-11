@@ -11,7 +11,7 @@ import {
   remindersActive,
 } from "../../api/desktop";
 import type { Item, ReminderToast } from "../../api/types";
-import { desktopCopy } from "../../copy";
+import { desktopCopy, uiCopy } from "../../copy";
 import glass from "../shared/glass.module.css";
 import { FiledCard } from "./FiledCard";
 import { RECAP_TOAST, isBeforeToast, isFocusToast } from "../../api/time";
@@ -89,7 +89,7 @@ function ReminderCard({
   onResize: () => void;
 }) {
   return (
-    <section className={`${glass.glass} ${styles.toast}`} aria-label="Reminder">
+    <section className={`${glass.glass} ${styles.toast}`} aria-label={uiCopy.regions.reminder}>
       <Icon />
       <div className={styles.body}>
         <div className={styles.text}>
@@ -135,7 +135,10 @@ function ReminderCard({
 
 function MissedToast({ toast }: { toast: ReminderToast }) {
   return (
-    <section className={`${glass.glass} ${styles.toast}`} aria-label="Missed reminders">
+    <section
+      className={`${glass.glass} ${styles.toast}`}
+      aria-label={uiCopy.regions.missedReminders}
+    >
       <Icon />
       <div className={styles.body}>
         <span className={styles.missedTitle}>{desktopCopy.missed(toast.items.length)}</span>
@@ -161,7 +164,7 @@ function MissedToast({ toast }: { toast: ReminderToast }) {
 function BriefToast({ toast }: { toast: ReminderToast }) {
   const more = toast.items.length - 4;
   return (
-    <section className={`${glass.glass} ${styles.toast}`} aria-label="Today">
+    <section className={`${glass.glass} ${styles.toast}`} aria-label={uiCopy.regions.today}>
       <Icon />
       <div className={styles.body}>
         <span className={styles.missedTitle}>{desktopCopy.briefTitle(toast.items.length)}</span>

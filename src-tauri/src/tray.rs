@@ -1,14 +1,16 @@
 //! Menu-bar item: a template N symbol with Capture, Quick capture, Open NOMA,
-//! the floating-orb and pause-reminders switches, and Quit.
+//! the floating-orb and pause-reminders switches, and Quit — labelled in the
+//! interface language and relabelled live when it changes.
 
 use std::sync::Arc;
 
 use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Wry};
 
 use crate::db::settings::{get_setting, set_setting};
+use crate::i18n;
 use crate::reminders::Reminders;
 use crate::state::AppState;
 use crate::voice::session::VoiceService;
@@ -28,27 +30,32 @@ fn store(app: &AppHandle, key: &str, value: &str) {
     }
 }
 
+/// Also used by presence.rs for the count next to the symbol.
+pub(crate) const TRAY_ID: &str = "noma";
+
 pub(crate) fn orb_enabled(app: &AppHandle) -> bool {
     setting(app, "orb.enabled").as_deref() != Some("0")
 }
 
-pub fn setup(app: &AppHandle) -> tauri::Result<()> {
-    let voice = MenuItem::with_id(app, "voice", "Capture by voice", true, None::<&str>)?;
-    let capture = MenuItem::with_id(app, "capture", "Quick capture", true, None::<&str>)?;
-    let open = MenuItem::with_id(app, "open", "Open NOMA", true, None::<&str>)?;
+/// The menu in the current interface language (ids stay the same).
+fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
+    let lang = i18n::current(app);
+    let voice = MenuItem::with_id(app, "voice", lang.tray_voice(), true, None::<&str>)?;
+    let capture = MenuItem::with_id(app, "capture", lang.tray_capture(), true, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", lang.tray_open(), true, None::<&str>)?;
     let orb = CheckMenuItem::with_id(
         app,
         "orb",
-        "Floating orb",
+        lang.tray_orb(),
         true,
         orb_enabled(app),
         None::<&str>,
     )?;
     let paused = setting(app, "reminders.paused").as_deref() == Some("1");
     let pause =
-        CheckMenuItem::with_id(app, "pause", "Pause reminders", true, paused, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit NOMA", true, Some("Cmd+Q"))?;
-    let menu = Menu::with_items(
+        CheckMenuItem::with_id(app, "pause", lang.tray_pause(), true, paused, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", lang.tray_quit(), true, Some("Cmd+Q"))?;
+    Menu::with_items(
         app,
         &[
             &voice,
@@ -60,10 +67,27 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
             &PredefinedMenuItem::separator(app)?,
             &quit,
         ],
-    )?;
+    )
+}
+
+/// Rebuilds the menu after the interface language changed.
+pub(crate) fn relabel(app: &AppHandle) {
+    let Some(tray) = app.tray_by_id(TRAY_ID) else {
+        return;
+    };
+    match build_menu(app) {
+        Ok(menu) => {
+            let _ = tray.set_menu(Some(menu));
+        }
+        Err(e) => log::warn!("tray menu: {e}"),
+    }
+}
+
+pub fn setup(app: &AppHandle) -> tauri::Result<()> {
+    let menu = build_menu(app)?;
 
     let icon = Image::from_bytes(include_bytes!("../icons/tray.png"))?;
-    TrayIconBuilder::with_id("noma")
+    TrayIconBuilder::with_id(TRAY_ID)
         .icon(icon)
         .icon_as_template(true)
         .tooltip("NOMA")

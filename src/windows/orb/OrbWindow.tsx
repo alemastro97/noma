@@ -85,6 +85,10 @@ export function OrbWindow() {
         if (down.current) void (listening.current ? voiceStop() : panelToggle("panel"));
         down.current = null;
       }}
+      onClick={(e) => {
+        // Keyboard activation (Space / Return): same as a click without a drag.
+        if (e.detail === 0) void (listening.current ? voiceStop() : panelToggle("panel"));
+      }}
     >
       <NomaOrb
         size={ORB_PX[presence.orbSize] ?? ORB_PX.m}

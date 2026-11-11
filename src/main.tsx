@@ -2,6 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app/App";
 import { initTheme } from "./theme/theme";
+import { initLocale } from "./i18n/locale";
+import { LocaleRoot } from "./i18n/LocaleRoot";
 import "./styles/global.css";
 
 initTheme();
@@ -14,10 +16,13 @@ async function boot() {
   }
 }
 
-void boot().then(() =>
+void boot().then(() => {
+  initLocale();
   createRoot(document.getElementById("root") as HTMLElement).render(
     <StrictMode>
-      <App />
+      <LocaleRoot>
+        <App />
+      </LocaleRoot>
     </StrictMode>,
-  ),
-);
+  );
+});

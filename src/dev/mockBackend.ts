@@ -652,6 +652,8 @@ function handle(cmd: string, a: Args): unknown {
       return settings.get(String(a.key)) ?? null;
     case "settings_set":
       settings.set(String(a.key), String(a.value));
+      // Like the backend: every window follows an interface-language change.
+      if (a.key === "ui.language") emit("ui:language", String(a.value));
       return null;
     case "voice_current":
       if (location.search.includes("demo")) {

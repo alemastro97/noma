@@ -3,7 +3,7 @@ import { memo, useMemo, useState, type DragEvent } from "react";
 import type { Item } from "../../api/types";
 import { timeCopy as t } from "../../copy";
 import { KIND_STYLE } from "../../components/Card/kind";
-import { anchorDate, formatTime, longDate } from "../../lib/dates";
+import { anchorDate, formatTime, longDate, intlLocale } from "../../lib/dates";
 import { useItemsStore } from "../../stores/items";
 import { useUiStore } from "../../stores/ui";
 import { useCardHandlers, useNow, useWorkspaceData, type CardHandlers } from "../useWorkspace";
@@ -61,11 +61,11 @@ const Chip = memo(function Chip({
 
 function title(anchor: Date, mode: CalendarMode, days: Date[]): string {
   if (mode === "month") {
-    return anchor.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+    return anchor.toLocaleDateString(intlLocale(), { month: "long", year: "numeric" });
   }
   const first = days[0]!;
   const last = days[days.length - 1]!;
-  const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const fmt = (d: Date) => d.toLocaleDateString(intlLocale(), { day: "numeric", month: "short" });
   return `${fmt(first)} – ${fmt(last)} ${last.getFullYear()}`;
 }
 

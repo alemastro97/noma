@@ -13,7 +13,7 @@
   /* Text */
   --noma-text: #F4F1FA;
   --noma-text-2: #A6A0B5;   /* use for all small metadata (passes 4.5:1) */
-  --noma-text-muted: #777184; /* decorative / large text only */
+  --noma-text-muted: #8C8698; /* quiet text; still 4.5:1 on bg and surface */
 
   /* Brand */
   --noma-lavender: #A78BFA;  /* primary accent */
@@ -62,11 +62,13 @@
   --noma-border: #E8E4EF;
   --noma-border-card: #E8E4EF;
   --noma-text: #24212D;
-  --noma-text-2: #777181;
-  --noma-lavender: #8065DC;
+  /* Darkened from the handoff (#777181, #8065DC) so small text and accents reach 4.5:1 on every light surface */
+  --noma-text-2: #6B6575;
+  --noma-text-muted: #6E6878;
+  --noma-lavender: #7255D0;
   /* darker semantic text tones for contrast on white */
-  --noma-reminder-text: #A86A12;
+  --noma-reminder-text: #96600F;
   --noma-project-text: #2F6FB3;
-  --noma-urgent-text: #C8464E;
+  --noma-urgent-text: #BD3F47;
   --noma-done-fill: #3FB592;
 }

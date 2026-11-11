@@ -1,5 +1,5 @@
 import { Check, Download } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { settingSet, voiceStart } from "../../api/desktop";
 import type { DownloadProgress } from "../../api/types";
 import { onboardingCopy as t } from "../../copy";
@@ -7,6 +7,7 @@ import { useShortcutLabels } from "../../hooks/useShortcuts";
 import { useAiStore } from "../../stores/ai";
 import { NomaOrb } from "../NomaOrb";
 import styles from "./Onboarding.module.css";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 
 const STEPS = 3;
 
@@ -67,6 +68,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
   const state = useAiStore((s) => s.state);
   const keys = useShortcutLabels();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
 
   const llm = state?.models.find((m) => m.id === state.modelId) ?? state?.models[0];
   const speech =
@@ -78,7 +81,14 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <div className={styles.backdrop} role="dialog" aria-modal="true" aria-labelledby="onb-title">
+    <div
+      ref={dialogRef}
+      className={styles.backdrop}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onb-title"
+      tabIndex={-1}
+    >
       <div className={styles.card}>
         <div className={styles.orb}>
           <NomaOrb size={step === 2 ? 72 : 64} state={step === 2 ? "listening" : "idle"} />

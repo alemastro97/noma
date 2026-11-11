@@ -4,7 +4,7 @@ import { mainShow, panelHide, voiceStart } from "../../api/desktop";
 import { onItemsChanged } from "../../api/events";
 import { completeItem, listItems, updateItem } from "../../api/items";
 import type { Item } from "../../api/types";
-import { desktopCopy } from "../../copy";
+import { desktopCopy, uiCopy } from "../../copy";
 import { PanelCapture, PanelSearch, SearchResults, usePanelSearch } from "./PanelFields";
 import { anchorDate, formatTime } from "../../lib/dates";
 import glass from "../shared/glass.module.css";
@@ -62,7 +62,7 @@ export function PanelWindow() {
 
   return (
     <div className={styles.root}>
-      <section className={`${glass.glass} ${styles.panel}`} aria-label="NOMA panel">
+      <section className={`${glass.glass} ${styles.panel}`} aria-label={uiCopy.regions.panel}>
         <header className={styles.head}>
           <span className={styles.title}>{desktopCopy.today}</span>
           <span className={styles.meta}>{desktopCopy.left(left)}</span>

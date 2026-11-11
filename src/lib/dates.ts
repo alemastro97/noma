@@ -1,9 +1,11 @@
 /**
- * Date helpers for card metadata. All output is English (en-GB: 24 h clock,
- * "9 November"). `now` is always passed in so the functions are pure and testable.
+ * Date helpers for card metadata, in the interface language (English uses
+ * en-GB: 24 h clock, "9 November"; Italian it-IT). `now` is always passed in so
+ * the functions are pure and testable.
  */
 
-const LOCALE = "en-GB";
+import { dateCopy as t } from "../copy";
+
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
@@ -31,7 +33,7 @@ export function dayDiff(d: Date, now: Date): number {
 }
 
 export function formatTime(d: Date): string {
-  return d.toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit", hour12: false });
+  return d.toLocaleTimeString(t.intl, { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
 function hasTime(d: Date): boolean {
@@ -41,17 +43,17 @@ function hasTime(d: Date): boolean {
 /** "Today" · "Tomorrow" · "Yesterday" · "Thu 12" (within a week) · "Apr 2" · "Apr 2, 2027". */
 export function formatDay(d: Date, now: Date): string {
   const diff = dayDiff(d, now);
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  if (diff === -1) return "Yesterday";
+  if (diff === 0) return t.today;
+  if (diff === 1) return t.tomorrow;
+  if (diff === -1) return t.yesterday;
   if (diff > 1 && diff < 7) {
-    const weekday = d.toLocaleDateString(LOCALE, { weekday: "short" });
-    return `${weekday} ${d.getDate()}`;
+    const weekday = d.toLocaleDateString(t.intl, { weekday: "short" });
+    return t.weekdayDay(weekday, d.getDate());
   }
-  const month = d.toLocaleDateString("en-US", { month: "short" });
+  const month = d.toLocaleDateString(t.intlMonth, { month: "short" });
   return d.getFullYear() === now.getFullYear()
-    ? `${month} ${d.getDate()}`
-    : `${month} ${d.getDate()}, ${d.getFullYear()}`;
+    ? t.monthDay(month, d.getDate())
+    : t.monthDayYear(month, d.getDate(), d.getFullYear());
 }
 
 /** Task deadline: "Thu 12 · 18:00", "Today · 11:00", or just the day when no time. */
@@ -68,32 +70,33 @@ export function formatReminder(d: Date, now: Date): string {
 export function relativeFromNow(d: Date, now: Date): string {
   const delta = d.getTime() - now.getTime();
   const abs = Math.abs(delta);
-  if (abs < MINUTE) return "now";
+  if (abs < MINUTE) return t.now;
+  const u = t.units;
   let text: string;
-  if (abs < HOUR) text = `${Math.round(abs / MINUTE)}m`;
+  if (abs < HOUR) text = `${Math.round(abs / MINUTE)}${u.m}`;
   else if (abs < DAY) {
     const h = Math.floor(abs / HOUR);
     const m = Math.round((abs - h * HOUR) / MINUTE);
-    text = m ? `${h}h ${m}m` : `${h}h`;
-  } else text = `${Math.round(abs / DAY)}d`;
-  return delta > 0 ? `in ${text}` : `${text} ago`;
+    text = m ? `${h}${u.h} ${m}${u.m}` : `${h}${u.h}`;
+  } else text = `${Math.round(abs / DAY)}${u.d}`;
+  return delta > 0 ? t.inFuture(text) : t.inPast(text);
 }
 
 /** "edited just now" · "edited 5m ago" · "edited yesterday" · "edited Thu 12". */
 export function editedAgo(d: Date, now: Date): string {
   const abs = now.getTime() - d.getTime();
-  if (abs < MINUTE) return "edited just now";
-  if (abs < HOUR) return `edited ${Math.round(abs / MINUTE)}m ago`;
+  if (abs < MINUTE) return t.editedJustNow;
+  if (abs < HOUR) return t.editedAgo(`${Math.round(abs / MINUTE)}${t.units.m}`);
   const diff = dayDiff(d, now);
-  if (diff === 0) return `edited ${Math.floor(abs / HOUR)}h ago`;
-  if (diff === -1) return "edited yesterday";
-  return `edited ${formatDay(d, now)}`;
+  if (diff === 0) return t.editedAgo(`${Math.floor(abs / HOUR)}${t.units.h}`);
+  if (diff === -1) return t.editedYesterday;
+  return t.editedOn(formatDay(d, now));
 }
 
 /** Event date block: { weekday: "WED", day: "11" }. */
 export function eventBlock(d: Date): { weekday: string; day: string } {
   return {
-    weekday: d.toLocaleDateString(LOCALE, { weekday: "short" }).toUpperCase(),
+    weekday: d.toLocaleDateString(t.intl, { weekday: "short" }).toUpperCase(),
     day: String(d.getDate()),
   };
 }
@@ -105,7 +108,7 @@ export function timeRange(start: Date, end: Date | null): string {
 
 /** "Monday, 9 November". */
 export function longDate(d: Date): string {
-  return d.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long" });
+  return d.toLocaleDateString(t.intl, { weekday: "long", day: "numeric", month: "long" });
 }
 
 export function isOverdue(d: Date, now: Date): boolean {
@@ -139,4 +142,9 @@ export function fromLocalInput(value: string): string | null {
 /** The date a card is "about": due, else reminder. */
 export function anchorDate(item: { dueAt: string | null; remindAt: string | null }): Date | null {
   return toDate(item.dueAt) ?? toDate(item.remindAt);
+}
+
+/** The interface locale for `toLocale*String` calls in components. */
+export function intlLocale(): string {
+  return t.intl;
 }

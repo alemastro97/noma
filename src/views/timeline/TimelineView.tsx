@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState, type CSSProperties } from "react";
 import { timeCopy as t } from "../../copy";
 import { KIND_STYLE } from "../../components/Card/kind";
-import { anchorDate, formatTime, startOfDay, timeRange, toDate } from "../../lib/dates";
+import { anchorDate, formatTime, startOfDay, timeRange, toDate, intlLocale } from "../../lib/dates";
 import { addDays, dayKey } from "../calendar/calendar";
 import { useCardHandlers, useNow, useWorkspaceData } from "../useWorkspace";
 import { layoutBars } from "./layout";
@@ -73,10 +73,10 @@ export function TimelineView() {
                 data-today={dayKey(d) === todayKey || undefined}
               >
                 <span className={styles.weekday}>
-                  {d.toLocaleDateString("en-GB", { weekday: "short" })}
+                  {d.toLocaleDateString(intlLocale(), { weekday: "short" })}
                 </span>
                 <span className={styles.date}>
-                  {d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                  {d.toLocaleDateString(intlLocale(), { day: "numeric", month: "short" })}
                 </span>
               </div>
             ))}

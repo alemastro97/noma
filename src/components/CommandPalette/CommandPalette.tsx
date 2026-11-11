@@ -2,6 +2,7 @@ import {
   ArrowRight,
   Columns3,
   FolderPlus,
+  Languages,
   LayoutGrid,
   List,
   Moon,
@@ -17,16 +18,18 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { devSeed, searchItems } from "../../api/items";
 import { semanticSearch } from "../../api/semantic";
 import type { Item, ItemType } from "../../api/types";
-import { copy, kindLabel, paletteCopy, semanticCopy, sidebarCopy } from "../../copy";
+import { copy, kindLabel, paletteCopy, semanticCopy, sidebarCopy, uiCopy } from "../../copy";
 import { useAskStore } from "../../stores/ask";
 import { useItemsStore } from "../../stores/items";
 import { useProjectsStore, personalBoards } from "../../stores/projects";
 import { useToastsStore } from "../../stores/toasts";
 import { useUiStore, type NavTarget } from "../../stores/ui";
 import { setTheme } from "../../theme/theme";
+import { setLanguage } from "../../i18n/locale";
 import { KIND_STYLE } from "../Card/kind";
 import styles from "../QuickAdd/Overlay.module.css";
 import { filterCommands, type Command } from "./commands";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 
 type Option =
   | { type: "command"; cmd: Command; icon: ReactNode }
@@ -66,7 +69,7 @@ function useCommands(): (Command & { icon: ReactNode })[] {
     const list: (Command & { icon: ReactNode })[] = [
       ...(["inbox", "today", "upcoming", "ideas", "notes"] as const).map((k) => ({
         id: `go:${k}`,
-        label: `Go to ${copy.nav[k]}`,
+        label: uiCopy.palette.goTo(copy.nav[k]),
         section: "goTo" as const,
         run: go({ kind: k }),
         icon,
@@ -101,7 +104,7 @@ function useCommands(): (Command & { icon: ReactNode })[] {
         const { Icon } = KIND_STYLE[k];
         return {
           id: `new:${k}`,
-          label: `New ${kindLabel[k].toLowerCase()}`,
+          label: uiCopy.palette.newKind[k],
           keywords: "create add capture",
           hint: k === "task" ? "⌘N" : undefined,
           section: "actions" as const,
@@ -135,7 +138,7 @@ function useCommands(): (Command & { icon: ReactNode })[] {
       },
       {
         id: "view:canvas",
-        label: "Canvas view",
+        label: uiCopy.palette.canvasView,
         keywords: "switch mode",
         hint: "⌘1",
         section: "actions",
@@ -144,7 +147,7 @@ function useCommands(): (Command & { icon: ReactNode })[] {
       },
       {
         id: "view:kanban",
-        label: "Kanban view",
+        label: uiCopy.palette.kanbanView,
         keywords: "switch mode board columns",
         hint: "⌘2",
         section: "actions",
@@ -153,7 +156,7 @@ function useCommands(): (Command & { icon: ReactNode })[] {
       },
       {
         id: "view:list",
-        label: "List view",
+        label: uiCopy.palette.listView,
         keywords: "switch mode",
         hint: "⌘3",
         section: "actions",
@@ -162,7 +165,7 @@ function useCommands(): (Command & { icon: ReactNode })[] {
       },
       {
         id: "sidebar",
-        label: "Toggle sidebar",
+        label: uiCopy.palette.toggleSidebar,
         hint: "⌘\\",
         section: "actions",
         run: () => ui().toggleSidebar(),
@@ -170,7 +173,7 @@ function useCommands(): (Command & { icon: ReactNode })[] {
       },
       {
         id: "theme:dark",
-        label: "Theme: Dark",
+        label: uiCopy.palette.themeDark,
         keywords: "appearance",
         section: "actions",
         run: () => setTheme("dark"),
@@ -178,7 +181,7 @@ function useCommands(): (Command & { icon: ReactNode })[] {
       },
       {
         id: "theme:light",
-        label: "Theme: Light",
+        label: uiCopy.palette.themeLight,
         keywords: "appearance",
         section: "actions",
         run: () => setTheme("light"),
@@ -186,24 +189,38 @@ function useCommands(): (Command & { icon: ReactNode })[] {
       },
       {
         id: "theme:system",
-        label: "Theme: Match system",
+        label: uiCopy.palette.themeSystem,
         keywords: "appearance auto",
         section: "actions",
         run: () => setTheme("system"),
         icon: <SunMoon size={15} strokeWidth={1.75} />,
       },
+      ...(
+        [
+          ["en", uiCopy.palette.languageEnglish],
+          ["it", uiCopy.palette.languageItalian],
+          ["system", uiCopy.palette.languageSystem],
+        ] as const
+      ).map(([pref, label]) => ({
+        id: `language:${pref}`,
+        label,
+        keywords: "language lingua interface",
+        section: "actions" as const,
+        run: () => setLanguage(pref),
+        icon: <Languages size={15} strokeWidth={1.75} />,
+      })),
     ];
     if (import.meta.env.DEV) {
       list.push({
         id: "dev:seed",
-        label: "Load sample data",
+        label: uiCopy.palette.loadSample,
         keywords: "dev seed demo",
         section: "actions",
         run: () =>
           void devSeed().then((seeded) => {
             void useProjectsStore.getState().load();
             useToastsStore.getState().push({
-              message: seeded ? "Sample data loaded." : "Sample data needs an empty database.",
+              message: seeded ? uiCopy.palette.sampleLoaded : uiCopy.palette.sampleNeedsEmpty,
             });
           }),
         icon: <Sparkles size={15} strokeWidth={1.75} />,
@@ -227,6 +244,8 @@ function PaletteDialog() {
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
   const q = query.trim();
   const [related, setRelated] = useState<{ q: string; items: Item[] }>({ q: "", items: [] });
   const results = useMemo(() => (q.length >= 2 && search.q === q ? search.items : []), [q, search]);
@@ -317,9 +336,12 @@ function PaletteDialog() {
   return (
     <div className={styles.backdrop} onMouseDown={close}>
       <div
+        ref={dialogRef}
         className={styles.panel}
         role="dialog"
-        aria-label="Command palette"
+        aria-modal="true"
+        aria-label={uiCopy.regions.commandPalette}
+        tabIndex={-1}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div

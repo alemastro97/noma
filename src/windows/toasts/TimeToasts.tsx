@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { reminderDismiss, reminderDone } from "../../api/desktop";
 import { focusStart, recapOpen, reminderSnoozeUntil } from "../../api/time";
 import type { Item, ReminderToast } from "../../api/types";
-import { desktopCopy, timeCopy as t } from "../../copy";
+import { desktopCopy, timeCopy as t, uiCopy } from "../../copy";
 import { FOCUS_MINUTES } from "../../hooks/useFocus";
 import { formatDay, formatDue, formatTime, toDate } from "../../lib/dates";
 import { PICKER_HOURS, atHour, nextMonday, pickerDays, thisEvening } from "../../lib/snooze";
@@ -127,7 +127,7 @@ export function BeforeToast({
 }) {
   const due = toDate(item.dueAt);
   return (
-    <section className={`${glass.glass} ${styles.toast}`} aria-label="Reminder">
+    <section className={`${glass.glass} ${styles.toast}`} aria-label={uiCopy.regions.reminder}>
       <div className={styles.icon} aria-hidden="true">
         <Bell size={20} strokeWidth={1.75} />
       </div>

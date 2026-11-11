@@ -2,6 +2,8 @@ import { StrictMode, type ReactElement } from "react";
 import { createRoot } from "react-dom/client";
 import "../../styles/global.css";
 import { initTheme } from "../../theme/theme";
+import { initLocale } from "../../i18n/locale";
+import { LocaleRoot } from "../../i18n/LocaleRoot";
 import "./floating.css";
 
 /** Mounts a floating panel: theme, transparent page, React root. */
@@ -19,8 +21,11 @@ export function boot(element: ReactElement): void {
         "important",
       );
     }
+    initLocale();
     createRoot(document.getElementById("root") as HTMLElement).render(
-      <StrictMode>{element}</StrictMode>,
+      <StrictMode>
+        <LocaleRoot>{element}</LocaleRoot>
+      </StrictMode>,
     );
   })();
 }

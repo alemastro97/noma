@@ -31,7 +31,7 @@ pub const PRESENCE_CHANGED: &str = "presence:changed";
 pub const OPEN_PALETTE: &str = "ui:open-palette";
 const TICK: StdDuration = StdDuration::from_secs(30);
 const SAVE_AFTER: StdDuration = StdDuration::from_millis(500);
-const TRAY_ID: &str = "noma";
+use crate::tray::TRAY_ID;
 
 pub const MENUBAR_COUNT: &str = "ui.menubarCount";
 pub const QUIET_ENABLED: &str = "reminders.quietEnabled";

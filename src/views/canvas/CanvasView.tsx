@@ -22,7 +22,8 @@ import {
   type MouseEvent,
   type PointerEvent,
 } from "react";
-import { workspaceCopy } from "../../copy";
+import { workspaceCopy, uiCopy } from "../../copy";
+import { motionMs } from "../../lib/motion";
 import { clearHover, hoverAtPoint, placeAtPoint } from "../../components/Sidebar/dropTarget";
 import { useBoardStore, type Point } from "../../stores/board";
 import { moveCards } from "../../stores/bulk";
@@ -70,8 +71,8 @@ function ZoomPill() {
       <button
         type="button"
         className={styles.zoomBtn}
-        aria-label="Zoom out"
-        onClick={() => void zoomOut({ duration: 200 })}
+        aria-label={uiCopy.zoomOut}
+        onClick={() => void zoomOut({ duration: motionMs(200) })}
       >
         <Minus size={15} strokeWidth={1.75} aria-hidden="true" />
       </button>
@@ -79,8 +80,8 @@ function ZoomPill() {
       <button
         type="button"
         className={styles.zoomBtn}
-        aria-label="Zoom in"
-        onClick={() => void zoomIn({ duration: 200 })}
+        aria-label={uiCopy.zoomIn}
+        onClick={() => void zoomIn({ duration: motionMs(200) })}
       >
         <Plus size={15} strokeWidth={1.75} aria-hidden="true" />
       </button>

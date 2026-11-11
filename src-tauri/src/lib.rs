@@ -4,6 +4,7 @@ pub mod commands;
 pub mod data;
 pub mod db;
 mod filed;
+mod i18n;
 pub mod organize;
 mod presence;
 pub mod reminders;
