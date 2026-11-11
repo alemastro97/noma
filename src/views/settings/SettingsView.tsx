@@ -1,6 +1,7 @@
 import { Check, Download, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ModelInfo, SpeechInfo } from "../../api/types";
+import { autostartGet, autostartSet } from "../../api/desktop";
 import { ShortcutRecorder } from "../../components/ShortcutRecorder/ShortcutRecorder";
 import { useSetting } from "../../hooks/useSetting";
 import { useShortcuts } from "../../hooks/useShortcuts";
@@ -287,12 +288,29 @@ function DesktopSection() {
   const [orb, setOrb] = useSetting("orb.enabled", "1");
   const [paused, setPaused] = useSetting("reminders.paused", "0");
   const [native, setNative] = useSetting("reminders.native", "1");
+  const [login, setLogin] = useState<boolean | null>(null);
+  useEffect(() => {
+    void autostartGet()
+      .then(setLogin)
+      .catch(() => setLogin(false));
+  }, []);
   const bool = (v: string | null, on: string) => (v === null ? null : v === on);
   return (
     <section className={styles.section} aria-labelledby="desktop-title">
       <h2 id="desktop-title" className={styles.h2}>
         {t.desktopTitle}
       </h2>
+      <Toggle
+        label={t.openAtLogin}
+        hint={t.openAtLoginHint}
+        value={login}
+        onChange={(v) => {
+          setLogin(v);
+          void autostartSet(v)
+            .then(setLogin)
+            .catch(() => setLogin(!v));
+        }}
+      />
       <Toggle
         label={t.orbToggle}
         hint={t.orbHint}

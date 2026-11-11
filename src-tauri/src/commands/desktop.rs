@@ -199,6 +199,26 @@ pub async fn settings_set(
     Ok(())
 }
 
+// ── Open at login ────────────────────────────────────────────────────────
+
+#[tauri::command]
+pub fn autostart_get(app: AppHandle) -> bool {
+    use tauri_plugin_autostart::ManagerExt;
+    app.autolaunch().is_enabled().unwrap_or(false)
+}
+
+#[tauri::command]
+pub fn autostart_set(app: AppHandle, enabled: bool) -> Result<bool, String> {
+    use tauri_plugin_autostart::ManagerExt;
+    let launcher = app.autolaunch();
+    if enabled {
+        launcher.enable().map_err(|e| e.to_string())?;
+    } else {
+        launcher.disable().map_err(|e| e.to_string())?;
+    }
+    Ok(launcher.is_enabled().unwrap_or(enabled))
+}
+
 // ── Shortcuts ────────────────────────────────────────────────────────────
 
 #[tauri::command]

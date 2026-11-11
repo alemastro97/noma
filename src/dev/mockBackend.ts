@@ -592,6 +592,10 @@ function handle(cmd: string, a: Args): unknown {
     }
     case "capture_retry":
       return null;
+    case "autostart_get":
+      return false;
+    case "autostart_set":
+      return Boolean(a.enabled);
     case "shortcuts_get":
       return { ...shortcutMap };
     case "shortcuts_set": {

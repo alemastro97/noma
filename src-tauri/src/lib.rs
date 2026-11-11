@@ -28,6 +28,11 @@ pub fn run() {
     let builder = builder.plugin(tauri_nspanel::init());
     builder
         .plugin(tauri_plugin_notification::init())
+        // Optional "open at login": starts hidden in the menu bar (`--background`).
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec!["--background"]),
+        ))
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
@@ -90,7 +95,15 @@ pub fn run() {
             let shortcuts = Shortcuts::load(app.handle());
             shortcuts.register_all(app.handle());
             app.manage(shortcuts);
-            windows::show_main(app.handle());
+            // Started at login: stay in the menu bar until the user opens NOMA.
+            if std::env::args().any(|a| a == "--background") {
+                windows::hide_main(app.handle());
+                if tray::orb_enabled(app.handle()) {
+                    windows::show(app.handle(), windows::ORB);
+                }
+            } else {
+                windows::show_main(app.handle());
+            }
             #[cfg(debug_assertions)]
             if std::env::var_os("NOMA_SELFTEST_DB").is_some() {
                 tauri::async_runtime::spawn(selftest::run(app.handle().clone()));
@@ -123,6 +136,8 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            commands::desktop::autostart_get,
+            commands::desktop::autostart_set,
             commands::desktop::shortcuts_get,
             commands::desktop::shortcuts_set,
             commands::desktop::shortcuts_reset,
@@ -176,6 +191,15 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building NOMA")
         .run(|app, event| match event {
+            // ⌘Q closes the window but keeps NOMA (and ⌥ Space) alive; the menu-bar
+            // "Quit NOMA" passes an exit code and really quits.
+            tauri::RunEvent::ExitRequested { api, code, .. } if code.is_none() => {
+                api.prevent_exit();
+                windows::hide_main(app);
+                if tray::orb_enabled(app) {
+                    windows::show(app, windows::ORB);
+                }
+            }
             // Never leave a model server running after NOMA quits.
             tauri::RunEvent::Exit => {
                 if let Some(ai) = app.try_state::<Arc<AiService>>() {

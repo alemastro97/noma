@@ -4,6 +4,8 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- NOMA stays alive when you press ⌘Q (only the window closes; Quit NOMA in the menu bar exits), and an optional **Open at login** starts it quietly in the menu bar, so ⌥ Space always opens the orb.
+
 - Captures get a **short headline title**; the card description keeps what you said, plus an AI summary for longer notes.
 - NOMA now files a capture in the **right project or personal board** by topic, using what each already contains; when unsure it goes to the Inbox.
 - New cards are **linked automatically** to clearly related cards.

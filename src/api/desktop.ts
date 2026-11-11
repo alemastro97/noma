@@ -68,3 +68,8 @@ export const shortcutsResume = () => invoke<void>("shortcuts_resume");
 export function onShortcutsChanged(cb: (map: ShortcutMap) => void): Promise<UnlistenFn> {
   return listen<ShortcutMap>("shortcuts:changed", (e) => cb(e.payload));
 }
+
+// ── Open at login ───────────────────────────────────────────────────────
+
+export const autostartGet = () => invoke<boolean>("autostart_get");
+export const autostartSet = (enabled: boolean) => invoke<boolean>("autostart_set", { enabled });
