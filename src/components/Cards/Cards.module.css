@@ -1,0 +1,526 @@
+/* Cards area: checklist, attachments, Markdown notes, badges, menus, dialogs. */
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+.button {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--noma-radius-control);
+  border: 1px solid var(--noma-border);
+  background: transparent;
+  color: var(--noma-text);
+  font-size: 13px;
+  transition:
+    background var(--noma-fast) ease,
+    border-color var(--noma-fast) ease;
+}
+.button:hover {
+  border-color: var(--noma-border-hover);
+}
+.button[data-tone="primary"] {
+  background: var(--noma-lavender);
+  border-color: var(--noma-lavender);
+  color: #111116;
+}
+.button[data-tone="danger"] {
+  background: var(--noma-urgent);
+  border-color: var(--noma-urgent);
+  color: #111116;
+}
+.button:disabled {
+  opacity: 0.5;
+}
+
+.miniBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+}
+.miniBtn:hover {
+  background: var(--noma-surface-elevated);
+  color: var(--noma-text);
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--noma-text-2);
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+.linkBtn:hover {
+  color: var(--noma-text);
+}
+
+/* ── Confirm dialog ──────────────────────────────────────────────────── */
+.confirm {
+  width: min(420px, calc(100vw - 32px));
+  padding: 20px 22px 16px;
+}
+.confirmTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--noma-text);
+}
+.confirmBody {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--noma-text-2);
+}
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+/* ── Detail panel sections ───────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--noma-text-2);
+}
+.sectionMeta {
+  font-family: var(--noma-font-mono);
+  font-size: 11px;
+  color: var(--noma-text-2);
+}
+
+.progressTrack {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--noma-border);
+  overflow: hidden;
+}
+.progressFill {
+  height: 100%;
+  background: var(--noma-done);
+  transition: width var(--noma-base) var(--noma-ease);
+}
+
+.rowActions {
+  display: inline-flex;
+  gap: 1px;
+  opacity: 0;
+  transition: opacity var(--noma-fast) ease;
+}
+
+.subtasks,
+.files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.subtask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  padding: 0 4px 0 2px;
+  border-radius: 8px;
+}
+.subtask:hover {
+  background: var(--noma-bg-2);
+}
+.subtask:hover .rowActions,
+.subtask:focus-within .rowActions,
+.file:hover .rowActions,
+.file:focus-within .rowActions {
+  opacity: 1;
+}
+.subtask[data-done] .subtaskInput {
+  color: var(--noma-text-2);
+  text-decoration: line-through;
+}
+.subtaskInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--noma-text);
+  font-size: 13px;
+}
+.subtaskInput::placeholder {
+  color: var(--noma-text-2);
+}
+.addRow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 4px;
+  color: var(--noma-text-2);
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 4px;
+  border-radius: 10px;
+}
+.file:hover {
+  background: var(--noma-bg-2);
+}
+.fileMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.thumb {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--noma-border);
+  background: var(--noma-surface-elevated);
+}
+.thumb[data-file] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--noma-text-2);
+}
+.fileText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fileName {
+  font-size: 13px;
+  color: var(--noma-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Markdown ────────────────────────────────────────────────────────── */
+.notesPreview {
+  position: relative;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  padding: 10px 12px;
+  background: var(--noma-bg-2);
+  cursor: text;
+}
+.notesPreview:hover {
+  border-color: var(--noma-border-hover);
+}
+.notesHint {
+  font-size: 11px;
+  color: var(--noma-text-2);
+  margin-top: -10px;
+}
+.markdown {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--noma-text);
+  overflow-wrap: anywhere;
+}
+.markdown > :first-child {
+  margin-top: 0;
+}
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+.markdown p,
+.markdown ul,
+.markdown ol,
+.markdown blockquote,
+.markdown pre {
+  margin: 0 0 8px;
+}
+.markdown h3,
+.markdown h4,
+.markdown h5 {
+  margin: 10px 0 6px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.markdown h3 {
+  font-size: 17px;
+}
+.markdown h4 {
+  font-size: 15px;
+}
+.markdown h5 {
+  font-size: 14px;
+  color: var(--noma-text-2);
+}
+.markdown ul,
+.markdown ol {
+  padding-left: 20px;
+}
+.markdown li[data-task] {
+  list-style: none;
+  margin-left: -18px;
+}
+.markdown blockquote {
+  padding-left: 10px;
+  border-left: 2px solid var(--noma-border-hover);
+  color: var(--noma-text-2);
+}
+.markdown hr {
+  border: 0;
+  border-top: 1px solid var(--noma-border);
+  margin: 10px 0;
+}
+.mdCode {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--noma-surface-elevated);
+}
+.mdPre {
+  font-family: var(--noma-font-mono);
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--noma-surface-elevated);
+  overflow-x: auto;
+  white-space: pre;
+}
+.mdLink {
+  color: var(--noma-lavender);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.mdTask {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border-radius: 4px;
+  border: 1.5px solid var(--noma-text-2);
+}
+.mdTask[data-checked] {
+  background: var(--noma-done);
+  border-color: var(--noma-done);
+}
+
+/* ── Card badges ─────────────────────────────────────────────────────── */
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--noma-font-mono);
+  font-size: 11px;
+  color: var(--noma-text-2);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge[data-complete] {
+  color: var(--noma-done);
+}
+.pinMark {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  color: var(--noma-lavender);
+  pointer-events: none;
+}
+
+/* ── Banner in the detail panel ─────────────────────────────────────── */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--noma-border);
+  background: var(--noma-bg-2);
+  font-size: 13px;
+  color: var(--noma-text-2);
+}
+.banner > span {
+  flex: 1;
+}
+.banner .button {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+/* ── Context menu ────────────────────────────────────────────────────── */
+.menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 180px;
+  padding: 5px;
+  border-radius: 12px;
+  background: var(--noma-surface-elevated);
+  border: 1px solid var(--noma-border);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  animation: menuIn 120ms var(--noma-ease) both;
+}
+[data-theme="light"] .menu {
+  box-shadow: 0 16px 40px rgba(36, 33, 45, 0.14);
+}
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 30px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--noma-text);
+  font-size: 13px;
+  text-align: left;
+}
+.menuItem:hover,
+.menuItem:focus-visible {
+  background: var(--noma-surface);
+  outline: none;
+}
+.menuItem[data-tone="danger"] {
+  color: var(--noma-urgent);
+}
+.menuSep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--noma-border);
+}
+.swatches {
+  display: flex;
+  gap: 6px;
+  padding: 6px 9px 8px;
+}
+.swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+}
+.swatch[aria-pressed="true"] {
+  border-color: var(--noma-text);
+}
+
+/* ── Archive / Trash views ───────────────────────────────────────────── */
+.binView {
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px 32px 40px;
+}
+.binHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--noma-text-2);
+}
+.binHead .button {
+  margin-left: auto;
+}
+.binGroup {
+  margin-bottom: 22px;
+}
+.binLabel {
+  font-size: 12px;
+  color: var(--noma-text-2);
+  margin: 0 0 8px;
+}
+.binList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 760px;
+}
+.binRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 6px 8px 6px 14px;
+  border-radius: var(--noma-radius-card);
+  border: 1px solid var(--noma-border-card);
+  background: var(--noma-surface);
+}
+.binRow:hover {
+  border-color: var(--noma-border-hover);
+}
+.binMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--noma-text);
+  text-align: left;
+  font-size: 14px;
+}
+.binTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.binDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.binActions {
+  display: flex;
+  gap: 6px;
+}
+.binActions .button {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}

@@ -43,6 +43,15 @@ export interface Item {
   hint: CaptureHint | null;
   /** An AI capture is still turning this placeholder into its final card. */
   capturing: boolean;
+  /** Cards: pinned cards sort first. */
+  pinned?: boolean;
+  /** Cards: set while the card is in the Archive. */
+  archivedAt?: Iso | null;
+  /** Cards: set while the card is in the Trash. */
+  deletedAt?: Iso | null;
+  subtasksDone?: number;
+  subtasksTotal?: number;
+  attachmentCount?: number;
 }
 
 export interface NewItem {

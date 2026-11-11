@@ -154,7 +154,10 @@ struct Export {
 }
 
 fn collect(conn: &Connection, now: DateTime<Utc>) -> DbResult<Export> {
-    let items = db::items::list_items(conn, &ItemFilter::All, true)?
+    // Archived cards are still the user's cards; the Trash is left out.
+    let mut all = db::items::list_items(conn, &ItemFilter::All, true)?;
+    all.extend(db::cards::list_archived(conn)?);
+    let items = all
         .into_iter()
         .map(|item| {
             let place = filing::place_of(conn, &item.id)

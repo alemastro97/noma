@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import styles from "./Sidebar.module.css";
 
 interface NavItemProps {
@@ -10,9 +10,20 @@ interface NavItemProps {
   active?: boolean;
   collapsed?: boolean;
   onSelect: () => void;
+  /** Right-click menu (projects and boards). */
+  onContextMenu?: (e: MouseEvent) => void;
 }
 
-export function NavItem({ label, icon, dot, count, active, collapsed, onSelect }: NavItemProps) {
+export function NavItem({
+  label,
+  icon,
+  dot,
+  count,
+  active,
+  collapsed,
+  onSelect,
+  onContextMenu,
+}: NavItemProps) {
   return (
     <a
       href="#"
@@ -24,6 +35,13 @@ export function NavItem({ label, icon, dot, count, active, collapsed, onSelect }
         e.preventDefault();
         onSelect();
       }}
+      onContextMenu={
+        onContextMenu &&
+        ((e) => {
+          e.preventDefault();
+          onContextMenu(e);
+        })
+      }
     >
       {dot ? (
         <span className={styles.dot} data-dot style={{ background: dot }} aria-hidden="true" />

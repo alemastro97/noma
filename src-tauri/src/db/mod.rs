@@ -1,9 +1,11 @@
 //! SQLite data layer. The frontend never touches SQL: Tauri commands call these
 //! functions and emit change events.
 
+pub mod attachments;
 pub mod boards;
 pub mod captures;
 pub mod embeddings;
+pub mod cards;
 pub mod error;
 pub mod filing;
 pub mod items;
@@ -11,12 +13,14 @@ pub mod links;
 pub mod migrations;
 pub mod models;
 pub mod placements;
+pub mod places;
 pub mod projects;
 pub mod recurrence;
 pub mod reminders;
 #[cfg(debug_assertions)]
 pub mod seed;
 pub mod settings;
+pub mod subtasks;
 pub mod tags;
 
 use std::path::Path;

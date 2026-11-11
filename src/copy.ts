@@ -403,3 +403,75 @@ export const semanticCopy = {
   downloading: (pct: number) => `Downloading… ${pct}%`,
   rebuild: "Rebuild index",
 };
+
+export const cardsCopy = {
+  pin: "Pin",
+  unpin: "Unpin",
+  pinned: "Pinned",
+  archive: "Archive",
+  unarchive: "Restore from Archive",
+  archived: (title: string) => `Archived “${title}”`,
+  trashed: (title: string) => `Moved “${title}” to Trash`,
+  restored: (title: string) => `Restored “${title}”`,
+  undo: "Undo",
+  restore: "Restore",
+  deleteForever: "Delete forever",
+  inArchive: "This card is in the Archive.",
+  inTrash: "This card is in the Trash.",
+  checklist: "Checklist",
+  subtasksProgress: (done: number, total: number) => `${done}/${total}`,
+  addSubtask: "Add an item…",
+  removeSubtask: "Remove item",
+  moveUp: "Move up",
+  moveDown: "Move down",
+  attachments: "Attachments",
+  attach: "Attach files",
+  attachmentCount: (n: number) => `${n} ${n === 1 ? "attachment" : "attachments"}`,
+  openFile: "Open",
+  showInFinder: "Show in Finder",
+  removeFile: "Remove",
+  fileSize: (bytes: number) =>
+    bytes < 1024
+      ? `${bytes} B`
+      : bytes < 1024 * 1024
+        ? `${Math.round(bytes / 1024)} KB`
+        : `${(bytes / 1024 / 1024).toFixed(1)} MB`,
+  editNotes: "Edit notes",
+  preview: "Preview",
+  markdownHint: "Markdown: **bold**, _italic_, `code`, - lists, [links](https://…)",
+  nav: { archive: "Archive", trash: "Trash" },
+  archiveEmpty: {
+    title: "Nothing archived.",
+    body: "Archive cards, projects and boards you're done with; they wait here.",
+  },
+  trashEmpty: {
+    title: "Trash is empty.",
+    body: "Deleted cards stay here for 30 days, then they're gone for good.",
+  },
+  trashNote: "Cards in the Trash are deleted for good after 30 days.",
+  emptyTrash: "Empty Trash",
+  emptyTrashTitle: "Empty the Trash?",
+  emptyTrashBody: (n: number) =>
+    `${n} ${n === 1 ? "card" : "cards"} will be deleted for good. This can't be undone.`,
+  deleteForeverTitle: "Delete this card for good?",
+  deleteForeverBody: "It can't be restored afterwards.",
+  deletedAgo: (days: number) =>
+    days <= 0 ? "Deleted today" : `Deleted ${days} ${days === 1 ? "day" : "days"} ago`,
+  archivedCards: "Cards",
+  archivedProjects: "Projects",
+  archivedBoards: "Boards",
+  cancel: "Cancel",
+  rename: "Rename",
+  color: "Color",
+  delete: "Delete",
+  placeMenu: (name: string) => `Options for ${name}`,
+  deleteProjectTitle: (name: string) => `Delete “${name}”?`,
+  deleteProjectBody:
+    "The project and its board are removed. Its cards move to the Trash, where you can restore them for 30 days.",
+  deleteBoardTitle: (name: string) => `Delete “${name}”?`,
+  deleteBoardBody:
+    "The board is removed. Cards that live only on it move to the Trash for 30 days; project cards stay in their project.",
+  placeArchived: (name: string) => `Archived “${name}”`,
+  placeDeleted: (name: string, n: number) =>
+    n > 0 ? `Deleted “${name}” · ${n} ${n === 1 ? "card" : "cards"} in Trash` : `Deleted “${name}”`,
+} as const;

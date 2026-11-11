@@ -2,6 +2,7 @@
 
 pub mod ai;
 pub mod boards;
+pub mod cards;
 pub mod desktop;
 pub mod items;
 pub mod projects;

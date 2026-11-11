@@ -135,6 +135,21 @@ pub struct Item {
     /// An AI capture is still turning this placeholder into its final card.
     #[serde(default)]
     pub capturing: bool,
+    /// Pinned cards sort first.
+    #[serde(default)]
+    pub pinned: bool,
+    /// Hidden from every view until restored from the Archive.
+    #[serde(default)]
+    pub archived_at: Option<DateTime<Utc>>,
+    /// In the Trash; purged 30 days after this moment.
+    #[serde(default)]
+    pub deleted_at: Option<DateTime<Utc>>,
+    #[serde(default)]
+    pub subtasks_done: u32,
+    #[serde(default)]
+    pub subtasks_total: u32,
+    #[serde(default)]
+    pub attachment_count: u32,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Default)]

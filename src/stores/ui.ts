@@ -10,6 +10,8 @@ export type NavTarget =
   | { kind: "notes" }
   | { kind: "settings" }
   | { kind: "review" }
+  | { kind: "archive" }
+  | { kind: "trash" }
   | { kind: "project"; id: string }
   | { kind: "board"; id: string };
 

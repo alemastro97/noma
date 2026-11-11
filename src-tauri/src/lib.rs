@@ -98,6 +98,7 @@ pub fn run() {
             app.manage(Arc::clone(&reminders));
             tauri::async_runtime::spawn(reminders.run());
             tauri::async_runtime::spawn(backup::run(app.handle().clone()));
+            tauri::async_runtime::spawn(commands::cards::purge_loop(app.handle().clone()));
 
             windows::setup(app.handle());
             if let Err(e) = tray::setup(app.handle()) {
@@ -226,6 +227,35 @@ pub fn run() {
             commands::semantic::semantic_reindex,
             commands::semantic::semantic_search,
             commands::semantic::ask_noma,
+            // cards
+            commands::cards::items_pin,
+            commands::cards::items_archive,
+            commands::cards::items_trash,
+            commands::cards::items_restore,
+            commands::cards::items_archived,
+            commands::cards::items_trashed,
+            commands::cards::items_delete_forever,
+            commands::cards::trash_empty,
+            commands::cards::subtasks_list,
+            commands::cards::subtasks_add,
+            commands::cards::subtasks_update,
+            commands::cards::subtasks_delete,
+            commands::cards::subtasks_reorder,
+            commands::cards::attachments_list,
+            commands::cards::attachments_add,
+            commands::cards::attachments_read,
+            commands::cards::attachments_open,
+            commands::cards::attachments_delete,
+            commands::cards::card_open_link,
+            commands::cards::projects_rename,
+            commands::cards::projects_set_color,
+            commands::cards::projects_archive,
+            commands::cards::projects_delete,
+            commands::cards::projects_archived,
+            commands::cards::boards_rename,
+            commands::cards::boards_archive,
+            commands::cards::boards_delete,
+            commands::cards::boards_archived,
         ])
         .build(tauri::generate_context!())
         .expect("error while building NOMA")

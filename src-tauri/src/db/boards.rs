@@ -4,7 +4,7 @@ use rusqlite::{Connection, Row, params};
 use super::error::{DbError, DbResult};
 use super::models::{Board, BoardKind, new_id};
 
-fn row_to_board(row: &Row<'_>) -> rusqlite::Result<Board> {
+pub(crate) fn row_to_board(row: &Row<'_>) -> rusqlite::Result<Board> {
     Ok(Board {
         id: row.get("id")?,
         name: row.get("name")?,
@@ -41,7 +41,8 @@ pub fn create_board(conn: &Connection, name: &str, now: DateTime<Utc>) -> DbResu
 }
 
 pub fn list_boards(conn: &Connection) -> DbResult<Vec<Board>> {
-    let mut stmt = conn.prepare("SELECT * FROM boards ORDER BY created_at ASC")?;
+    let mut stmt =
+        conn.prepare("SELECT * FROM boards WHERE archived_at IS NULL ORDER BY created_at ASC")?;
     let rows = stmt.query_map([], row_to_board)?;
     Ok(rows.collect::<Result<_, _>>()?)
 }

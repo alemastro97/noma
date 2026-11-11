@@ -3,7 +3,8 @@ import { onOpenItem, onOpenToday, settingGet } from "../api/desktop";
 import { getItem } from "../api/items";
 import { Onboarding } from "../components/Onboarding/Onboarding";
 import type { Board, ItemFilter, Project } from "../api/types";
-import { copy, organizeCopy } from "../copy";
+import { cardsCopy, copy, organizeCopy } from "../copy";
+import { ConfirmDialog } from "../components/Cards/ConfirmDialog";
 import { CommandPalette } from "../components/CommandPalette/CommandPalette";
 import { AskNoma } from "../components/AskNoma/AskNoma";
 import { useAskStore } from "../stores/ask";
@@ -30,6 +31,9 @@ function titleFor(target: NavTarget, projects: Project[], boards: Board[]) {
       return boards.find((b) => b.id === target.id)?.name ?? copy.nav.boards;
     case "review":
       return organizeCopy.review.nav;
+    case "archive":
+    case "trash":
+      return cardsCopy.nav[target.kind];
     default:
       return copy.nav[target.kind];
   }
@@ -39,6 +43,8 @@ function filterFor(target: NavTarget): ItemFilter | null {
   switch (target.kind) {
     case "settings":
     case "review":
+    case "archive":
+    case "trash":
       return null;
     case "upcoming":
       return { kind: "upcoming", days: 7 };
@@ -145,7 +151,7 @@ export function App() {
           title={titleFor(target, projects, boards)}
           count={openCount}
           color={color}
-          plain={target.kind === "settings" || target.kind === "review"}
+          plain={!filter}
           onCapture={() => useUiStore.getState().openQuickAdd()}
           onSearch={() => useUiStore.getState().setPaletteOpen(true)}
           onAsk={() => useAskStore.getState().openAsk()}
@@ -159,6 +165,7 @@ export function App() {
       <CommandPalette />
       <AskNoma />
       <Toasts />
+      <ConfirmDialog />
       {onboarding && <Onboarding onDone={() => setOnboarding(false)} />}
     </div>
   );

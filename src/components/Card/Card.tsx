@@ -1,7 +1,7 @@
-import { Copy, Flag, Maximize2, Repeat, Trash2 } from "lucide-react";
+import { Copy, Flag, Maximize2, Pin, PinOff, Repeat, Trash2 } from "lucide-react";
 import { memo, type CSSProperties, type MouseEvent } from "react";
 import type { Item, Progress, Project } from "../../api/types";
-import { cardCopy, hintCopy, kindLabel, priorityLabel } from "../../copy";
+import { cardCopy, cardsCopy, hintCopy, kindLabel, priorityLabel } from "../../copy";
 import {
   editedAgo,
   eventBlock,
@@ -17,6 +17,7 @@ import styles from "./Card.module.css";
 import { Checkbox } from "./Checkbox";
 import { HintChips } from "./HintChips";
 import { NomaOrb } from "../NomaOrb";
+import { CardBadges, PinMark } from "../Cards/CardBadges";
 import { KIND_STYLE } from "./kind";
 
 export type CardVariant = "canvas" | "board" | "compact";
@@ -35,6 +36,7 @@ export interface CardProps {
   onSelect?: (id: string) => void;
   onDuplicate?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onPin?: (id: string) => void;
   className?: string;
   style?: CSSProperties;
 }
@@ -84,7 +86,8 @@ function Actions({
   onOpen,
   onDuplicate,
   onDelete,
-}: Pick<CardProps, "item" | "onOpen" | "onDuplicate" | "onDelete">) {
+  onPin,
+}: Pick<CardProps, "item" | "onOpen" | "onDuplicate" | "onDelete" | "onPin">) {
   const stop = (fn?: (id: string) => void) => (e: MouseEvent) => {
     e.stopPropagation();
     fn?.(item.id);
@@ -99,6 +102,21 @@ function Actions({
           onClick={stop(onOpen)}
         >
           <Maximize2 size={14} strokeWidth={1.75} aria-hidden="true" />
+        </button>
+      )}
+      {onPin && (
+        <button
+          type="button"
+          className={styles.act}
+          aria-label={item.pinned ? cardsCopy.unpin : cardsCopy.pin}
+          title={item.pinned ? cardsCopy.unpin : cardsCopy.pin}
+          onClick={stop(onPin)}
+        >
+          {item.pinned ? (
+            <PinOff size={14} strokeWidth={1.75} aria-hidden="true" />
+          ) : (
+            <Pin size={14} strokeWidth={1.75} aria-hidden="true" />
+          )}
         </button>
       )}
       {onDuplicate && (
@@ -317,7 +335,9 @@ export const Card = memo(function Card(props: CardProps) {
         </>
       ) : (
         <>
+          <PinMark item={item} />
           <Body {...props} />
+          <CardBadges item={item} />
           <HintChips item={item} />
         </>
       )}
