@@ -4,6 +4,7 @@
 pub mod boards;
 pub mod captures;
 pub mod error;
+pub mod filing;
 pub mod items;
 pub mod links;
 pub mod migrations;

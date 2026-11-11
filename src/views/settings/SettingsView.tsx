@@ -1,7 +1,15 @@
 import { Check, Download, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ModelInfo, SpeechInfo } from "../../api/types";
-import { autostartGet, autostartSet } from "../../api/desktop";
+import type { BackupInfo } from "../../api/types";
+import {
+  autostartGet,
+  autostartSet,
+  backupInfo,
+  backupNow,
+  backupReveal,
+  dataExport,
+} from "../../api/desktop";
 import { ShortcutRecorder } from "../../components/ShortcutRecorder/ShortcutRecorder";
 import { useSetting } from "../../hooks/useSetting";
 import { useShortcuts } from "../../hooks/useShortcuts";
@@ -288,6 +296,8 @@ function DesktopSection() {
   const [orb, setOrb] = useSetting("orb.enabled", "1");
   const [paused, setPaused] = useSetting("reminders.paused", "0");
   const [native, setNative] = useSetting("reminders.native", "1");
+  const [filed, setFiled] = useSetting("capture.toast", "1");
+  const [brief, setBrief] = useSetting("reminders.brief", "1");
   const [login, setLogin] = useState<boolean | null>(null);
   useEffect(() => {
     void autostartGet()
@@ -318,6 +328,18 @@ function DesktopSection() {
         onChange={(v) => setOrb(v ? "1" : "0")}
       />
       <Toggle
+        label={t.filedToast}
+        hint={t.filedToastHint}
+        value={bool(filed, "1")}
+        onChange={(v) => setFiled(v ? "1" : "0")}
+      />
+      <Toggle
+        label={t.brief}
+        hint={t.briefHint}
+        value={bool(brief, "1")}
+        onChange={(v) => setBrief(v ? "1" : "0")}
+      />
+      <Toggle
         label={t.nativeNotifications}
         hint={t.nativeHint}
         value={bool(native, "1")}
@@ -334,6 +356,55 @@ function DesktopSection() {
         <p className={styles.meta}>{t.shortcutHint}</p>
         <ShortcutBinding action="voice" label={t.shortcutVoice} />
         <ShortcutBinding action="capture" label={t.shortcutCapture} />
+      </div>
+    </section>
+  );
+}
+
+function DataSection() {
+  const [info, setInfo] = useState<BackupInfo | null>(null);
+  const [exported, setExported] = useState(false);
+  useEffect(() => {
+    void backupInfo()
+      .then(setInfo)
+      .catch(() => undefined);
+  }, []);
+  const last = info?.lastAt
+    ? new Date(info.lastAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+    : null;
+  return (
+    <section className={styles.section} aria-labelledby="data-title">
+      <h2 id="data-title" className={styles.h2}>
+        {t.dataTitle}
+      </h2>
+      <p className={styles.lead}>{t.dataLead}</p>
+      <p className={styles.status}>{exported ? t.exported : t.lastBackup(last)}</p>
+      <div className={styles.dataActions}>
+        <button
+          type="button"
+          className={styles.ghost}
+          onClick={() =>
+            void backupNow()
+              .then(setInfo)
+              .catch(() => undefined)
+          }
+        >
+          {t.backupNow}
+        </button>
+        <button type="button" className={styles.ghost} onClick={() => void backupReveal()}>
+          {t.showBackups}
+        </button>
+        <button
+          type="button"
+          className={styles.ghost}
+          onClick={() =>
+            void dataExport()
+              .then(() => setExported(true))
+              .catch(() => undefined)
+          }
+        >
+          {t.exportData}
+        </button>
       </div>
     </section>
   );
@@ -418,6 +489,7 @@ export function SettingsView() {
 
         <VoiceSection />
         <DesktopSection />
+        <DataSection />
 
         <section className={styles.section} aria-labelledby="appearance-title">
           <h2 id="appearance-title" className={styles.h2}>

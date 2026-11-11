@@ -12,14 +12,22 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_notification::NotificationExt;
 use tokio::sync::Notify;
 
-use crate::db::{self, models::Item, settings::get_setting};
-use crate::state::AppState;
+use crate::db::{
+    self,
+    models::{Item, ItemFilter},
+    settings::{get_setting, set_setting},
+};
+use crate::state::{AppState, local_tz};
 use crate::windows;
 
 pub const REMINDERS_CHANGED: &str = "reminders:changed";
 /// Older than this when it fires: it was missed, group it.
 const MISSED_AFTER: Duration = Duration::minutes(10);
 const MAX_SLEEP: StdDuration = StdDuration::from_secs(30);
+pub const BRIEF_ID: &str = "brief";
+/// The morning brief shows from this local hour on.
+const BRIEF_FROM_HOUR: u32 = 7;
+const BRIEF_LAST_DAY: &str = "brief.last_day";
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -28,6 +36,10 @@ pub struct Toast {
     pub id: String,
     pub items: Vec<Item>,
     pub missed: bool,
+    /// Set on a "filed in…" toast shown after a capture made outside the main window.
+    pub filed: Option<crate::filed::Filed>,
+    /// The once-a-day "today" summary.
+    pub brief: bool,
 }
 
 pub struct Reminders {
@@ -61,6 +73,20 @@ impl Reminders {
             windows::show(&self.app, windows::TOASTS);
         }
         let _ = self.app.emit(REMINDERS_CHANGED, toasts);
+    }
+
+    /// Adds a toast, replacing one with the same id.
+    pub fn push(&self, toast: Toast) {
+        if let Ok(mut t) = self.toasts.lock() {
+            t.retain(|x| x.id != toast.id);
+            t.push(toast);
+        }
+        self.publish();
+    }
+
+    /// Whether the main window is in front (the user already sees their cards).
+    pub fn main_in_front(&self) -> bool {
+        !self.app_in_background()
     }
 
     /// Removes the toast for `id` (an item id or "away").
@@ -138,6 +164,8 @@ impl Reminders {
                     id: item.id.clone(),
                     items: vec![item.clone()],
                     missed: false,
+                    filed: None,
+                    brief: false,
                 });
             }
             if !missed.is_empty() {
@@ -149,6 +177,8 @@ impl Reminders {
                             id: "away".into(),
                             items: missed.clone(),
                             missed: true,
+                            filed: None,
+                            brief: false,
                         },
                     ),
                 }
@@ -169,8 +199,49 @@ impl Reminders {
         next
     }
 
+    /// Once a day, the first time NOMA is awake after 7:00: what is on today.
+    fn brief(&self) {
+        use chrono::Timelike;
+        if self.setting("reminders.brief").as_deref() == Some("0") {
+            return;
+        }
+        let (now, tz) = (Utc::now(), local_tz());
+        let local = now.with_timezone(&tz);
+        let day = local.date_naive().to_string();
+        if local.hour() < BRIEF_FROM_HOUR || self.setting(BRIEF_LAST_DAY).as_deref() == Some(&day) {
+            return;
+        }
+        let Some(state) = self.app.try_state::<AppState>() else {
+            return;
+        };
+        let items = {
+            let Ok(conn) = state.db.lock() else { return };
+            let _ = set_setting(&conn, BRIEF_LAST_DAY, &day);
+            db::items::list_items(&conn, &ItemFilter::Today { now, tz }, false).unwrap_or_default()
+        };
+        if items.is_empty() {
+            return;
+        }
+        let body = if items.len() == 1 {
+            items[0].title.clone()
+        } else {
+            format!("{} and {} more", items[0].title, items.len() - 1)
+        };
+        self.notify_native("Today in NOMA", &body);
+        self.push(Toast {
+            id: BRIEF_ID.into(),
+            items,
+            missed: false,
+            filed: None,
+            brief: true,
+        });
+    }
+
     pub async fn run(self: Arc<Self>) {
         loop {
+            if !self.paused() {
+                self.brief();
+            }
             let next = if self.paused() { None } else { self.tick() };
             let sleep = next
                 .and_then(|n| (n - Utc::now()).to_std().ok())

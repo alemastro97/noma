@@ -1,6 +1,8 @@
 pub mod ai;
+mod backup;
 pub mod commands;
 pub mod db;
+mod filed;
 pub mod reminders;
 #[cfg(debug_assertions)]
 mod selftest;
@@ -86,6 +88,7 @@ pub fn run() {
             let reminders = Reminders::new(app.handle().clone());
             app.manage(Arc::clone(&reminders));
             tauri::async_runtime::spawn(reminders.run());
+            tauri::async_runtime::spawn(backup::run(app.handle().clone()));
 
             windows::setup(app.handle());
             if let Err(e) = tray::setup(app.handle()) {
@@ -137,6 +140,14 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            filed::filed_undo,
+            filed::filed_move,
+            filed::filed_open,
+            filed::brief_open,
+            backup::backup_info,
+            backup::backup_now,
+            backup::backup_reveal,
+            backup::data_export,
             commands::desktop::autostart_get,
             commands::desktop::autostart_set,
             commands::desktop::shortcuts_get,
@@ -234,7 +245,11 @@ fn enable_login_item_once(app: &tauri::AppHandle) {
         return;
     };
     let Ok(conn) = state.db.lock() else { return };
-    if db::settings::get_setting(&conn, KEY).ok().flatten().is_some() {
+    if db::settings::get_setting(&conn, KEY)
+        .ok()
+        .flatten()
+        .is_some()
+    {
         return;
     }
     if let Err(e) = app.autolaunch().enable() {

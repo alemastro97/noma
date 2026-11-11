@@ -1,8 +1,9 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LogicalSize } from "@tauri-apps/api/dpi";
 import { Bell, X } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
+  briefOpen,
   onRemindersChanged,
   reminderDismiss,
   reminderDone,
@@ -12,6 +13,7 @@ import {
 import type { Item, ReminderToast } from "../../api/types";
 import { desktopCopy } from "../../copy";
 import glass from "../shared/glass.module.css";
+import { FiledCard } from "./FiledCard";
 import styles from "./toasts.module.css";
 import { whenLabel } from "./when";
 
@@ -30,6 +32,10 @@ export function ToastsWindow() {
     return () => void un.then((f) => f());
   }, []);
 
+  // A card that grows (the Move menu) asks for a new measure.
+  const [measure, setMeasure] = useState(0);
+  const remeasure = useCallback(() => setMeasure((n) => n + 1), []);
+
   // The window hugs its content so the transparent area never blocks clicks.
   useLayoutEffect(() => {
     const el = ref.current;
@@ -42,7 +48,7 @@ export function ToastsWindow() {
     } catch {
       // Plain browser (dev mock): no window to size.
     }
-  }, [toasts]);
+  }, [toasts, measure]);
 
   const now = new Date();
 
@@ -50,6 +56,8 @@ export function ToastsWindow() {
     <div ref={ref} className={styles.stack}>
       {toasts.map((t) => {
         const first = t.items[0];
+        if (t.filed) return <FiledCard key={t.id} toast={t} onResize={remeasure} />;
+        if (t.brief) return <BriefToast key={t.id} toast={t} />;
         if (t.missed) return <MissedToast key={t.id} toast={t} />;
         return first ? <ReminderCard key={t.id} toastId={t.id} item={first} now={now} /> : null;
       })}
@@ -120,6 +128,40 @@ function MissedToast({ toast }: { toast: ReminderToast }) {
             onClick={() => void reminderDismiss(toast.id)}
           >
             {desktopCopy.dismiss}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BriefToast({ toast }: { toast: ReminderToast }) {
+  const more = toast.items.length - 4;
+  return (
+    <section className={`${glass.glass} ${styles.toast}`} aria-label="Today">
+      <Icon />
+      <div className={styles.body}>
+        <span className={styles.missedTitle}>{desktopCopy.briefTitle(toast.items.length)}</span>
+        <ul className={styles.missed}>
+          {toast.items.slice(0, 4).map((i) => (
+            <li key={i.id}>{i.title}</li>
+          ))}
+          {more > 0 && <li>{desktopCopy.andMore(more)}</li>}
+        </ul>
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={glass.btn}
+            onClick={() => void reminderDismiss(toast.id)}
+          >
+            {desktopCopy.dismiss}
+          </button>
+          <button
+            type="button"
+            className={`${glass.btn} ${glass.btnDone}`}
+            onClick={() => void briefOpen()}
+          >
+            {desktopCopy.seeToday}
           </button>
         </div>
       </div>

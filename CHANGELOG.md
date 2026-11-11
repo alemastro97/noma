@@ -4,6 +4,11 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
+- **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.
+- **Morning brief.** Once a day, a small note with what is on today.
+- **Backups and export.** A daily local backup (last 10 kept) and an export of everything as Markdown + JSON, in Settings → Your data.
+
 - NOMA stays alive when you press ⌘Q (only the window closes; Quit NOMA in the menu bar exits), and an optional **Open at login** starts it quietly in the menu bar, so ⌥ Space always opens the orb. Installed builds turn it **on by default at first launch** (once; Settings stays in charge).
 
 - Captures get a **short headline title**; the card description keeps what you said, plus an AI summary for longer notes.

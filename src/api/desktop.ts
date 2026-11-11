@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import type { Action } from "../lib/shortcuts";
-import type { PanelName, ReminderToast, VoiceState } from "./types";
+import type { BackupInfo, PanelName, Place, ReminderToast, VoiceState } from "./types";
 
 // ── Voice ───────────────────────────────────────────────────────────────
 
@@ -73,3 +73,33 @@ export function onShortcutsChanged(cb: (map: ShortcutMap) => void): Promise<Unli
 
 export const autostartGet = () => invoke<boolean>("autostart_get");
 export const autostartSet = (enabled: boolean) => invoke<boolean>("autostart_set", { enabled });
+
+// ── "Filed in…" toast ───────────────────────────────────────────────────
+
+export const filedUndo = (captureId: string, itemIds: string[]) =>
+  invoke<void>("filed_undo", { captureId, itemIds });
+/** Moves the capture's cards and teaches NOMA where such notes belong. */
+export const filedMove = (captureId: string, itemIds: string[], place: Place) =>
+  invoke<void>("filed_move", { captureId, itemIds, place });
+export const filedOpen = (toastId: string, itemId: string) =>
+  invoke<void>("filed_open", { toastId, itemId });
+
+export function onOpenItem(cb: (itemId: string) => void): Promise<UnlistenFn> {
+  return listen<string>("ui:open-item", (e) => cb(e.payload));
+}
+
+// ── Backups and export ──────────────────────────────────────────────────
+
+export const backupInfo = () => invoke<BackupInfo>("backup_info");
+export const backupNow = () => invoke<BackupInfo>("backup_now");
+export const backupReveal = () => invoke<void>("backup_reveal");
+/** Writes noma.json + noma.md to a dated folder in Downloads; resolves to its path. */
+export const dataExport = () => invoke<string>("data_export");
+
+// ── Morning brief ───────────────────────────────────────────────────────
+
+export const briefOpen = () => invoke<void>("brief_open");
+
+export function onOpenToday(cb: () => void): Promise<UnlistenFn> {
+  return listen("ui:open-today", () => cb());
+}

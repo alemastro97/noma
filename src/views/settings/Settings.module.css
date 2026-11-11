@@ -314,3 +314,10 @@
   border: 1px solid var(--noma-border);
   background: var(--noma-surface);
 }
+
+.dataActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}

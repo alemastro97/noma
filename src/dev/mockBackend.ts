@@ -592,6 +592,21 @@ function handle(cmd: string, a: Args): unknown {
     }
     case "capture_retry":
       return null;
+    case "backup_info":
+    case "backup_now":
+      return {
+        dir: "~/Library/Application Support/noma/backups",
+        count: 3,
+        lastAt: iso(new Date()),
+      };
+    case "backup_reveal":
+    case "filed_undo":
+    case "filed_move":
+    case "filed_open":
+    case "brief_open":
+      return null;
+    case "data_export":
+      return "~/Downloads/NOMA export";
     case "autostart_get":
       return false;
     case "autostart_set":
@@ -651,6 +666,17 @@ function handle(cmd: string, a: Args): unknown {
       if (!r) return [];
       const soon = { ...r, remindAt: iso(new Date(Date.now() + 15 * 60_000)) };
       return [
+        {
+          id: "filed:demo",
+          items: [...items.values()].slice(3, 4).map(withLinks),
+          missed: false,
+          filed: {
+            captureId: "demo",
+            place: { kind: "project", id: "p-launch" },
+            placeName: "Spring launch",
+            moved: false,
+          },
+        },
         { id: r.id, items: [withLinks(soon)], missed: false },
         { id: "away", items: [...items.values()].slice(0, 3).map(withLinks), missed: true },
       ];

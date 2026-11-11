@@ -32,6 +32,8 @@ pub struct Context<'a> {
     pub boards: &'a [(String, String)],
     /// Latest card titles per project / board id: what each place is about.
     pub recent: &'a [(String, Vec<String>)],
+    /// (note, place name): where the user moved similar notes before.
+    pub examples: &'a [(String, String)],
 }
 
 /// One validated card, ready to be written.
@@ -230,14 +232,30 @@ pub fn user_prompt(text: &str, ctx: &Context<'_>) -> String {
         })
         .collect::<Vec<_>>()
         .join(", ");
+    // The user's own corrections outrank the model's guess about a place.
+    let examples = if ctx.examples.is_empty() {
+        String::new()
+    } else {
+        let list = ctx
+            .examples
+            .iter()
+            .map(|(note, place)| {
+                let note: String = note.chars().take(90).collect();
+                format!("\"{}\" -> {place}", note.replace('\n', " "))
+            })
+            .collect::<Vec<_>>()
+            .join("; ");
+        format!("The user filed similar notes like this, do the same: {list}\n")
+    };
     format!(
-        "Now: {} ({}), time zone {}\nCalendar: {}\nProjects: {}\nBoards: {}\nNote: {}",
+        "Now: {} ({}), time zone {}\nCalendar: {}\nProjects: {}\nBoards: {}\n{}Note: {}",
         local.format("%Y-%m-%dT%H:%M"),
         local.format("%A"),
         ctx.tz.name(),
         calendar,
         projects,
         boards,
+        examples,
         text.trim()
     )
 }
@@ -598,11 +616,29 @@ mod tests {
         let c = Context {
             boards: &boards,
             recent: &recent,
+            examples: &[],
             ..ctx(&projects)
         };
         let p = user_prompt("x", &c);
         assert!(p.contains("Projects: Spring launch (Book the photographer; Draft launch email)"));
         assert!(p.contains("Boards: Trips 2027"));
+    }
+
+    #[test]
+    fn prompt_carries_the_users_corrections_only_when_there_are_some() {
+        let projects = vec![("p1".to_string(), "Studio move".to_string())];
+        assert!(!user_prompt("x", &ctx(&projects)).contains("filed similar"));
+        let examples = vec![(
+            "chiamare i traslocatori".to_string(),
+            "Studio move".to_string(),
+        )];
+        let c = Context {
+            examples: &examples,
+            ..ctx(&projects)
+        };
+        assert!(user_prompt("x", &c).contains(
+            "The user filed similar notes like this, do the same: \"chiamare i traslocatori\" -> Studio move\nNote: x"
+        ));
     }
 
     #[test]
@@ -628,6 +664,7 @@ mod tests {
             projects,
             boards: &[],
             recent: &[],
+            examples: &[],
         }
     }
 

@@ -121,3 +121,38 @@
     animation: none;
   }
 }
+
+.filedIcon {
+  background: rgba(167, 139, 250, 0.12);
+  border-color: rgba(167, 139, 250, 0.3);
+  color: var(--noma-violet);
+}
+.place {
+  font-size: 13px;
+  color: var(--noma-text-2);
+}
+.place strong {
+  font-weight: 500;
+  color: var(--noma-text);
+}
+.places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 132px;
+  overflow-y: auto;
+}
+.placeBtn {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}

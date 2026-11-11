@@ -243,6 +243,28 @@ export interface ReminderToast {
   id: string;
   items: Item[];
   missed: boolean;
+  /** Present on a "filed in…" toast shown after a capture. */
+  filed?: Filed | null;
+  /** The once-a-day "today" summary. */
+  brief?: boolean;
+}
+
+/** Where a card lives: a project, a personal board or the Inbox. */
+export type Place =
+  { kind: "project"; id: string } | { kind: "board"; id: string } | { kind: "inbox" };
+
+export interface Filed {
+  captureId: string;
+  place: Place;
+  placeName: string;
+  /** True once the user moved it from the toast. */
+  moved: boolean;
+}
+
+export interface BackupInfo {
+  dir: string;
+  count: number;
+  lastAt: string | null;
 }
 
 export type PanelName = "orb" | "overlay" | "capture" | "panel" | "toasts";

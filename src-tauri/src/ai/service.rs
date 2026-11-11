@@ -668,6 +668,7 @@ impl AiService {
                     )
                 });
                 self.set_phase(Phase::Idle, None);
+                crate::filed::announce(&self.app, &capture.id, &ids);
                 CaptureEvent {
                     capture_id: capture.id.clone(),
                     status: "done".into(),
@@ -713,7 +714,7 @@ impl AiService {
         self.set_phase(Phase::Processing, None);
         self.publish().await;
 
-        let (projects, boards, recent) = self
+        let (projects, boards, recent, examples) = self
             .with_db(|c| -> db::DbResult<_> {
                 let projects: Vec<(String, String)> = db::projects::list_projects(c)?
                     .into_iter()
@@ -732,7 +733,9 @@ impl AiService {
                 for (id, _) in &boards {
                     recent.push((id.clone(), db::items::recent_titles(c, id, true, 3)?));
                 }
-                Ok((projects, boards, recent))
+                let examples =
+                    db::filing::pick(&capture.raw_text, &db::filing::examples(c, 60)?, 4);
+                Ok((projects, boards, recent, examples))
             })
             .ok_or_else(|| AiError::NotReady("database unavailable".into()))??;
         let (now, tz) = (now(), local_tz());
@@ -742,6 +745,7 @@ impl AiService {
             projects: &projects,
             boards: &boards,
             recent: &recent,
+            examples: &examples,
         };
         let user = extract::user_prompt(&capture.raw_text, &ctx);
         let output = provider

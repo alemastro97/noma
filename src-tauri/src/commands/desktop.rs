@@ -154,7 +154,14 @@ pub async fn reminder_done(
 
 // ── UI settings ─────────────────────────────────────────────────────────
 
-const UI_PREFIXES: [&str; 5] = ["ui.", "onboarding.", "orb.", "reminders.", "voice."];
+const UI_PREFIXES: [&str; 6] = [
+    "ui.",
+    "onboarding.",
+    "orb.",
+    "reminders.",
+    "voice.",
+    "capture.",
+];
 
 fn ui_key(key: &str) -> Result<(), String> {
     if UI_PREFIXES.iter().any(|p| key.starts_with(p)) {

@@ -159,6 +159,7 @@ async fn main() {
         projects: &projects,
         boards: &boards,
         recent: &recent,
+        examples: &[],
     };
 
     // Warm-up: load the model and fill the prompt cache.

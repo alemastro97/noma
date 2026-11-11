@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { settingGet } from "../api/desktop";
+import { onOpenItem, onOpenToday, settingGet } from "../api/desktop";
+import { getItem } from "../api/items";
 import { Onboarding } from "../components/Onboarding/Onboarding";
 import type { Board, ItemFilter, Project } from "../api/types";
 import { copy } from "../copy";
@@ -56,6 +57,27 @@ export function App() {
     settingGet("onboarding.done")
       .then((v) => setOnboarding(typeof v !== "undefined" && v !== "1"))
       .catch(() => undefined);
+  }, []);
+
+  // "Open" on a filed toast: go to the card's place and show it.
+  useEffect(() => {
+    const un = onOpenItem((id) => {
+      void getItem(id)
+        .then((item) => {
+          if (!item) return;
+          const ui = useUiStore.getState();
+          ui.setTarget(
+            item.projectId ? { kind: "project", id: item.projectId } : { kind: "inbox" },
+          );
+          ui.openDetail(id);
+        })
+        .catch(() => undefined);
+    });
+    const unToday = onOpenToday(() => useUiStore.getState().setTarget({ kind: "today" }));
+    return () => {
+      void un.then((f) => f()).catch(() => undefined);
+      void unToday.then((f) => f()).catch(() => undefined);
+    };
   }, []);
 
   // Initial data and backend change events. Safe under StrictMode's double effect.

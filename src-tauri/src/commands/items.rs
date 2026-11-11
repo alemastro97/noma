@@ -89,7 +89,14 @@ pub async fn items_update(
 ) -> Result<Item, String> {
     let item = {
         let conn = state.db.lock().map_err(lock_message)?;
-        db::items::update_item(&conn, &id, patch, now(), local_tz()).map_err(to_message)?
+        let project_changed = patch.project_id.is_some();
+        let item =
+            db::items::update_item(&conn, &id, patch, now(), local_tz()).map_err(to_message)?;
+        // Re-filing a captured card by hand teaches where such notes belong.
+        if project_changed && let Ok((place, _)) = db::filing::place_of(&conn, &id) {
+            let _ = db::filing::record_for_item(&conn, &id, &place, now());
+        }
+        item
     };
     emit_items_changed(&app, vec![item.id.clone()]);
     Ok(item)

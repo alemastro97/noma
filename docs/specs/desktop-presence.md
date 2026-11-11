@@ -16,6 +16,11 @@ NOMA lives on top of your work, not inside a window (design `screens/Desktop.htm
 7. **Onboarding.** First run: welcome → download the two local models (understanding + voice) → try ⌥ Space. Skippable; stored as `onboarding.done`.
 
 8. **Rebindable shortcuts.** Settings → On your desktop: for _Talk to NOMA_ and _Quick capture_, **Change** opens a game-style recorder — hold your combination, it shows live, then **Save** (or Esc / Cancel). Needs a modifier plus a key (so typing can't be hijacked); duplicates and combinations owned by another app are rejected with a message; **Reset** restores ⌥ Space / ⌘⇧N. The global shortcuts are released while recording so the current one doesn't fire. Stored as `shortcut.voice` / `shortcut.capture` (`Alt+Space`, `Super+Shift+KeyN`: modifiers + `KeyboardEvent.code`); every on-screen hint reads the live value (`shortcuts:changed`).
+9. **Filed-in toast.** After a capture made while the main window is not in front (voice, quick capture), a toast says the card's title and where it went (_Filed in Studio move_ / _Inbox_) with **Undo** (deletes the cards), **Move** (Inbox, projects, personal boards) and **Open** (main window on that card). It closes itself after 7 s unless hovered or the Move menu is open. Moving records a correction (see ai-capture.md). Off with Settings → On your desktop → _Show where captures go_ (`capture.toast`).
+
+10. **Morning brief.** Once a day, the first time NOMA is awake after 07:00 local, a toast lists what is on today (up to 4 titles) with _See today_; nothing shows on an empty day. `reminders.brief` turns it off; `brief.last_day` remembers the day. Paused with reminders.
+
+11. **Backups and export.** Settings → _Your data_. A snapshot of the database (`VACUUM INTO`) is written to `<app data>/backups/noma-YYYY-MM-DD-HHMMSS.db` when the newest one is older than 24 h (checked hourly) or on _Back up now_; the newest 10 are kept. _Export…_ writes `noma.json` (projects, boards, every card with its place) and `noma.md` (cards grouped by place) to `~/Downloads/NOMA export <date>/` and shows it in Finder. Restoring is manual: quit NOMA and replace `noma.db` with a snapshot.
 
 ## Data
 
@@ -38,3 +43,4 @@ At rest NOMA uses ~0.2 GB (dev build): the Rust core ~40 MB plus three webviews 
 ## Changelog
 
 - 2026-11-09 — created and shipped in 0.3.0.
+- 2026-11-11 — lifecycle (⌘Q keeps NOMA alive, open at login, on by default for installed builds); filed-in toast, morning brief, backups and export.

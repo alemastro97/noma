@@ -187,6 +187,20 @@ export const settingsCopy = {
   remindersPausedHint: "Reminders still fire later — nothing is lost.",
   nativeNotifications: "System notifications",
   nativeHint: "Also notify through macOS when NOMA isn't in front.",
+  filedToast: "Show where captures go",
+  filedToastHint:
+    "After a voice or quick capture, a small note says where NOMA filed it, with Undo and Move. Moving it teaches NOMA for next time.",
+  brief: "Morning brief",
+  briefHint:
+    "Once a day, the first time you're at your Mac after 7:00, NOMA shows what's on today.",
+  dataTitle: "Your data",
+  dataLead:
+    "Everything lives on this Mac. NOMA keeps a daily backup (the last 10) and can export all your cards as Markdown and JSON.",
+  lastBackup: (when: string | null) => (when ? `Last backup: ${when}` : "No backup yet"),
+  backupNow: "Back up now",
+  showBackups: "Show backups",
+  exportData: "Export…",
+  exported: "Exported to Downloads",
   shortcuts: "Shortcuts",
   shortcutHint: "Click Change, press the keys you want — you'll see them live — then Save.",
   shortcutChange: "Change",
@@ -266,6 +280,15 @@ export const desktopCopy = {
   done: "Done",
   dismiss: "Dismiss",
   inMinutes: (m: number) => (m <= 0 ? "Now" : `In ${m} ${m === 1 ? "minute" : "minutes"}`),
+  briefTitle: (n: number) => `Today · ${n} ${n === 1 ? "thing" : "things"}`,
+  seeToday: "See today",
+  filedIn: (place: string) => `Filed in ${place}`,
+  movedTo: (place: string) => `Moved to ${place} — NOMA will remember`,
+  andMore: (n: number) => `+${n} more`,
+  undo: "Undo",
+  move: "Move",
+  open: "Open",
+  moveTo: "Move to",
   missed: (n: number) => `While you were away · ${n} ${n === 1 ? "reminder" : "reminders"}`,
 };
 
