@@ -17,6 +17,7 @@ pub mod reminders;
 pub mod seed;
 pub mod settings;
 pub mod tags;
+pub mod voice;
 
 use std::path::Path;
 

@@ -14,6 +14,8 @@ import type { Item, ReminderToast } from "../../api/types";
 import { desktopCopy } from "../../copy";
 import glass from "../shared/glass.module.css";
 import { FiledCard } from "./FiledCard";
+import { voiceToastKind } from "../../api/voice";
+import { VoiceCommandCard } from "./VoiceCommandCard";
 import styles from "./toasts.module.css";
 import { whenLabel } from "./when";
 
@@ -57,6 +59,7 @@ export function ToastsWindow() {
       {toasts.map((t) => {
         const first = t.items[0];
         if (t.filed) return <FiledCard key={t.id} toast={t} onResize={remeasure} />;
+        if (voiceToastKind(t.id)) return <VoiceCommandCard key={t.id} toast={t} />;
         if (t.brief) return <BriefToast key={t.id} toast={t} />;
         if (t.missed) return <MissedToast key={t.id} toast={t} />;
         return first ? <ReminderCard key={t.id} toastId={t.id} item={first} now={now} /> : null;

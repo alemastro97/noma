@@ -14,6 +14,7 @@ import type {
   Progress,
   Project,
 } from "../api/types";
+import { handleVoice, NOT_HANDLED as NOT_HANDLED_VOICE } from "./mock/voice";
 
 type Args = Record<string, unknown>;
 
@@ -685,9 +686,12 @@ function handle(cmd: string, a: Args): unknown {
       links = links.filter((l) => l.id !== a.id);
       changed();
       return null;
-    default:
+    default: {
+      const voice = handleVoice(cmd, a);
+      if (voice !== NOT_HANDLED_VOICE) return voice;
       console.warn(`[mock backend] unhandled command ${cmd}`);
       return null;
+    }
   }
 }
 

@@ -76,7 +76,7 @@ fn main() {
         }
         let t = Instant::now();
         let out = stt
-            .transcribe(&audio[..audio.len() - 16_000], None)
+            .transcribe(&audio[..audio.len() - 16_000], None, None)
             .expect("transcribe");
         println!(
             "[{i}] speech {speech_ms} ms · endpoint {:?} ms · stt {} ms · lang {:?}\n    in:  {text}\n    out: {}",

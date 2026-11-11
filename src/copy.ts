@@ -316,3 +316,33 @@ export const onboardingCopy = {
   finish: "Start using NOMA",
   step: (i: number, n: number) => `${i} of ${n}`,
 };
+
+export const voiceCopy = {
+  // Toast confirming a voice command
+  markedDone: "Marked done",
+  movedTo: (when: string) => `Moved to ${when}`,
+  moved: "Moved",
+  // Card detail: the kept recording
+  recording: "Recording",
+  play: "Play recording",
+  stop: "Stop",
+  duration: (ms: number) => {
+    const s = Math.max(1, Math.round(ms / 1000));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  },
+  // Settings → voice extras
+  extrasTitle: "Voice commands & sounds",
+  extrasLead:
+    "Start with “mark … done”, “move … to tomorrow” or “what's on today?” and NOMA acts instead of taking a note. Anything unclear is saved as a note.",
+  sound: "Confirmation sound",
+  soundHint: "A soft chime when a voice capture is saved.",
+  speak: "Answer aloud",
+  speakHint: "“What's on today?” is answered with the Mac's voice, in your voice language.",
+  keepAudio: "Keep the recording",
+  keepAudioHint:
+    "Saves what you said as audio next to the card, so you can play it back. Stays on this Mac.",
+  vocabulary: "Words to recognize",
+  vocabularyHint:
+    "Names and words NOMA should expect, separated by commas. Project and board names are added for you.",
+  vocabularyPlaceholder: "Marta, Kyoto, Figma",
+};

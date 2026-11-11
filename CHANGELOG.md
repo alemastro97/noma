@@ -4,6 +4,12 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- **Voice commands.** Say "segna fatto chiamare Marta", "sposta il dentista a domani" or "cosa ho oggi?" and NOMA acts on the card instead of taking a note, with Undo in the toast. Anything unclear is still captured.
+- **Spoken answers.** "What's on today?" is read aloud in your voice language (Settings → Voice commands & sounds).
+- **Confirmation sound** when a voice capture is saved.
+- **Words to recognize.** Whisper now expects your project and board names plus your own list of names.
+- **Keep the recording** (off by default): the audio of a voice capture is saved next to the card and can be played from the card's details.
+
 - **Filed-in toast.** After a voice or quick capture NOMA shows where the card went, with Undo, Move and Open.
 - **NOMA learns from corrections.** Move a captured card and similar notes are filed the same way next time.
 - **Morning brief.** Once a day, a small note with what is on today.

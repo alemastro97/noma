@@ -15,6 +15,7 @@ import { useProjectsStore } from "../../stores/projects";
 import { useUiStore } from "../../stores/ui";
 import { KIND_STYLE } from "../Card/kind";
 import styles from "./DetailPanel.module.css";
+import { VoiceRecordingField } from "./VoiceRecording";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -270,6 +271,8 @@ function Editor({ item }: { item: Item }) {
       <Field label={detailCopy.tags}>
         <TagsField tags={item.tags} onChange={(tags) => update({ tags })} />
       </Field>
+
+      <VoiceRecordingField itemId={item.id} />
 
       {created && (
         <p className={styles.footnote}>

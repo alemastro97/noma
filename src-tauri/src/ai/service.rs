@@ -589,6 +589,22 @@ impl AiService {
         }
     }
 
+    /// One schema-constrained completion outside the capture queue (voice
+    /// commands). Fails with `NotReady` when no model is available.
+    pub async fn complete_once(
+        &self,
+        system: &str,
+        user: &str,
+        schema: &serde_json::Value,
+    ) -> Result<String, AiError> {
+        let provider = self.provider().await?;
+        let out = provider
+            .complete_json(&self.client, system, user, schema)
+            .await;
+        *self.last_used.lock().expect("last_used") = Instant::now();
+        out
+    }
+
     /// Wakes the worker (new capture, model became available…).
     pub fn nudge(&self) {
         self.wake.notify_one();

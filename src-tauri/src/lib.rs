@@ -199,6 +199,10 @@ pub fn run() {
             commands::desktop::reminder_done,
             commands::desktop::settings_get,
             commands::desktop::settings_set,
+            // voice
+            voice::commands::voice_recording_for_item,
+            voice::commands::voice_recording_audio,
+            voice::commands::voice_command_undo,
         ])
         .build(tauri::generate_context!())
         .expect("error while building NOMA")
