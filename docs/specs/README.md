@@ -15,6 +15,7 @@ Living specifications. One file per feature; each is updated in the same PR as t
 | [Semantic search & Ask NOMA](semantic.md)    | Shipped  | 4     |
 | [Cards](cards.md)                            | Shipped  | 4     |
 | [Voice](voice.md)                            | Shipped  | 4     |
+| [Your data](data.md)                         | Shipped  | 4     |
 
 Plans live in [`../plans/`](../plans/), decisions in [`../adr/`](../adr/).
 

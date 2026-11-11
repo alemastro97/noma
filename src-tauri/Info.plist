@@ -4,5 +4,7 @@
 <dict>
   <key>NSMicrophoneUsageDescription</key>
   <string>NOMA listens only while you hold or tap ⌥ Space, and turns what you say into cards. Audio never leaves your Mac.</string>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>NOMA reads your Apple Notes or Reminders only when you choose to import them.</string>
 </dict>
 </plist>

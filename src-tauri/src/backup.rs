@@ -30,7 +30,7 @@ pub fn dir(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 /// Snapshot files, newest first.
-fn snapshots(dir: &Path) -> Vec<(PathBuf, DateTime<Utc>)> {
+pub(crate) fn snapshots(dir: &Path) -> Vec<(PathBuf, DateTime<Utc>)> {
     let mut all: Vec<_> = fs::read_dir(dir)
         .into_iter()
         .flatten()
@@ -116,7 +116,7 @@ pub async fn backup_now(app: AppHandle, state: State<'_, AppState>) -> Result<Ba
     Ok(info(&dir))
 }
 
-fn reveal(path: &Path, select: bool) {
+pub(crate) fn reveal(path: &Path, select: bool) {
     let mut cmd = std::process::Command::new("open");
     if select {
         cmd.arg("-R");
@@ -146,14 +146,14 @@ struct ExportedItem {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-struct Export {
+pub(crate) struct Export {
     exported_at: DateTime<Utc>,
     projects: Vec<db::models::Project>,
     boards: Vec<db::models::Board>,
     items: Vec<ExportedItem>,
 }
 
-fn collect(conn: &Connection, now: DateTime<Utc>) -> DbResult<Export> {
+pub(crate) fn collect(conn: &Connection, now: DateTime<Utc>) -> DbResult<Export> {
     // Archived cards are still the user's cards; the Trash is left out.
     let mut all = db::items::list_items(conn, &ItemFilter::All, true)?;
     all.extend(db::cards::list_archived(conn)?);
@@ -175,7 +175,7 @@ fn collect(conn: &Connection, now: DateTime<Utc>) -> DbResult<Export> {
 }
 
 /// Everything as Markdown: one section per place, open cards first.
-fn markdown(export: &Export) -> String {
+pub(crate) fn markdown(export: &Export) -> String {
     let mut out = format!(
         "# NOMA export\n\n{}\n",
         export

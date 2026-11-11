@@ -23,6 +23,7 @@ import { SemanticSection } from "./SemanticSection";
 import { TimeSettings } from "./TimeSettings";
 import { VoiceExtrasSection } from "./VoiceExtrasSection";
 import { DesktopPresenceSettings } from "./DesktopPresenceSettings";
+import { DataToolsSection } from "./DataToolsSection";
 
 function Segmented<T extends string>({
   value,
@@ -498,6 +499,7 @@ export function SettingsView() {
         <DesktopSection />
         <TimeSettings />
         <DataSection />
+        <DataToolsSection />
 
         <section className={styles.section} aria-labelledby="appearance-title">
           <h2 id="appearance-title" className={styles.h2}>

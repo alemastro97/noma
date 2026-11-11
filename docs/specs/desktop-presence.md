@@ -20,7 +20,7 @@ NOMA lives on top of your work, not inside a window (design `screens/Desktop.htm
 
 10. **Morning brief.** Once a day, the first time NOMA is awake after 07:00 local, a toast lists what is on today (up to 4 titles) with _See today_; nothing shows on an empty day. `reminders.brief` turns it off; `brief.last_day` remembers the day. Paused with reminders.
 
-11. **Backups and export.** Settings → _Your data_. A snapshot of the database (`VACUUM INTO`) is written to `<app data>/backups/noma-YYYY-MM-DD-HHMMSS.db` when the newest one is older than 24 h (checked hourly) or on _Back up now_; the newest 10 are kept. _Export…_ writes `noma.json` (projects, boards, every card with its place) and `noma.md` (cards grouped by place) to `~/Downloads/NOMA export <date>/` and shows it in Finder. Restoring is manual: quit NOMA and replace `noma.db` with a snapshot.
+11. **Backups and export.** Settings → _Your data_. A snapshot of the database (`VACUUM INTO`) is written to `<app data>/backups/noma-YYYY-MM-DD-HHMMSS.db` when the newest one is older than 24 h (checked hourly) or on _Back up now_; the newest 10 are kept. _Export…_ writes `noma.json` (projects, boards, every card with its place) and `noma.md` (cards grouped by place) to `~/Downloads/NOMA export <date>/` and shows it in Finder. Restoring from a snapshot: see data.md.
 
 ## Data
 
