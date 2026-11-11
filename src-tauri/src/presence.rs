@@ -229,10 +229,10 @@ pub fn setup(app: &AppHandle) {
 
 /// Called by `settings_set` after any UI setting changed.
 pub fn on_setting(app: &AppHandle, key: &str) {
-    if key.starts_with("orb.") || key.starts_with("ui.") || key.starts_with("reminders.") {
-        if let Some(p) = app.try_state::<Arc<Presence>>() {
-            p.nudge();
-        }
+    if (key.starts_with("orb.") || key.starts_with("ui.") || key.starts_with("reminders."))
+        && let Some(p) = app.try_state::<Arc<Presence>>()
+    {
+        p.nudge();
     }
 }
 

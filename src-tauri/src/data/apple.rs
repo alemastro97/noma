@@ -68,7 +68,7 @@ fn friendly(err: String) -> String {
 
 /// Folder (Notes) or list (Reminders) names, without duplicates.
 pub fn sources(source: Source) -> Result<Vec<String>, String> {
-    let out = jxa(names_script(source)).map_err(|e| friendly(e))?;
+    let out = jxa(names_script(source)).map_err(friendly)?;
     let mut names: Vec<String> = serde_json::from_str(&out).map_err(|e| e.to_string())?;
     let mut seen = std::collections::HashSet::new();
     names.retain(|n| seen.insert(n.clone()));
@@ -105,7 +105,7 @@ fn drafts(source: Source, raw: Vec<Raw>) -> Vec<Draft> {
 
 /// Reads every note in a folder, or every open reminder in a list.
 pub fn read(source: Source, name: &str) -> Result<Vec<Draft>, String> {
-    let out = jxa(&read_script(source, name)).map_err(|e| friendly(e))?;
+    let out = jxa(&read_script(source, name)).map_err(friendly)?;
     let raw: Vec<Raw> = serde_json::from_str(&out).map_err(|e| e.to_string())?;
     Ok(drafts(source, raw))
 }

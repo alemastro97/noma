@@ -24,7 +24,7 @@ pub struct Candidate {
 /// Open Inbox cards (oldest first) whose capture finished, with its text.
 pub fn candidates(conn: &Connection) -> DbResult<Vec<Candidate>> {
     let mut items = db::items::list_items(conn, &ItemFilter::Inbox, false)?;
-    items.sort_by(|a, b| a.created_at.cmp(&b.created_at));
+    items.sort_by_key(|a| a.created_at);
     let mut out = Vec::new();
     for item in items.into_iter().filter(|i| !i.capturing) {
         if let Some(c) = db::captures::latest_for_item(conn, &item.id)?

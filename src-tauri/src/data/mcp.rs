@@ -198,13 +198,12 @@ pub fn run() -> i32 {
             Ok(msg) => handle(conn.as_ref(), &msg),
             Err(_) => Some(error(Value::Null, -32700, "parse error")),
         };
-        if let Some(answer) = answer {
-            if writeln!(stdout, "{answer}")
+        if let Some(answer) = answer
+            && writeln!(stdout, "{answer}")
                 .and_then(|_| stdout.flush())
                 .is_err()
-            {
-                break;
-            }
+        {
+            break;
         }
     }
     0

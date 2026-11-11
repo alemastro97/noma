@@ -23,7 +23,7 @@ export interface ForceOptions {
 
 export const DEFAULT_FORCES: ForceOptions = {
   repulsion: 5200,
-  springLength: 120,
+  springLength: 70,
   springStrength: 0.04,
   gravity: 0.012,
   damping: 0.82,

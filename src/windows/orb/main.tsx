@@ -7,12 +7,22 @@ import { LocaleRoot } from "../../i18n/LocaleRoot";
 import { OrbWindow } from "./OrbWindow";
 
 initTheme();
-initLocale();
 
-createRoot(document.getElementById("root") as HTMLElement).render(
-  <StrictMode>
-    <LocaleRoot>
-      <OrbWindow />
-    </LocaleRoot>
-  </StrictMode>,
-);
+async function boot() {
+  // Plain-browser development (no Tauri shell): use the in-memory mock backend.
+  if (import.meta.env.DEV && !("__TAURI_INTERNALS__" in window)) {
+    const { installMockBackend } = await import("../../dev/mockBackend");
+    installMockBackend();
+  }
+}
+
+void boot().then(() => {
+  initLocale();
+  createRoot(document.getElementById("root") as HTMLElement).render(
+    <StrictMode>
+      <LocaleRoot>
+        <OrbWindow />
+      </LocaleRoot>
+    </StrictMode>,
+  );
+});

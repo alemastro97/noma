@@ -95,6 +95,9 @@ struct Runtime {
     error: Option<String>,
 }
 
+/// Shared in-memory index: (item id, vector) pairs.
+type IndexCache = Arc<Vec<(String, Vec<f32>)>>;
+
 pub struct SemanticService {
     app: AppHandle,
     paths: Paths,
@@ -103,7 +106,7 @@ pub struct SemanticService {
     runtime: std::sync::Mutex<Runtime>,
     cancel: std::sync::Mutex<Option<Arc<AtomicBool>>>,
     /// In-memory copy of the index (model id, vectors); dropped on every write.
-    cache: std::sync::Mutex<Option<Arc<Vec<(String, Vec<f32>)>>>>,
+    cache: std::sync::Mutex<Option<IndexCache>>,
     last_used: std::sync::Mutex<Instant>,
     dirty: AtomicBool,
     wake: Notify,
@@ -390,12 +393,13 @@ impl SemanticService {
     pub async fn run(self: Arc<Self>) {
         self.publish().await;
         loop {
-            if self.dirty.swap(false, Ordering::Relaxed) && self.ready() {
-                if let Err(e) = self.index_pass().await {
-                    log::warn!("semantic index: {e}");
-                    self.runtime.lock().expect("runtime lock").error = Some(e.to_string());
-                    self.publish().await;
-                }
+            if self.dirty.swap(false, Ordering::Relaxed)
+                && self.ready()
+                && let Err(e) = self.index_pass().await
+            {
+                log::warn!("semantic index: {e}");
+                self.runtime.lock().expect("runtime lock").error = Some(e.to_string());
+                self.publish().await;
             }
             tokio::select! {
                 _ = self.wake.notified() => tokio::time::sleep(DEBOUNCE).await,

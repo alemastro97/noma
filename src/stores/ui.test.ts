@@ -20,7 +20,14 @@ test("setTarget switches the active target", () => {
 test("setViewMode accepts available modes", () => {
   useUiStore.getState().setViewMode("list");
   expect(useUiStore.getState().viewMode).toBe("list");
-  expect(AVAILABLE_VIEW_MODES).toEqual(["canvas", "kanban", "list", "graph", "calendar", "timeline"]);
+  expect(AVAILABLE_VIEW_MODES).toEqual([
+    "canvas",
+    "kanban",
+    "list",
+    "graph",
+    "calendar",
+    "timeline",
+  ]);
 });
 
 test("setViewMode('calendar') switches to the calendar", () => {

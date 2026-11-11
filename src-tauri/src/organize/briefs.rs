@@ -108,7 +108,7 @@ pub fn cards(
         })
         .cloned()
         .collect();
-    done.sort_by(|a, b| b.completed_at.cmp(&a.completed_at));
+    done.sort_by_key(|a| std::cmp::Reverse(a.completed_at));
     done.truncate(MAX_DONE);
     let mut open: Vec<Item> = all
         .into_iter()
