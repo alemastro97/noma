@@ -75,10 +75,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "dmg",
-      "app"
-    ],
+    "targets": ["dmg", "app"],
     "category": "Productivity",
     "shortDescription": "NOMA \u2014 your second mind.",
     "icon": [

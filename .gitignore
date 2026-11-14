@@ -31,4 +31,5 @@ pnpm-debug.log*
 # Local tooling scratch
 .superpowers/
 coverage/
-src-tauri/.cargo/
+# Machine-specific cargo settings (e.g. a C++ header path workaround).
+/.cargo/

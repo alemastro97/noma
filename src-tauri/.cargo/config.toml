@@ -1,0 +1,6 @@
+# Compile every C/C++ dependency (whisper.cpp) for the same minimum macOS as
+# the shipped app (tauri.conf.json `minimumSystemVersion`), whether it is built
+# by `cargo test`, `cargo run --example` or `tauri build`. Otherwise objects
+# cached by one are reused by the other with the wrong availability checks.
+[env]
+MACOSX_DEPLOYMENT_TARGET = "13.0"

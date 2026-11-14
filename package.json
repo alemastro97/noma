@@ -17,7 +17,10 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:fast": "tauri build --bundles app -- --profile release-fast",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm check:rust",
+    "check:rust": "vite build && cd src-tauri && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

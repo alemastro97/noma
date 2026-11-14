@@ -49,6 +49,17 @@ objc2 = "0.6"
 objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSGraphics"] }
 tauri-nspanel = "2.1"
 
+# Local builds of the real app in a fraction of the time: `pnpm build:fast`.
+[profile.release-fast]
+inherits = "release"
+lto = "thin"
+codegen-units = 16
+incremental = true
+strip = "debuginfo"
+
+[profile.dev]
+debug = "line-tables-only"
+
 [profile.release]
 codegen-units = 1
 lto = true

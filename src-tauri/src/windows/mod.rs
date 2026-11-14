@@ -204,6 +204,7 @@ pub fn show(app: &AppHandle, label: &'static str) {
 }
 
 /// Whether a floating window exists and is on screen (blocks on the main thread).
+#[cfg(debug_assertions)]
 pub fn is_shown(app: &AppHandle, label: &'static str) -> bool {
     let (tx, rx) = std::sync::mpsc::channel();
     let handle = app.clone();
