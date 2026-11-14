@@ -4,6 +4,8 @@ All notable changes to NOMA are documented here. The format follows [Keep a Chan
 
 ## Unreleased
 
+- **The orb is no longer always on screen.** By default it appears only while you hold ⌥ Space and disappears as soon as you let go (also after login). _Settings → On your desktop → Keep the orb on screen_ brings the permanent orb back.
+
 ## 0.4.0 — Second mind (2026-11-11)
 
 - **Italian interface.** Settings → Appearance → _Interface language_: Match system, English or Italiano. Every window, the menu-bar menu and notifications switch live.

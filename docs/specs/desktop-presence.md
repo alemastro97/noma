@@ -10,7 +10,7 @@ NOMA lives on top of your work, not inside a window (design `screens/Desktop.htm
 2. **While talking (`voice.display`).** Default **Orb only**: the floating orb appears (even over NOMA or with the orb switched off) and pulses while listening; click it or release/tap ⌥ Space to finish. Optional **Full panel**: the overlay below. In both modes the window closes the moment you stop talking — transcription and AI capture run in the background, with only a short success flash on the orb; empty speech, missing model and errors still show the panel for a moment. Partials and the waveform exist only in the full panel (Whisper on the GPU while the UI animates caused stutter).
    **Voice overlay** (full panel). Glass panel at 18 % from the top of the active screen: listening orb, live waveform from input level, live transcript, and **↵** closes it at once. Keys: **↵** save now, **Tab** edit the transcript (then ↵ saves), **Esc** cancel. Messages for empty speech, missing model and errors.
 3. **Quick capture (⌘⇧N anywhere).** Glass input that accepts focus without activating the main window; Auto mode; ↵ saves, Esc closes.
-4. **Floating orb.** Non-activating NSPanel that floats over fullscreen apps on every Space (ADR-0002); shown when the main window is hidden or unfocused, hidden when it is in front. Click toggles the **panel** (Today with check-off, n left, _Talk to NOMA_, _Open NOMA_); drag moves it. Mirrors voice / AI state. Off via Settings → On your desktop.
+4. **Floating orb.** Non-activating NSPanel that floats over fullscreen apps on every Space (ADR-0002); **off by default**: it appears only while the voice shortcut is held (pulsing) and hides 0.2 s after you let go. With _Keep the orb on screen_ (`orb.enabled = 1`) it also stays on screen whenever the main window is hidden or unfocused, and hides when the window is in front. Click toggles the **panel** (Today with check-off, n left, _Talk to NOMA_, _Open NOMA_); drag moves it. Mirrors voice / AI state. Permanent orb: Settings → On your desktop → _Keep the orb on screen_, or the menu-bar item.
 5. **Reminders.** A scheduler sleeps until the next due reminder (effective time `snoozed_until` or `remind_at`, max 30 s, nudged on every item change) and shows glass toasts top-right: _Snooze 1h_, _Tomorrow_ (09:00), _Done_. Reminders missed by more than 10 min (NOMA was closed or the Mac asleep) are grouped into one "While you were away" toast. A macOS notification is also sent when NOMA is not in front (setting). Recurring reminders advance on Done. Pause from the tray or Settings.
 6. **Lifecycle.** ⌘Q and closing the window both just hide the main window (NOMA and its shortcuts keep running); only the menu-bar _Quit NOMA_ exits. Optional _Open at login_ (Settings → On your desktop; macOS LaunchAgent, starts with `--background`: no window, orb only) makes ⌥ Space work right after login; installed (non-dev) builds enable it once at first launch (`autostart.initialized` setting), never overriding a later choice. Closing the main window hides it (NOMA keeps running as a menu-bar agent, no Dock icon); reopening from the Dock / tray / panel restores it. Tray menu: Talk, Quick capture, Open NOMA, Floating orb ✓, Pause reminders ✓, Quit.
 7. **Onboarding.** First run: welcome → download the two local models (understanding + voice) → try ⌥ Space. Skippable; stored as `onboarding.done`.
@@ -24,7 +24,7 @@ NOMA lives on top of your work, not inside a window (design `screens/Desktop.htm
 
 ## Data
 
-Migration `0004`: `items.reminded_at`. Settings keys: `ai.speechModel`, `voice.autoStop`, `voice.language`, `voice.display`, `shortcut.voice`, `shortcut.capture`, `orb.enabled`, `reminders.paused`, `reminders.native`, `onboarding.done` (UI keys are written through a whitelisted `settings_set`). Events: `voice:state`, `voice:level`, `voice:partial`, `reminders:changed`.
+Migration `0004`: `items.reminded_at`. Settings keys: `ai.speechModel`, `voice.autoStop`, `voice.language`, `voice.display`, `shortcut.voice`, `shortcut.capture`, `orb.enabled` (off by default: the orb shows only while you hold the voice shortcut), `reminders.paused`, `reminders.native`, `onboarding.done` (UI keys are written through a whitelisted `settings_set`). Events: `voice:state`, `voice:level`, `voice:partial`, `reminders:changed`.
 
 ## Decisions
 
@@ -43,4 +43,5 @@ At rest NOMA uses ~0.2 GB (dev build): the Rust core ~40 MB plus three webviews 
 ## Changelog
 
 - 2026-11-09 — created and shipped in 0.3.0.
+- 2026-11-14 — orb off by default (transient while talking); fixes the orb sitting on screen at every login.
 - 2026-11-11 — lifecycle (⌘Q keeps NOMA alive, open at login, on by default for installed builds); filed-in toast, morning brief, backups and export.

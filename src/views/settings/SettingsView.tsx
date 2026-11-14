@@ -319,7 +319,7 @@ function ShortcutBinding({ action, label }: { action: Action; label: string }) {
 }
 
 function DesktopSection() {
-  const [orb, setOrb] = useSetting("orb.enabled", "1");
+  const [orb, setOrb] = useSetting("orb.enabled", "0");
   const [paused, setPaused] = useSetting("reminders.paused", "0");
   const [native, setNative] = useSetting("reminders.native", "1");
   const [filed, setFiled] = useSetting("capture.toast", "1");

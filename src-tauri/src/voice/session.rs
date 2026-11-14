@@ -136,7 +136,9 @@ impl VoiceService {
     fn restore_orb_later(self: &Arc<Self>) {
         let me = Arc::clone(self);
         tauri::async_runtime::spawn(async move {
-            tokio::time::sleep(Duration::from_millis(1800)).await;
+            // Kept orb: let the result flash. Transient orb: gone as soon as you let go.
+            let keep = crate::tray::orb_enabled(&me.app);
+            tokio::time::sleep(Duration::from_millis(if keep { 1800 } else { 200 })).await;
             if me.is_active() {
                 return;
             }

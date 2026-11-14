@@ -189,8 +189,9 @@ export const it: CopyBundle = {
     openAtLogin: "Apri all'avvio",
     openAtLoginHint:
       "NOMA si avvia in silenzio nella barra dei menu, così la scorciatoia vocale funziona appena accedi. ⌘Q chiude solo la finestra; per uscire usa Esci da NOMA nella barra dei menu.",
-    orbToggle: "Sfera fluttuante",
-    orbHint: "Una piccola sfera che resta sopra le altre app quando NOMA è in background.",
+    orbToggle: "Tieni la sfera sempre visibile",
+    orbHint:
+      "Spenta di default: la sfera compare solo mentre tieni premuta la scorciatoia vocale e sparisce quando rilasci. Accesa: una piccola sfera resta sopra le altre app quando NOMA è in background.",
     remindersPaused: "Metti in pausa i promemoria",
     remindersPausedHint: "I promemoria arrivano comunque più tardi: non si perde nulla.",
     nativeNotifications: "Notifiche di sistema",

@@ -184,8 +184,9 @@ const settingsCopy_en = {
   openAtLogin: "Open at login",
   openAtLoginHint:
     "NOMA starts quietly in the menu bar, so the voice shortcut works right after you log in. ⌘Q only closes the window; use Quit NOMA in the menu bar to exit.",
-  orbToggle: "Floating orb",
-  orbHint: "A small orb that stays on top of other apps when NOMA is in the background.",
+  orbToggle: "Keep the orb on screen",
+  orbHint:
+    "Off by default: the orb appears only while you hold the voice shortcut and disappears when you let go. On: a small orb stays on top of other apps when NOMA is in the background.",
   remindersPaused: "Pause reminders",
   remindersPausedHint: "Reminders still fire later — nothing is lost.",
   nativeNotifications: "System notifications",

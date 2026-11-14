@@ -34,7 +34,7 @@ fn store(app: &AppHandle, key: &str, value: &str) {
 pub(crate) const TRAY_ID: &str = "noma";
 
 pub(crate) fn orb_enabled(app: &AppHandle) -> bool {
-    setting(app, "orb.enabled").as_deref() != Some("0")
+    setting(app, "orb.enabled").as_deref() == Some("1")
 }
 
 /// The menu in the current interface language (ids stay the same).
