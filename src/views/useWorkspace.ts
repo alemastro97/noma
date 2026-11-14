@@ -8,8 +8,8 @@ import { useProjectsStore } from "../stores/projects";
 import { selectCard, useSelectionStore } from "../stores/selection";
 import { useUiStore } from "../stores/ui";
 
-/** Current time, refreshed every 30 s so relative labels ("in 2h 10m") stay true. */
-export function useNow(intervalMs = 30_000): Date {
+/** Current time, refreshed every minute so relative labels ("in 2h 10m") stay true. */
+export function useNow(intervalMs = 60_000): Date {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), intervalMs);

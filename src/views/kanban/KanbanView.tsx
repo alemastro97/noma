@@ -24,6 +24,7 @@ export function KanbanView({ empty }: { empty?: ReactNode }) {
   const onDrop = (status: Status) => (e: DragEvent) => {
     e.preventDefault();
     setOver(null);
+    setDragging(null);
     const store = useItemsStore.getState();
     batchHistory("bulk", () => {
       for (const id of draggedIds(e)) {

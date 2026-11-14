@@ -45,7 +45,20 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
       if (mine !== seq) return;
       const positions: Record<string, Point> = {};
       for (const p of placements ?? []) positions[p.itemId] = { x: p.x, y: p.y };
-      set({ boardId, positions, links: links ?? [] });
+      const prev = get();
+      const same = <T>(a: T, b: T) => JSON.stringify(a) === JSON.stringify(b);
+      const nextLinks = links ?? [];
+      if (
+        prev.boardId === boardId &&
+        same(prev.positions, positions) &&
+        same(prev.links, nextLinks)
+      )
+        return;
+      set({
+        boardId,
+        positions: same(prev.positions, positions) ? prev.positions : positions,
+        links: same(prev.links, nextLinks) ? prev.links : nextLinks,
+      });
     } catch (err) {
       if (mine === seq) toastError(message(err));
     }

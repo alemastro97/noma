@@ -1,0 +1,7 @@
+/* App-side additions to the design handoff's noma-orb.css (which stays untouched).
+   Small resting orbs (sidebar, header chip) stay still, so an idle window
+   repaints nothing. */
+.noma-orb.s-idle.small .core,
+.noma-orb.s-idle.small .core::before {
+  animation: none;
+}

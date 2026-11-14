@@ -15,7 +15,7 @@ import { Sidebar } from "../components/Sidebar/Sidebar";
 import { Toasts } from "../components/Toasts/Toasts";
 import { useAiStore } from "../stores/ai";
 import { useBoardStore } from "../stores/board";
-import { flushPendingDeletes, useItemsStore } from "../stores/items";
+import { useItemsStore } from "../stores/items";
 import { useProjectsStore } from "../stores/projects";
 import { useUiStore, type NavTarget, type ViewMode } from "../stores/ui";
 import styles from "./App.module.css";
@@ -75,8 +75,9 @@ export function App() {
   const viewMode = useUiStore((s) => s.viewMode);
   const projects = useProjectsStore((s) => s.projects);
   const boards = useProjectsStore((s) => s.boards);
-  const order = useItemsStore((s) => s.order);
-  const itemsById = useItemsStore((s) => s.items);
+  const openCount = useItemsStore((s) =>
+    s.order.reduce((n, id) => n + (s.items[id] && s.items[id].status !== "done" ? 1 : 0), 0),
+  );
 
   useGlobalHotkeys();
   useWorkspaceTools();
@@ -134,12 +135,10 @@ export function App() {
         if (cancelled) fn();
         else unlisten = fn;
       });
-    window.addEventListener("beforeunload", flushPendingDeletes);
     return () => {
       cancelled = true;
       unlisten?.();
       unlistenAi?.();
-      window.removeEventListener("beforeunload", flushPendingDeletes);
     };
   }, []);
 
@@ -161,7 +160,6 @@ export function App() {
 
   const color =
     target.kind === "project" ? projects.find((p) => p.id === target.id)?.color : undefined;
-  const openCount = order.filter((id) => itemsById[id] && itemsById[id].status !== "done").length;
 
   return (
     <div role="application" aria-label={copy.appName} className={styles.app}>

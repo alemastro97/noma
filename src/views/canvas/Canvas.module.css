@@ -63,10 +63,11 @@
   stroke: var(--noma-border-hover) !important;
   stroke-width: 1.5 !important;
   stroke-dasharray: 4 4;
-  animation: dash 1.6s linear infinite;
   fill: none;
 }
+/* Only the selected link moves: an idle board repaints nothing. */
 .edge[data-selected] {
+  animation: dash 1.6s linear infinite;
   stroke: var(--noma-lavender) !important;
   stroke-opacity: 0.9;
 }

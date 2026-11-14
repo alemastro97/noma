@@ -29,7 +29,21 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => ({
         boardsApi.listBoards(),
         projectsApi.getProgress(),
       ]);
-      set({ projects: projects ?? [], boards: boards ?? [], progress: progress ?? {} });
+      // Same data → same objects, so cards and the sidebar do not re-render.
+      const prev = get();
+      const keep = <T>(old: T, next: T): T =>
+        JSON.stringify(old) === JSON.stringify(next) ? old : next;
+      const next = {
+        projects: keep(prev.projects, projects ?? []),
+        boards: keep(prev.boards, boards ?? []),
+        progress: keep(prev.progress, progress ?? {}),
+      };
+      if (
+        next.projects !== prev.projects ||
+        next.boards !== prev.boards ||
+        next.progress !== prev.progress
+      )
+        set(next);
     } catch (err) {
       toastError(message(err));
     }

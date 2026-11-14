@@ -426,6 +426,7 @@ function Canvas({ boardId, viewKey, empty }: CanvasViewProps) {
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        nodesDraggable={isBoard}
         onNodesChange={onNodesChange}
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}

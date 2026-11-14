@@ -101,6 +101,21 @@ export async function redo(): Promise<boolean> {
   return true;
 }
 
+/** The entry recorded last, for a toast's Undo button. */
+export function lastEntry(): HistoryEntry | undefined {
+  return past[past.length - 1];
+}
+
+/** Undoes one specific entry (a toast's Undo). No-op when it was already undone. */
+export async function undoEntry(entry: HistoryEntry | undefined): Promise<boolean> {
+  const at = entry ? past.lastIndexOf(entry) : -1;
+  if (!entry || at < 0) return false;
+  past.splice(at, 1);
+  future.push(entry);
+  await replay(entry.undo);
+  return true;
+}
+
 export function historySize(): { past: number; future: number } {
   return { past: past.length, future: future.length };
 }

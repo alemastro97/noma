@@ -15,18 +15,12 @@ import {
 } from "../api/types";
 import { inversePatch } from "../lib/inversePatch";
 import { useBoardStore } from "./board";
-import { record } from "./history";
+import { lastEntry, record, undoEntry } from "./history";
 import { useProjectsStore } from "./projects";
-import { TOAST_MS, toastError, useToastsStore } from "./toasts";
+import { toastError, useToastsStore } from "./toasts";
 
 export interface LoadOptions {
   includeDone?: boolean;
-}
-
-interface PendingDelete {
-  item: Item;
-  index: number;
-  timer: ReturnType<typeof setTimeout>;
 }
 
 export interface ItemsState {
@@ -48,7 +42,7 @@ export interface ItemsState {
   toggleComplete: (id: string) => Promise<void>;
   setStatus: (id: string, status: Status) => Promise<void>;
   duplicate: (id: string) => Promise<Item | null>;
-  /** Removes now, deletes on the server after the undo window. `quiet` skips the toast. */
+  /** Moves the card to the Trash at once; Undo (toast or ⌘Z) restores it. `quiet` skips the toast. */
   remove: (id: string, opts?: { quiet?: boolean }) => void;
   refreshCounts: () => Promise<void>;
   subscribe: () => Promise<UnlistenFn>;
@@ -60,10 +54,21 @@ function message(err: unknown): string {
 
 // Latest-request-wins guard for `load`.
 let loadSeq = 0;
-const pendingDeletes = new Map<string, PendingDelete>();
+/** Cards with a write in flight: a reload must not overwrite their optimistic state. */
+const inflight = new Map<string, number>();
 
-export function isPendingDelete(id: string): boolean {
-  return pendingDeletes.has(id);
+function begin(id: string): void {
+  inflight.set(id, (inflight.get(id) ?? 0) + 1);
+}
+
+function end(id: string): void {
+  const n = (inflight.get(id) ?? 1) - 1;
+  if (n <= 0) inflight.delete(id);
+  else inflight.set(id, n);
+}
+
+function same(a: Item | undefined, b: Item): a is Item {
+  return !!a && a.updatedAt === b.updatedAt && JSON.stringify(a) === JSON.stringify(b);
 }
 
 function replaceOne(s: ItemsState, item: Item): Partial<ItemsState> {
@@ -81,25 +86,12 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
   freshId: null,
 
   async load(filter, options = {}) {
-    const seq = ++loadSeq;
-    set({ loading: true, error: null, lastFilter: filter, lastOptions: options });
-    try {
-      const list = (await api.listItems(filter, options.includeDone ?? false)).filter(
-        (i) => !pendingDeletes.has(i.id),
-      );
-      if (seq !== loadSeq) return;
-      const items: Record<string, Item> = {};
-      for (const it of list) items[it.id] = it;
-      set({ items, order: list.map((i) => i.id), loading: false });
-    } catch (err) {
-      if (seq !== loadSeq) return;
-      set({ loading: false, error: message(err) });
-    }
+    await fetchInto(filter, options, false);
   },
 
   async reload() {
     const { lastFilter, lastOptions } = get();
-    if (lastFilter) await get().load(lastFilter, lastOptions);
+    if (lastFilter) await fetchInto(lastFilter, lastOptions, true);
   },
 
   async create(input) {
@@ -130,12 +122,15 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
       const optimistic: Item = { ...before, ...fields, tags: tags ?? before.tags };
       set((s) => replaceOne(s, optimistic));
     }
+    begin(id);
     try {
       const updated = await api.updateItem(id, patch);
       set((s) => replaceOne(s, updated));
     } catch (err) {
       if (before) set((s) => replaceOne(s, before));
       toastError(message(err));
+    } finally {
+      end(id);
     }
   },
 
@@ -157,6 +152,7 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
         replaceOne(s, { ...before, status: "done", completedAt: new Date().toISOString() }),
       );
     }
+    begin(id);
     try {
       const updated = await api.completeItem(id);
       set((s) => replaceOne(s, updated));
@@ -166,6 +162,8 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
     } catch (err) {
       if (before) set((s) => replaceOne(s, before));
       toastError(message(err));
+    } finally {
+      end(id);
     }
   },
 
@@ -199,35 +197,28 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
 
   remove(id, opts = {}) {
     const item = get().items[id];
-    if (!item || pendingDeletes.has(id)) return;
-    const index = get().order.indexOf(id);
+    if (!item) return;
     record({
       action: "delete",
       undo: () => restoreDeleted(id),
       redo: () => get().remove(id, { quiet: true }),
     });
+    const entry = lastEntry();
     set((s) => {
       const items = { ...s.items };
       delete items[id];
       return { items, order: s.order.filter((x) => x !== id) };
     });
-
-    const commit = async () => {
-      pendingDeletes.delete(id);
-      try {
-        await trashItem(id);
-      } catch (err) {
-        toastError(message(err));
-        void get().reload();
-      }
-    };
-    const timer = setTimeout(() => void commit(), TOAST_MS);
-    pendingDeletes.set(id, { item, index, timer });
+    // The Trash keeps it recoverable, so there is nothing to wait for.
+    void trashItem(id).catch((err) => {
+      toastError(message(err));
+      void get().reload();
+    });
 
     if (opts.quiet) return;
     useToastsStore.getState().push({
       message: cardsCopy.trashed(item.title),
-      action: { label: uiCopy.undo, run: () => void cancelPendingDelete(id) },
+      action: { label: uiCopy.undo, run: () => void undoEntry(entry) },
     });
   },
 
@@ -241,39 +232,58 @@ export const useItemsStore = create<ItemsState>()((set, get) => ({
   },
 
   subscribe() {
-    // Coalesce bursts (a drag, a seed) into one refresh per frame.
-    let queued = false;
+    // Trailing debounce: a burst (bulk action, import, AI capture) is one refresh.
+    let timer: ReturnType<typeof setTimeout> | undefined;
     return onItemsChanged(() => {
-      if (queued) return;
-      queued = true;
-      setTimeout(() => {
-        queued = false;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
         void get().reload();
         void get().refreshCounts();
         void useProjectsStore.getState().load();
         void useBoardStore.getState().reload();
-      }, 16);
+      }, 40);
     });
   },
 }));
 
-/** Puts back a card whose delete is still in its undo window. False when already gone. */
-export function cancelPendingDelete(id: string): boolean {
-  const pending = pendingDeletes.get(id);
-  if (!pending) return false;
-  clearTimeout(pending.timer);
-  pendingDeletes.delete(id);
-  useItemsStore.setState((s) => {
-    const order = s.order.filter((x) => x !== id);
-    order.splice(Math.min(pending.index, order.length), 0, id);
-    return { items: { ...s.items, [id]: pending.item }, order };
-  });
-  return true;
+/**
+ * Fetches a filter into the store. Unchanged cards keep their object identity
+ * (so memoized cards do not re-render) and cards with a write in flight keep
+ * their optimistic state. A background `quiet` reload never flips `loading`.
+ */
+async function fetchInto(filter: ItemFilter, options: LoadOptions, quiet: boolean): Promise<void> {
+  const { setState: set, getState: get } = useItemsStore;
+  const seq = ++loadSeq;
+  if (quiet) set({ lastFilter: filter, lastOptions: options });
+  else set({ loading: true, error: null, lastFilter: filter, lastOptions: options });
+  try {
+    const list = await api.listItems(filter, options.includeDone ?? false);
+    if (seq !== loadSeq) return;
+    const prev = get();
+    const items: Record<string, Item> = {};
+    let changed = list.length !== prev.order.length;
+    list.forEach((it, i) => {
+      const old = prev.items[it.id];
+      const keep = old && (inflight.has(it.id) || same(old, it)) ? old : it;
+      items[it.id] = keep;
+      if (keep !== old || prev.order[i] !== it.id) changed = true;
+    });
+    if (!changed) {
+      if (prev.loading) set({ loading: false });
+      return;
+    }
+    const order = list.map((i) => i.id);
+    const sameOrder =
+      order.length === prev.order.length && order.every((id, i) => id === prev.order[i]);
+    set({ items, order: sameOrder ? prev.order : order, loading: false });
+  } catch (err) {
+    if (seq !== loadSeq) return;
+    set({ loading: false, error: message(err) });
+  }
 }
 
-/** Undo of a delete: cancel it if still pending, else bring the card back from the Trash. */
+/** Undo of a delete: bring the card back from the Trash. */
 async function restoreDeleted(id: string): Promise<void> {
-  if (cancelPendingDelete(id)) return;
   try {
     await restoreItem(id);
     await useItemsStore.getState().reload();
@@ -282,11 +292,11 @@ async function restoreDeleted(id: string): Promise<void> {
   }
 }
 
-/** Flushes pending deletes immediately (used on window unload). */
-export function flushPendingDeletes(): void {
-  for (const [id, p] of pendingDeletes) {
-    clearTimeout(p.timer);
-    pendingDeletes.delete(id);
-    void trashItem(id);
-  }
-}
+// The arrival highlight is a one-shot: clear it so it does not replay on remount.
+useItemsStore.subscribe((s, prev) => {
+  const id = s.freshId;
+  if (!id || id === prev.freshId) return;
+  setTimeout(() => {
+    if (useItemsStore.getState().freshId === id) useItemsStore.setState({ freshId: null });
+  }, 1600);
+});

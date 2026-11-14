@@ -2,8 +2,8 @@
 import type { Iso, Place } from "../api/types";
 import { moveItems, unmoveItems, type PriorPlace } from "../api/workspace";
 import { workspaceCopy } from "../copy";
-import { batchHistory, record } from "./history";
-import { cancelPendingDelete, useItemsStore } from "./items";
+import { batchHistory, lastEntry, record, undoEntry } from "./history";
+import { useItemsStore } from "./items";
 import { useSelectionStore } from "./selection";
 import { toastError, useToastsStore } from "./toasts";
 import { useUiStore } from "./ui";
@@ -38,12 +38,10 @@ export function bulkDelete(ids: string[]): void {
     batchHistory("delete", () => {
       for (const id of present) items.remove(id, { quiet: true });
     });
+    const entry = lastEntry();
     useToastsStore.getState().push({
       message: workspaceCopy.bulkDeleted(present.length),
-      action: {
-        label: workspaceCopy.undo,
-        run: () => present.forEach((id) => cancelPendingDelete(id)),
-      },
+      action: { label: workspaceCopy.undo, run: () => void undoEntry(entry) },
     });
   }
   useSelectionStore.getState().clear();

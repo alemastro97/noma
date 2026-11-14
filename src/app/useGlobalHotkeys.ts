@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useItemsStore } from "../stores/items";
-import { isTypingTarget, useUiStore } from "../stores/ui";
+import { isTypingTarget, useUiStore, isModalOpen } from "../stores/ui";
 
 const IS_MAC = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform ?? "");
 
@@ -12,11 +12,13 @@ const IS_MAC = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(naviga
 export function useGlobalHotkeys(): void {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // A focused control (a list row, a button) already handled this key.
+      if (e.defaultPrevented) return;
       const ui = useUiStore.getState();
       const mod = IS_MAC ? e.metaKey : e.ctrlKey;
       const typing = isTypingTarget(e.target);
       const key = e.key.toLowerCase();
-      const overlayOpen = ui.paletteOpen || ui.quickAdd.open;
+      const overlayOpen = ui.paletteOpen || ui.quickAdd.open || isModalOpen();
 
       if (mod && key === "k") {
         e.preventDefault();

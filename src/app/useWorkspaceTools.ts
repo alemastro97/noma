@@ -3,7 +3,7 @@ import { bulkComplete, bulkDelete } from "../stores/bulk";
 import { useFiltersStore } from "../stores/filters";
 import { redo, undo } from "../stores/history";
 import { installPointerModifiers, useSelectionStore, visibleOrder } from "../stores/selection";
-import { isTypingTarget, useUiStore } from "../stores/ui";
+import { isTypingTarget, useUiStore, isModalOpen } from "../stores/ui";
 
 const IS_MAC = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform ?? "");
 
@@ -19,11 +19,12 @@ export function useWorkspaceTools(): void {
     void useFiltersStore.getState().load();
 
     const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
       const ui = useUiStore.getState();
       const mod = IS_MAC ? e.metaKey : e.ctrlKey;
       const key = e.key.toLowerCase();
       const typing = isTypingTarget(e.target);
-      const overlayOpen = ui.paletteOpen || ui.quickAdd.open;
+      const overlayOpen = ui.paletteOpen || ui.quickAdd.open || isModalOpen();
       const inWorkspace = ui.target.kind !== "settings";
       const stop = () => {
         e.preventDefault();

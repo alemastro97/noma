@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Item } from "../api/types";
 import { EMPTY_COUNTS } from "../api/types";
+import { historySize, resetHistory } from "./history";
 import { useItemsStore } from "./items";
 import { useToastsStore } from "./toasts";
 
@@ -111,31 +112,61 @@ test("complete rolls back when invoke rejects", async () => {
   expect(useToastsStore.getState().toasts.at(-1)?.message).toBe("boom");
 });
 
-describe("undoable delete", () => {
-  beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
-
-  test("undo within the window restores the card with no server call", () => {
+describe("delete", () => {
+  test("goes to the Trash at once, exactly once", () => {
+    mocked.mockResolvedValue(undefined);
     useItemsStore.setState({
       order: ["a", "b"],
       items: { a: item({ id: "a" }), b: item({ id: "b" }) },
     });
     useItemsStore.getState().remove("a");
+    useItemsStore.getState().remove("a");
     expect(useItemsStore.getState().order).toEqual(["b"]);
-    useToastsStore.getState().toasts.at(-1)?.action?.run();
-    expect(useItemsStore.getState().order).toEqual(["a", "b"]);
-    vi.advanceTimersByTime(6000);
-    expect(mocked).not.toHaveBeenCalledWith("items_trash", { id: "a" });
-  });
-
-  test("after the window the delete is sent exactly once", () => {
-    mocked.mockResolvedValue(undefined);
-    useItemsStore.setState({ order: ["a"], items: { a: item({ id: "a" }) } });
-    useItemsStore.getState().remove("a");
-    useItemsStore.getState().remove("a");
-    vi.advanceTimersByTime(5000);
     const deletes = mocked.mock.calls.filter((c) => c[0] === "items_trash");
     expect(deletes).toEqual([["items_trash", { id: "a" }]]);
+  });
+
+  test("the toast's Undo restores it from the Trash and uses up the undo step", async () => {
+    mocked.mockResolvedValue(undefined);
+    resetHistory();
+    useItemsStore.setState({ order: ["a"], items: { a: item({ id: "a" }) } });
+    useItemsStore.getState().remove("a");
+    expect(historySize().past).toBe(1);
+    useToastsStore.getState().toasts.at(-1)?.action?.run();
+    await vi.waitFor(() => expect(mocked).toHaveBeenCalledWith("items_restore", { id: "a" }));
+    expect(historySize().past).toBe(0);
+  });
+});
+
+describe("reload", () => {
+  test("keeps unchanged cards identical and does not flip loading", async () => {
+    const a = item({ id: "a" });
+    useItemsStore.setState({
+      order: ["a"],
+      items: { a },
+      lastFilter: { kind: "inbox" },
+      loading: false,
+    });
+    const seen: boolean[] = [];
+    const un = useItemsStore.subscribe((s) => seen.push(s.loading));
+    mocked.mockResolvedValueOnce([{ ...a }]);
+    await useItemsStore.getState().reload();
+    un();
+    expect(useItemsStore.getState().items.a).toBe(a);
+    expect(seen).not.toContain(true);
+  });
+
+  test("does not overwrite a card whose edit is still in flight", async () => {
+    const a = item({ id: "a" });
+    useItemsStore.setState({ order: ["a"], items: { a }, lastFilter: { kind: "inbox" } });
+    let finish: (v: unknown) => void = () => undefined;
+    mocked.mockImplementationOnce(() => new Promise((r) => (finish = r)));
+    const edit = useItemsStore.getState().update("a", { title: "New" });
+    mocked.mockResolvedValueOnce([a]); // a stale snapshot arrives meanwhile
+    await useItemsStore.getState().reload();
+    expect(useItemsStore.getState().items.a?.title).toBe("New");
+    finish({ ...a, title: "New", updatedAt: "2026-11-09T11:00:00Z" });
+    await edit;
   });
 });
 

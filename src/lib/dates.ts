@@ -32,8 +32,20 @@ export function dayDiff(d: Date, now: Date): number {
   return Math.round((startOfDay(d).getTime() - startOfDay(now).getTime()) / DAY);
 }
 
+// Building an Intl formatter is slow; every card asks for several per render.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+function fmt(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = locale + JSON.stringify(options);
+  let f = formatters.get(key);
+  if (!f) {
+    f = new Intl.DateTimeFormat(locale, options);
+    formatters.set(key, f);
+  }
+  return f;
+}
+
 export function formatTime(d: Date): string {
-  return d.toLocaleTimeString(t.intl, { hour: "2-digit", minute: "2-digit", hour12: false });
+  return fmt(t.intl, { hour: "2-digit", minute: "2-digit", hour12: false }).format(d);
 }
 
 function hasTime(d: Date): boolean {
@@ -47,10 +59,10 @@ export function formatDay(d: Date, now: Date): string {
   if (diff === 1) return t.tomorrow;
   if (diff === -1) return t.yesterday;
   if (diff > 1 && diff < 7) {
-    const weekday = d.toLocaleDateString(t.intl, { weekday: "short" });
+    const weekday = fmt(t.intl, { weekday: "short" }).format(d);
     return t.weekdayDay(weekday, d.getDate());
   }
-  const month = d.toLocaleDateString(t.intlMonth, { month: "short" });
+  const month = fmt(t.intlMonth, { month: "short" }).format(d);
   return d.getFullYear() === now.getFullYear()
     ? t.monthDay(month, d.getDate())
     : t.monthDayYear(month, d.getDate(), d.getFullYear());
@@ -96,7 +108,7 @@ export function editedAgo(d: Date, now: Date): string {
 /** Event date block: { weekday: "WED", day: "11" }. */
 export function eventBlock(d: Date): { weekday: string; day: string } {
   return {
-    weekday: d.toLocaleDateString(t.intl, { weekday: "short" }).toUpperCase(),
+    weekday: fmt(t.intl, { weekday: "short" }).format(d).toUpperCase(),
     day: String(d.getDate()),
   };
 }

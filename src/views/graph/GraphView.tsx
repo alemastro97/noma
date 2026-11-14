@@ -76,6 +76,10 @@ export function GraphView({ empty }: { empty?: ReactNode }) {
       .filter((e): e is [number, number] => e[0] !== undefined && e[1] !== undefined);
     return { nodes, edges, shown };
   }, [items, links, onlyLinked, sim]);
+  const structure = useMemo(
+    () => `${nodes.map((n) => n.id).join(",")}|${edges.map((e) => e.join("-")).join(",")}`,
+    [nodes, edges],
+  );
 
   // Run the simulation until it settles; restart whenever the graph changes.
   const kick = (to = 0.8) => {
@@ -111,9 +115,10 @@ export function GraphView({ empty }: { empty?: ReactNode }) {
       if (raf.current !== null) cancelAnimationFrame(raf.current);
       raf.current = null;
     };
-    // `kick` closes over the current nodes/edges.
+    // `kick` closes over the current nodes/edges; a reload with the same
+    // cards and links must not shake a settled graph.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, edges]);
+  }, [structure]);
 
   // Center the origin once the size is known.
   useEffect(() => {

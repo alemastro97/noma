@@ -1,4 +1,5 @@
 import "./noma-orb.css";
+import "./noma-orb.app.css";
 
 export const ORB_STATES = ["idle", "listening", "processing", "success", "error"] as const;
 export type OrbState = (typeof ORB_STATES)[number];
@@ -12,7 +13,9 @@ export interface NomaOrbProps {
 }
 
 export function NomaOrb({ state = "idle", size = 56, label, className }: NomaOrbProps) {
-  const classes = ["noma-orb", `s-${state}`, className].filter(Boolean).join(" ");
+  const classes = ["noma-orb", `s-${state}`, size <= 32 && "small", className]
+    .filter(Boolean)
+    .join(" ");
   return (
     <div
       className={classes}

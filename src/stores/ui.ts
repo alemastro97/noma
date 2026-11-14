@@ -114,3 +114,8 @@ export function isTypingTarget(el: EventTarget | null): boolean {
   const tag = el.tagName;
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable;
 }
+
+/** A modal dialog (Ask NOMA, confirm, onboarding…) is open: workspace keys stay out. */
+export function isModalOpen(): boolean {
+  return !!document.querySelector('[aria-modal="true"], [role="alertdialog"]');
+}

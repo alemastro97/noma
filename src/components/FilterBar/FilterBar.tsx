@@ -211,7 +211,11 @@ export function FilterBar() {
           className={styles.close}
           aria-label={workspaceCopy.closeFilter}
           title={workspaceCopy.closeFilter}
-          onClick={() => useFiltersStore.getState().setOpen(false)}
+          onClick={() => {
+            const filters = useFiltersStore.getState();
+            filters.reset();
+            filters.setOpen(false);
+          }}
         >
           <X size={14} strokeWidth={1.75} aria-hidden="true" />
         </button>
