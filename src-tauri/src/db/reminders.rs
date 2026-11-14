@@ -6,17 +6,17 @@ use chrono::{DateTime, Utc};
 use rusqlite::{Connection, OptionalExtension, params};
 
 use super::error::DbResult;
-use super::items::get_item;
+use super::items::{VISIBLE, get_item};
 use super::models::Item;
 
-const EFFECTIVE: &str = "COALESCE(snoozed_until, remind_at)";
+const EFFECTIVE: &str = "COALESCE(i.snoozed_until, i.remind_at)";
 
 /// Open items whose reminder time has come and has not fired yet.
 pub fn due_reminders(conn: &Connection, now: DateTime<Utc>) -> DbResult<Vec<Item>> {
     let mut stmt = conn.prepare(&format!(
-        "SELECT id FROM items WHERE status != 'done' AND {EFFECTIVE} IS NOT NULL \
-         AND archived_at IS NULL AND deleted_at IS NULL \
-         AND {EFFECTIVE} <= ?1 AND (reminded_at IS NULL OR reminded_at < {EFFECTIVE}) \
+        "SELECT i.id FROM items i WHERE i.status != 'done' AND {EFFECTIVE} IS NOT NULL \
+         AND {VISIBLE} \
+         AND {EFFECTIVE} <= ?1 AND (i.reminded_at IS NULL OR i.reminded_at < {EFFECTIVE}) \
          ORDER BY {EFFECTIVE}"
     ))?;
     let ids: Vec<String> = stmt
@@ -34,7 +34,7 @@ pub fn due_reminders(conn: &Connection, now: DateTime<Utc>) -> DbResult<Vec<Item
 /// Records that `item_id`'s reminder fired at its current effective time.
 pub fn mark_reminded(conn: &Connection, item_id: &str) -> DbResult<()> {
     conn.execute(
-        &format!("UPDATE items SET reminded_at = {EFFECTIVE} WHERE id = ?1"),
+        "UPDATE items SET reminded_at = COALESCE(snoozed_until, remind_at) WHERE id = ?1",
         params![item_id],
     )?;
     Ok(())
@@ -45,9 +45,9 @@ pub fn next_reminder_at(conn: &Connection, now: DateTime<Utc>) -> DbResult<Optio
     Ok(conn
         .query_row(
             &format!(
-                "SELECT MIN({EFFECTIVE}) FROM items WHERE status != 'done' \
-                 AND archived_at IS NULL AND deleted_at IS NULL \
-                 AND {EFFECTIVE} > ?1 AND (reminded_at IS NULL OR reminded_at < {EFFECTIVE})"
+                "SELECT MIN({EFFECTIVE}) FROM items i WHERE i.status != 'done' \
+                 AND {VISIBLE} \
+                 AND {EFFECTIVE} > ?1 AND (i.reminded_at IS NULL OR i.reminded_at < {EFFECTIVE})"
             ),
             [now],
             |r| r.get::<_, Option<DateTime<Utc>>>(0),

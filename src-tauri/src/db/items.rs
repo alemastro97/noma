@@ -303,7 +303,7 @@ pub fn list_items(
     query_items(conn, &sql, &refs)
 }
 
-fn count_items(conn: &Connection, filter: &ItemFilter) -> DbResult<u32> {
+pub(crate) fn count_items(conn: &Connection, filter: &ItemFilter) -> DbResult<u32> {
     let (where_sql, params) = filter_sql(filter, false);
     let sql = format!("SELECT COUNT(*) FROM items i WHERE {VISIBLE} AND ({where_sql})");
     let refs: Vec<&dyn ToSql> = params.iter().map(|p| p.as_ref()).collect();
@@ -377,8 +377,15 @@ pub fn update_item(
         return complete_item(conn, id, now, tz);
     }
 
-    let tx = conn.unchecked_transaction()?;
-    let mut item = require_item(&tx, id)?;
+    // Callers such as a bulk move already hold a transaction: join it, since
+    // SQLite cannot nest BEGIN.
+    let own = if conn.is_autocommit() {
+        Some(conn.unchecked_transaction()?)
+    } else {
+        None
+    };
+    let tx: &Connection = own.as_deref().unwrap_or(conn);
+    let mut item = require_item(tx, id)?;
     let old_project = item.project_id.clone();
     if let Some(kind) = patch.kind {
         item.kind = kind;
@@ -411,6 +418,9 @@ pub fn update_item(
     }
     if let Some(snoozed_until) = patch.snoozed_until {
         item.snoozed_until = snoozed_until;
+    } else if patch.remind_at.is_some() {
+        // A new reminder time replaces an old snooze, which would otherwise win forever.
+        item.snoozed_until = None;
     }
     let mut restart_series = patch.due_at.is_some() || patch.remind_at.is_some();
     if let Some(recurrence) = patch.recurrence {
@@ -440,7 +450,7 @@ pub fn update_item(
         }
     }
     item.updated_at = now;
-    write_item(&tx, &item)?;
+    write_item(tx, &item)?;
 
     if restart_series {
         let start = item.recurrence.as_ref().and(item.due_at.or(item.remind_at));
@@ -451,30 +461,32 @@ pub fn update_item(
     }
 
     if let Some(tags) = &patch.tags {
-        set_item_tags(&tx, &item.id, tags)?;
+        set_item_tags(tx, &item.id, tags)?;
     }
 
     // Changing project moves the card to the new project's board, or off the old
     // project's board when cleared. Personal-board placements are left alone.
     if item.project_id != old_project {
-        let current = current_placement_board(&tx, &item.id)?;
+        let current = current_placement_board(tx, &item.id)?;
         let on_project_board = match &current {
-            Some(b) => board_kind(&tx, b)? == Some(BoardKind::Project),
+            Some(b) => board_kind(tx, b)? == Some(BoardKind::Project),
             None => true,
         };
         if on_project_board {
             match &item.project_id {
                 Some(p) => {
-                    if let Some(board) = project_board(&tx, p)? {
-                        let (x, y) = next_slot(&tx, &board)?;
-                        place_item(&tx, &item.id, &board, x, y)?;
+                    if let Some(board) = project_board(tx, p)? {
+                        let (x, y) = next_slot(tx, &board)?;
+                        place_item(tx, &item.id, &board, x, y)?;
                     }
                 }
-                None => remove_placement(&tx, &item.id)?,
+                None => remove_placement(tx, &item.id)?,
             }
         }
     }
-    tx.commit()?;
+    if let Some(own) = own {
+        own.commit()?;
+    }
     require_item(conn, id)
 }
 

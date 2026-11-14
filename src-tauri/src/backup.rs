@@ -68,6 +68,8 @@ pub fn snapshot(conn: &Connection, dir: &Path, now: DateTime<Utc>) -> Result<Pat
 
 /// Takes a snapshot when the newest one is older than a day. Runs for the app's lifetime.
 pub async fn run(app: AppHandle) {
+    // Not during startup: VACUUM holds the database while the first window loads.
+    tokio::time::sleep(Duration::from_secs(90)).await;
     loop {
         if let (Ok(dir), Some(state)) = (dir(&app), app.try_state::<AppState>()) {
             let due = snapshots(&dir)

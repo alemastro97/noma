@@ -6,7 +6,6 @@ use chrono_tz::Tz;
 use rusqlite::{Connection, OptionalExtension};
 
 use super::error::DbResult;
-use super::items::list_items;
 use super::models::ItemFilter;
 
 /// The orb glows when a reminder is due within this window…
@@ -16,7 +15,7 @@ pub const ATTENTION_BEHIND: Duration = Duration::hours(24);
 
 /// Open items on Today (the same list as the orb panel's "n left").
 pub fn today_left(conn: &Connection, now: DateTime<Utc>, tz: Tz) -> DbResult<u32> {
-    Ok(list_items(conn, &ItemFilter::Today { now, tz }, false)?.len() as u32)
+    crate::db::items::count_items(conn, &ItemFilter::Today { now, tz })
 }
 
 /// Open items whose reminder time (snooze first) is overdue or due soon.

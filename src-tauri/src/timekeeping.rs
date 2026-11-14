@@ -203,7 +203,8 @@ impl TimeService {
     pub async fn run(self: Arc<Self>) {
         loop {
             let now = Utc::now();
-            let paused = self.setting("reminders.paused").as_deref() == Some("1");
+            let paused = self.setting("reminders.paused").as_deref() == Some("1")
+                || crate::presence::quiet_now(&self.app);
             let mut next = self.focus_tick(now);
             if !paused {
                 self.recap(now);

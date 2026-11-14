@@ -437,6 +437,40 @@ mod tests {
     use crate::db::{self, models::*};
     use chrono::TimeZone;
 
+    #[test]
+    fn bulk_move_into_a_project_and_back() {
+        let conn = crate::db::open_in_memory().unwrap();
+        let now = chrono::Utc::now();
+        let tz = chrono_tz::UTC;
+        let project =
+            crate::db::projects::create_project(&conn, "Studio move", "#fff", now).unwrap();
+        let mk = |t: &str| {
+            crate::db::items::create_item(
+                &conn,
+                crate::db::models::NewItem {
+                    title: t.into(),
+                    ..Default::default()
+                },
+                now,
+            )
+            .unwrap()
+            .id
+        };
+        let ids = vec![mk("a"), mk("b")];
+        let place = crate::db::filing::Place::Project(project.id.clone());
+        let prior = move_items(&conn, &ids, &place, now, tz).unwrap();
+        for id in &ids {
+            assert_eq!(crate::db::filing::place_of(&conn, id).unwrap().0, place);
+        }
+        restore_places(&conn, &prior, now, tz).unwrap();
+        for id in &ids {
+            assert_eq!(
+                crate::db::filing::place_of(&conn, id).unwrap().0,
+                crate::db::filing::Place::Inbox
+            );
+        }
+    }
+
     fn now() -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 11, 11, 9, 0, 0).unwrap()
     }

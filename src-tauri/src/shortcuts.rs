@@ -124,6 +124,10 @@ impl Shortcuts {
                     .ok()
                     .and_then(|c| get_setting(&c, &action.key()).ok().flatten())
             });
+            // Saved but empty: the user cleared it, so no default comes back.
+            if saved.as_deref().is_some_and(|acc| acc.trim().is_empty()) {
+                continue;
+            }
             let entry = saved
                 .and_then(|acc| parse(&acc).ok().map(|s| (acc, s)))
                 .or_else(|| {

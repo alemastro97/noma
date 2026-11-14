@@ -8,7 +8,7 @@ use crate::filed::{OPEN_ITEM, OPEN_TODAY};
 use crate::windows;
 
 /// Longest capture accepted from a link.
-const TEXT_MAX: usize = 20_000;
+const TEXT_MAX: usize = 4_000;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Link {
@@ -43,6 +43,15 @@ pub fn parse(url: &Url) -> Option<Link> {
 pub fn handle(app: &AppHandle, url: &Url) {
     match parse(url) {
         Some(Link::Capture(text)) => {
+            // Any web page or mail can fire this link: one capture every few seconds.
+            static LAST: std::sync::Mutex<Option<std::time::Instant>> = std::sync::Mutex::new(None);
+            if let Ok(mut last) = LAST.lock() {
+                if last.is_some_and(|t| t.elapsed() < std::time::Duration::from_secs(3)) {
+                    log::warn!("noma:// capture ignored: too many in a row");
+                    return;
+                }
+                *last = Some(std::time::Instant::now());
+            }
             let app = app.clone();
             tauri::async_runtime::spawn(async move {
                 if let Err(e) =

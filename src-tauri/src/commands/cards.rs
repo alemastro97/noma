@@ -43,7 +43,11 @@ fn remove_attachment_dirs(app: &AppHandle, ids: &[String]) {
         return;
     };
     for id in ids {
-        let _ = fs::remove_dir_all(dir.join(id));
+        // Card ids are UUIDs; anything else ("", "..") must never reach remove_dir_all.
+        let safe = !id.is_empty() && id.chars().all(|c| c.is_ascii_alphanumeric() || c == '-');
+        if safe {
+            let _ = fs::remove_dir_all(dir.join(id));
+        }
     }
 }
 

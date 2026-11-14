@@ -182,6 +182,14 @@ impl Presence {
         };
         let on = setting(&self.app, MENUBAR_COUNT).as_deref() != Some("0");
         let title = (on && state.today_left > 0).then(|| state.today_left.to_string());
+        // Setting it is a main-thread hop and a menu-bar redraw: only on change.
+        static LAST: Mutex<Option<Option<String>>> = Mutex::new(None);
+        if let Ok(mut last) = LAST.lock() {
+            if last.as_ref() == Some(&title) {
+                return;
+            }
+            *last = Some(title.clone());
+        }
         let _ = tray.set_title(title);
     }
 
